@@ -1,22 +1,26 @@
 {
     "280": {
       "DAI": {
-        "address": "0xaB334Ad47ECa0b6680358B27fFF99D28d12a01Fb"
+        "address": "0x9763f852a16534BD0C312e15b4266A1333662101",
+         "decimal_places": 18 
       },
       "LINK": {
-        "address": "0x4ed1e1405A5714791D4dA9607358d17dBD6E60fb"
+        "address": "0x732A6F0089CFaFd91E7Ad33475A264e1393dFaD8",
+         "decimal_places": 18
       },
       "BTC": {
-        "address": "0x9763f852a16534BD0C312e15b4266A1333662101"
+        "address": "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833",
+        "decimal_places": 8
       },
       "USDT": {
         "address": ""
       },
       "USDC": {
-        "address": "0x732A6F0089CFaFd91E7Ad33475A264e1393dFaD8"
+        "address": "0x89126812d7aa022f817465B7197dE668330712E8",
+        "decimal_places": 6
       },
       "deXchange": {
-        "address": "0x7710b652E8b746cAAC3A69CA2655Ab1df7429f9f"
+        "address": "0xA4b7A892a3fb2FC8777E8a325Ff78D07D6BE0f24"
       },
       "explorerURL": "https://explorer.zksync.io"
     },

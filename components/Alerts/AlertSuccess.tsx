@@ -11,48 +11,48 @@ function TransitionLeft(props: TransitionProps) {
     return <Slide {...props} direction="left" />
 }
 
-const WarningInfo = () => {
+const AlertSuccess = () => {
     // @ts-ignore
-    const { snackbarInfo, setSnackbarInfo } = useAppStateContext()
+    const { snackbarSuccess, setSnackbarSuccess } = useAppStateContext()
     const position: SnackbarOrigin = { vertical: "bottom", horizontal: "right" }
 
     return (
         <Snackbar
             anchorOrigin={position}
             onClose={() => {
-                setSnackbarInfo({
+                setSnackbarSuccess({
                     open: false,
-                    message: snackbarInfo.message,
+                    message: snackbarSuccess.message,
                 })
                 setTimeout(() => {
-                    setSnackbarInfo({
+                    setSnackbarSuccess({
                         open: false,
                         message: "",
                     })
                 }, 10000)
             }}
-            open={snackbarInfo.open}
+            open={snackbarSuccess.open}
             autoHideDuration={6000}
             message="Note archived"
             key={"top" + "center"}
             TransitionComponent={TransitionLeft}
         >
             <Alert
-                severity="info"
-                className="bg-alertBgBlue text-alertTextBlue py-5 flex items-center justify-between relative rounded overflow-hidden shadow-black1"
+                severity="success"
+                className="bg-alertBgGreen text-alertTextGreen py-5 flex items-center justify-between relative rounded overflow-hidden shadow-black1"
                 classes={{ icon: "relative bottom-0.5" }}
             >
-                <div className="h-full w-1 absolute bg-alertBlue left-0 top-0" />
-                <span className="mr-3">Token must be greater than zero !</span>
+                <div className="h-full w-1 absolute bg-alertGreen left-0 top-0" />
+                <span className="mr-3">{snackbarSuccess.message}</span>
                 <CloseIcon
-                    className="relative bottom-0.5 hover:bg-alertTextBlue hover:text-alertBgBlue rounded-full transition-all duration-300 cursor-pointer"
+                    className="relative bottom-0.5 hover:bg-alertTextGreen hover:text-alertBgGreen rounded-full transition-all duration-300 cursor-pointer"
                     onClick={() => {
-                      setSnackbarInfo({
+                        setSnackbarSuccess({
                             open: false,
-                            message: snackbarInfo.message,
+                            message: snackbarSuccess.message,
                         })
                         setTimeout(() => {
-                            setSnackbarInfo({
+                            setSnackbarSuccess({
                                 open: false,
                                 message: "",
                             })
@@ -64,4 +64,4 @@ const WarningInfo = () => {
     )
 }
 
-export default WarningInfo
+export default AlertSuccess

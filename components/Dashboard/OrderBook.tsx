@@ -1,237 +1,237 @@
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { useEffect } from "react"
 
-// Import Selectors
-import { orderBookSelector } from "../../features/selectors"
-
 // Import Interactions
-import { getOrders } from "../../api/interactions"
+import { getBuyOrders, getSellOrders } from "../../api/interactions"
 import * as React from "react"
-import { styled } from "@mui/material/styles"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
-import TableCell, { tableCellClasses } from "@mui/material/TableCell"
+import TableCell from "@mui/material/TableCell"
 import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Paper from "@mui/material/Paper"
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.common.black,
-        color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-    },
-}))
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    "&:nth-of-type(odd)": {
-        backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    "&:last-child td, &:last-child th": {
-        border: 0,
-    },
-}))
-
-function createData(name: string, calories: number, fat: number) {
-    return { name, calories, fat }
-}
-
-const rows = [
-    createData(1, 0.002, 500),
-    createData(1, 237, 9.0),
-    createData(1, 262, 16.0),
-    createData(1, 305, 3.7),
-    createData(1, 356, 16.0),
-]
+import { truncateDecimals } from "../../utility"
 
 const OrderBook = () => {
-    const provider = useAppSelector((state) => state.provider.connection)
-    const exchange = useAppSelector((state) => state.exchange.contract)
-    const symbols = useAppSelector((state) => state.tokens.symbols)
-    const orderBook = useAppSelector(orderBookSelector)
+    const { symbols } = useAppSelector((state) => state.tokens)
+    const { buyOrders, sellOrders } = useAppSelector((state) => state.order)
 
     const dispatch = useAppDispatch()
 
-    // const fillOrderHandler = (order: any) => {
-    //     fillOrder(provider, exchange, order, dispatch)
-    // }
     useEffect(() => {
-        getOrders(dispatch)
+        getBuyOrders(dispatch)
+        getSellOrders(dispatch)
     }, [])
 
     return (
-        <div className="relative bg-black py-[0.75em] px-[1.75em] m-[0.75em] h-[300px] col-span-full overflow-y-scroll shadow-black1">
+        <div className="relative bg-black py-[0.75em] px-[1.75em] m-[0.75em] col-span-full overflow-y-scroll shadow-black1">
             <div className="flex items-center justify-between">
                 <h2>Order Book</h2>
             </div>
 
-            <div className="flex items-center">
-                {!orderBook || orderBook.sellOrders.length === 0 ? (
+            <div className="flex items-center gap-5 max-h-[550px]">
+                {false ? (
                     <p className="flex-center">No Sell Orders</p>
                 ) : (
-                    // <table className="exchange__orderbook--sell">
-                    //     <caption>Selling</caption>
-                    //     <thead>
-                    //         <tr>
-                    //             <th>
-                    //                 {symbols && symbols[0]}
-                    //                 <img src="/images/sort.svg" alt="Sort" />
-                    //             </th>
-                    //             <th>
-                    //                 {symbols && symbols[0]}/
-                    //                 {symbols && symbols[1]}
-                    //                 <img src="/images/sort.svg" alt="Sort" />
-                    //             </th>
-                    //             <th>
-                    //                 {symbols && symbols[1]}
-                    //                 <img src="/images/sort.svg" alt="Sort" />
-                    //             </th>
-                    //         </tr>
-                    //     </thead>
-                    //     <tbody>
-                    //         {/* MAPPING OF SELL ORDERS... */}
-
-                    //         {orderBook &&
-                    //             orderBook.sellOrders.map(
-                    //                 (order: any, index: any) => {
-                    //                     return (
-                    //                         <tr
-                    //                             key={index}
-                    //                             onClick={() =>
-                    //                                 fillOrderHandler(order)
-                    //                             }
-                    //                         >
-                    //                             <td>{order.token0Amount}</td>
-                    //                             <td
-                    //                                 style={{
-                    //                                     color: `${order.orderTypeClass}`,
-                    //                                 }}
-                    //                             >
-                    //                                 {order.tokenPrice}
-                    //                             </td>
-                    //                             <td>{order.token1Amount}</td>
-                    //                         </tr>
-                    //                     )
-                    //                 }
-                    //             )}
-                    //     </tbody>
-                    // </table>
-                    <TableContainer component={Paper}>
-                        <Table
-                            sx={{ minWidth: 700 }}
-                            aria-label="customized table"
+                    <div className="flex flex-col my-10 h-full mb-auto">
+                        <span className="text-lg px-4">Selling</span>
+                        <TableContainer
+                            component={Paper}
+                            className="rounded-lg overflow-scroll bg-black min-h-[250px] max-h-[500px]"
                         >
-                            <TableHead>
-                                <TableRow>
-                                    <StyledTableCell>
-                                        {symbols && symbols[0]}
-
-                                        <img
-                                            src="/images/sort.svg"
-                                            alt="Sort"
-                                        />
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
-                                        {symbols && symbols[0]}/
-                                        {symbols && symbols[1]}
-                                        <img
-                                            src="/images/sort.svg"
-                                            alt="Sort"
-                                        />
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
-                                        {symbols && symbols[1]}
-                                        <img
-                                            src="/images/sort.svg"
-                                            alt="Sort"
-                                        />
-                                    </StyledTableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows.map((row) => (
-                                    <StyledTableRow key={row.name}>
-                                        <StyledTableCell
-                                            component="th"
-                                            scope="row"
+                            <Table aria-label="customized table">
+                                <TableHead className="bg-black border-b border-b-textGray1 border-opacity-20 sticky top-[0px]">
+                                    <TableRow>
+                                        <TableCell
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                            align="center"
                                         >
-                                            {row.name}
-                                        </StyledTableCell>
-                                        <StyledTableCell align="right">
-                                            {row.calories}
-                                        </StyledTableCell>
-                                        <StyledTableCell align="right">
-                                            {row.fat}
-                                        </StyledTableCell>
-                                        <StyledTableCell align="right">
-                                            {row.carbs}
-                                        </StyledTableCell>
-                                        <StyledTableCell align="right">
-                                            {row.protein}
-                                        </StyledTableCell>
-                                    </StyledTableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                            <span className="flex w-full justify-start items-center">
+                                                {symbols && symbols[0]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                        >
+                                            <span className="flex items-center mx-auto w-fit">
+                                                {symbols && symbols[0]} /{" "}
+                                                {symbols && symbols[1]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                        <TableCell
+                                            align="right"
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                        >
+                                            <span className="flex items-center w-full justify-end ml-auto">
+                                                {symbols && symbols[1]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody className="bg-black">
+                                    {sellOrders
+                                        .filter((order) => {
+                                            return (
+                                                order.side === "sell" &&
+                                                order.status !== "cancelled" &&
+                                                order.market ===
+                                                    `${symbols[0]}-${symbols[1]}`
+                                            )
+                                        })
+                                        .map((order, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell
+                                                    component="th"
+                                                    scope="row"
+                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                    align="center"
+                                                >
+                                                    {order.originalQuantity}
+                                                </TableCell>
+                                                <TableCell
+                                                    align="right"
+                                                    className="border-none text-textGreen1 text-center h-5 py-2.5"
+                                                >
+                                                    {truncateDecimals(
+                                                        (
+                                                            Number(
+                                                                order.originalQuantity
+                                                            ) /
+                                                            Number(order.price)
+                                                        ).toString(),
+                                                        5
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    align="right"
+                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                >
+                                                    {order.price}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </div>
                 )}
-
-                <div className="divider"></div>
-
-                {!orderBook || orderBook.buyOrders.length === 0 ? (
+                {false ? (
                     <p className="flex-center">No Buy Orders</p>
                 ) : (
-                    <table className="exchange__orderbook--buy">
-                        <caption>Buying</caption>
-                        <thead>
-                            <tr>
-                                <th>
-                                    {symbols && symbols[0]}
-                                    <img src="/images/sort.svg" alt="Sort" />
-                                </th>
-                                <th>
-                                    {symbols && symbols[0]}/
-                                    {symbols && symbols[1]}
-                                    <img src="/images/sort.svg" alt="Sort" />
-                                </th>
-                                <th>
-                                    {symbols && symbols[1]}
-                                    <img src="/images/sort.svg" alt="Sort" />
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* MAPPING OF BUY ORDERS... */}
-
-                            {orderBook &&
-                                orderBook.buyOrders.map(
-                                    (order: any, index: any) => {
-                                        return (
-                                            <tr
-                                                key={index}
-                                                onClick={() =>
-                                                    fillOrderHandler(order)
-                                                }
-                                            >
-                                                <td>{order.token0Amount}</td>
-                                                <td
-                                                    style={{
-                                                        color: `${order.orderTypeClass}`,
-                                                    }}
+                    <div className="my-10 flex flex-col mb-auto">
+                        <span className="text-lg px-4">Buying</span>
+                        <TableContainer
+                            component={Paper}
+                            className="rounded-lg overflow-scroll bg-black min-h-[250px] max-h-[500px]"
+                        >
+                            <Table aria-label="customized table relative">
+                                <TableHead className="bg-black border-b-0 shadow-tableStickyHead sticky top-0">
+                                    <TableRow>
+                                        <TableCell
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                            align="center"
+                                        >
+                                            <span className="flex w-full justify-start items-center">
+                                                {symbols && symbols[0]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                        >
+                                            <span className="flex items-center mx-auto w-fit">
+                                                {symbols && symbols[0]} /{" "}
+                                                {symbols && symbols[1]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                        <TableCell
+                                            align="right"
+                                            sx={{ borderBottom: "0" }}
+                                            className="text-textGray1"
+                                        >
+                                            <span className="flex items-center w-full justify-end ml-auto">
+                                                {symbols && symbols[1]}
+                                                <img
+                                                    src="/images/sort.svg"
+                                                    alt="Sort"
+                                                />
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody className="bg-black">
+                                    {buyOrders
+                                        .filter((order) => {
+                                            return (
+                                                order.side === "buy" &&
+                                                order.status !== "cancelled" &&
+                                                order.market ===
+                                                    `${symbols[0]}-${symbols[1]}`
+                                            )
+                                        })
+                                        .map((order) => (
+                                            <TableRow key={order._id}>
+                                                <TableCell
+                                                    component="th"
+                                                    scope="row"
+                                                    className="text-white border-none px-8 mt-0 h-5 py-2.5"
+                                                    align="center"
                                                 >
-                                                    {order.tokenPrice}
-                                                </td>
-                                                <td>{order.token1Amount}</td>
-                                            </tr>
-                                        )
-                                    }
-                                )}
-                        </tbody>
-                    </table>
+                                                    {order.originalQuantity}
+                                                </TableCell>
+                                                <TableCell
+                                                    align="right"
+                                                    className="border-none text-textGreen1 text-center h-5 py-2.5"
+                                                >
+                                                    {truncateDecimals(
+                                                        (
+                                                            Number(
+                                                                order.originalQuantity
+                                                            ) /
+                                                            Number(order.price)
+                                                        ).toString(),
+                                                        5
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    align="right"
+                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                >
+                                                    {order.price}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </div>
                 )}
             </div>
         </div>

@@ -33,6 +33,11 @@ export const actions = {
 
     // order
 
-    insert_new_order: createAction<IGetOrder>("order/new_order_inserted"),
-    load_all_orders: createAction<IGetOrder[]>("order/all_orders_loaded"),
+    load_sell_orders: createAction<IGetOrder[]>("order/sell_orders_loaded"),
+    load_buy_orders: createAction<IGetOrder[]>("order/buy_orders_loaded"),
+    load_my_orders: createAction<IGetOrder[]>("order/my_orders_loaded"),
+    insert_sell_order: createAction<IGetOrder>("order/sell_order_inserted"),
+    insert_buy_order: createAction<IGetOrder>("order/buy_order_inserted"),
+    load_cancelled_orders: createAction<IGetOrder[]>("order/cancelled_orders_loaded"),
+    cancel_order: createAction<IGetOrder>("order/order_cancelled"),
 }

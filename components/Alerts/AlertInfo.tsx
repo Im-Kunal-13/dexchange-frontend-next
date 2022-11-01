@@ -11,52 +11,52 @@ function TransitionLeft(props: TransitionProps) {
     return <Slide {...props} direction="left" />
 }
 
-const WarningAlert = () => {
+const AlertInfo = () => {
     // @ts-ignore
-    const { snackbarWarning, setSnackbarWarning } = useAppStateContext()
+    const { snackbarInfo, setSnackbarInfo } = useAppStateContext()
     const position: SnackbarOrigin = { vertical: "bottom", horizontal: "right" }
 
     return (
         <Snackbar
             anchorOrigin={position}
             onClose={() => {
-                setSnackbarWarning({
+                setSnackbarInfo({
                     open: false,
-                    message: snackbarWarning.message,
+                    message: snackbarInfo.message,
                 })
                 setTimeout(() => {
-                    setSnackbarWarning({
+                    setSnackbarInfo({
                         open: false,
                         message: "",
                     })
                 }, 10000)
             }}
-            open={snackbarWarning.open}
+            open={snackbarInfo.open}
             autoHideDuration={6000}
             message="Note archived"
             key={"top" + "center"}
             TransitionComponent={TransitionLeft}
         >
             <Alert
-                severity="warning"
-                className="bg-alertBgYellow text-alertTextYellow py-5 flex items-center justify-between relative rounded overflow-hidden shadow-black1"
+                severity="info"
+                className="bg-alertBgBlue text-alertTextBlue py-5 flex items-center justify-between relative rounded overflow-hidden shadow-black1"
                 classes={{ icon: "relative bottom-0.5" }}
             >
-                <div className="h-full w-1 absolute bg-alertYellow left-0 top-0" />
-                <span className="mr-3">{snackbarWarning.message}</span>
+                <div className="h-full w-1 absolute bg-alertBlue left-0 top-0" />
+                <span className="mr-3">{snackbarInfo.message}</span>
                 <CloseIcon
-                    className="relative bottom-0.5 hover:bg-alertTextYellow hover:text-alertBgYellow rounded-full transition-all duration-300 cursor-pointer"
+                    className="relative bottom-0.5 hover:bg-alertTextBlue hover:text-alertBgBlue rounded-full transition-all duration-300 cursor-pointer"
                     onClick={() => {
-                        setSnackbarWarning({
+                      setSnackbarInfo({
                             open: false,
-                            message: snackbarWarning.message,
+                            message: snackbarInfo.message,
                         })
                         setTimeout(() => {
-                            setSnackbarWarning({
+                            setSnackbarInfo({
                                 open: false,
                                 message: "",
                             })
-                        }, 1000)
+                        }, 10000)
                     }}
                 />
             </Alert>
@@ -64,4 +64,4 @@ const WarningAlert = () => {
     )
 }
 
-export default WarningAlert
+export default AlertInfo

@@ -11,7 +11,7 @@ function TransitionLeft(props: TransitionProps) {
     return <Slide {...props} direction="left" />
 }
 
-const WarningError = () => {
+const AlertError = () => {
     // @ts-ignore
     const { snackbarError, setSnackbarError } = useAppStateContext()
     const position: SnackbarOrigin = { vertical: "bottom", horizontal: "right" }
@@ -64,4 +64,4 @@ const WarningError = () => {
     )
 }
 
-export default WarningError
+export default AlertError

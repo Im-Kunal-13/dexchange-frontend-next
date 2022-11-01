@@ -29,7 +29,7 @@ const Markets = () => {
                         value={
                             tokenContracts.length >= 2
                                 ? `${tokenContracts[0].address},${tokenContracts[1].address}`
-                                : "0x9763f852a16534BD0C312e15b4266A1333662101,0x732A6F0089CFaFd91E7Ad33475A264e1393dFaD8"
+                                : ""
                         }
                         variant="standard"
                         name="markets"
@@ -49,7 +49,9 @@ const Markets = () => {
                         }}
                         disableUnderline={true}
                     >
-                        <MenuItem disabled>Select Market</MenuItem>
+                        <MenuItem disabled value="">
+                            Select Market
+                        </MenuItem>
                         <MenuItem
                             // @ts-ignore
                             value={`${config[chainId].BTC.address},${config[chainId].USDC.address}`}

@@ -1,4 +1,4 @@
-import { CONFIG } from "../assets/data"
+import config from "../assets/data/config.json"
 import { useEffect } from "react"
 import { useAppDispatch } from "../store/store"
 import {
@@ -20,10 +20,10 @@ import Transactions from "../components/Dashboard/Transactions"
 import Trades from "../components/Dashboard/Trades"
 import OrderBook from "../components/Dashboard/OrderBook"
 import * as zksync from "zksync-web3"
-import WarningAlert from "../components/Alerts/WarningAlert"
-import WarningError from "../components/Alerts/WarningError"
-import WarningSuccess from "../components/Alerts/WarningSuccess"
-import WarningInfo from "../components/Alerts/WarningInfo"
+import AlertWarning from "../components/Alerts/AlertWarning"
+import AlertInfo from "../components/Alerts/AlertInfo"
+import AlertSuccess from "../components/Alerts/AlertSuccess"
+import AlertError from "../components/Alerts/AlertError"
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
@@ -48,12 +48,15 @@ const Home: NextPage = () => {
         }
 
         // Token Smart Contracts
-        const BTC = CONFIG[chainId].BTC
-        const USDC = CONFIG[chainId].USDC
+        //@ts-ignore
+        const BTC = config[chainId].BTC
+        //@ts-ignore
+        const USDC = config[chainId].USDC
         await loadTokens(provider, [BTC.address, USDC.address], dispatch)
 
         // Exchange Smart contract
-        const exchangeConfig = CONFIG[chainId].deXchange
+        //@ts-ignore
+        const exchangeConfig = config[chainId].deXchange
         const exchange = await loadExchange(
             provider,
             exchangeConfig.address,
@@ -72,14 +75,14 @@ const Home: NextPage = () => {
         <div className="bg-bgGray1">
             <Navbar />
             <main className="grid">
-                <section className="bg-black shadow-black1 p-[2em] col-start-1 col-end-5">
+                <section className="bg-black shadow-black1 p-[2em] col-start-1 col-end-5 max-h-[82rem]">
                     <Markets />
 
                     <Balance />
 
                     <Order />
                 </section>
-                <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit">
+                <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
                     <TvChart />
                     <Transactions />
                     <Trades />
@@ -87,10 +90,10 @@ const Home: NextPage = () => {
                 </section>
             </main>
 
-            <WarningAlert />
-            <WarningError />
-            <WarningSuccess />
-            <WarningInfo />
+            <AlertWarning />
+            <AlertInfo />
+            <AlertSuccess />
+            <AlertError />
         </div>
     )
 }

@@ -784,9 +784,3 @@ export const TOKEN_ABI = [
         type: "function",
     },
 ]
-
-export const tokenDecimalLimit = new Map([
-    ["BTC", 8],
-    ["USDC", 6],
-    ["LINK", 18],
-])

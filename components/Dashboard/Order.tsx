@@ -1,15 +1,10 @@
 import { useState, useRef, SetStateAction, useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
-
-import {
-    insertOrder,
-    // makeBuyOrder,
-    // makeSellOrder,
-} from "../../api/interactions"
-import { Button, FormHelperText, TextField } from "@mui/material"
+import { insertOrder } from "../../api/interactions"
+import { Button, FormHelperText, TextField, Tooltip } from "@mui/material"
 import { useAppStateContext } from "../../context/contextProvider"
-import { tokenDecimalLimit } from "../../constants/abi"
+import config from "../../assets/data/config.json"
 
 const Order = () => {
     // @ts-ignore
@@ -23,9 +18,7 @@ const Order = () => {
     const { connection, account, chainId } = useAppSelector(
         (state) => state.provider
     )
-    const { contracts, symbols, balances } = useAppSelector(
-        (state) => state.tokens
-    )
+    const { symbols, balances } = useAppSelector((state) => state.tokens)
 
     const dispatch = useAppDispatch()
 
@@ -36,27 +29,32 @@ const Order = () => {
     const limitRef = useRef(null)
 
     const buyHandler = (e: React.FormEvent<HTMLFormElement>) => {
-        console.log(amount)
         e.preventDefault()
         if (
             (isMarket && Number(amount) > 0) ||
             (Number(amount) > 0 && Number(price) > 0)
         ) {
-            insertOrder(
-                connection,
-                account,
-                `${symbols[0]}-${symbols[1]}`,
-                isMarket ? "market" : "limit",
-                isBuy ? "buy" : "sell",
-                amount,
-                isMarket ? "" : price,
-                chainId,
-                dispatch,
-                setSnackbarSuccess
-            )
-            // makeBuyOrder(connection, contract, contracts, { amount, price }, dispatch);
-            setAmount("0")
-            setPrice("0")
+            if (Number(price) <= Number(balances[1])) {
+                insertOrder(
+                    connection,
+                    account,
+                    `${symbols[0]}-${symbols[1]}`,
+                    isMarket ? "market" : "limit",
+                    isBuy ? "buy" : "sell",
+                    amount,
+                    isMarket ? "" : price,
+                    chainId,
+                    dispatch,
+                    setSnackbarSuccess
+                )
+                setAmount("0")
+                setPrice("0")
+            } else {
+                setSnackbarWarning({
+                    open: true,
+                    message: "You don't have enough USDC deposited !",
+                })
+            }
         } else {
             setSnackbarWarning({
                 open: true,
@@ -71,27 +69,27 @@ const Order = () => {
             (isMarket && Number(amount) > 0) ||
             (Number(amount) > 0 && Number(price) > 0)
         ) {
-            // makeSellOrder(
-            //     connection,
-            //     contract,
-            //     contracts,
-            //     { amount, price },
-            //     dispatch
-            // )
-            insertOrder(
-                connection,
-                account,
-                `${symbols[0]}-${symbols[1]}`,
-                isMarket ? "Market" : "Limit",
-                isBuy ? "Buy" : "Sell",
-                amount,
-                price,
-                chainId,
-                dispatch,
-                setSnackbarSuccess
-            )
-            setAmount("0")
-            setPrice("0")
+            if (Number(amount) <= Number(balances[0])) {
+                insertOrder(
+                    connection,
+                    account,
+                    `${symbols[0]}-${symbols[1]}`,
+                    isMarket ? "Market" : "Limit",
+                    isBuy ? "Buy" : "Sell",
+                    amount,
+                    price,
+                    chainId,
+                    dispatch,
+                    setSnackbarSuccess
+                )
+                setAmount("0")
+                setPrice("0")
+            } else {
+                setSnackbarWarning({
+                    open: true,
+                    message: "You don't have enough tokens to sell !",
+                })
+            }
         } else {
             setSnackbarWarning({
                 open: true,
@@ -107,10 +105,11 @@ const Order = () => {
     ) => {
         if (value.includes(".")) {
             const arr = value.split(".")
-            //@ts-ignore
             if (
-                arr.length <= tokenDecimalLimit.get(symbol) &&
-                arr[1].length <= tokenDecimalLimit.get(symbol)
+                //@ts-ignore
+                arr.length <= config[chainId][symbol].decimal_places &&
+                //@ts-ignore
+                arr[1].length <= config[chainId][symbol].decimal_places
             ) {
                 setValue(value)
             }
@@ -119,10 +118,27 @@ const Order = () => {
         }
     }
 
+    const getPlaceholder = (symbol: string) => {
+        return (
+            "0." +
+            [
+                ...Array(
+                    // @ts-ignore
+                    config[chainId][symbol].decimal_places
+                ),
+            ]
+                .map(() => {
+                    return "0"
+                })
+                .join("")
+        )
+    }
+
     useEffect(() => {
         setAmount("")
         setPrice("")
     }, [symbols])
+
     return (
         <div className="col-span-full flex flex-col gap-5">
             <div className="flex items-center justify-between">
@@ -189,7 +205,9 @@ const Order = () => {
                 )}
                 <TextField
                     id="amount"
-                    placeholder="0.0000"
+                    placeholder={
+                        chainId && symbols[0] ? getPlaceholder(symbols[0]) : "0"
+                    }
                     type="number"
                     value={amount}
                     autoComplete="off"
@@ -225,65 +243,76 @@ const Order = () => {
                     You don't have enough USDC deposited !
                 </FormHelperText>
 
-                {isMarket ? (
-                    <></>
+                {isBuy ? (
+                    <label
+                        htmlFor="price"
+                        className={`${
+                            isMarket &&
+                            "text-opacity-30 text-white transition-all duration-500"
+                        }  transition-all duration-500`}
+                    >
+                        Buy Price
+                    </label>
                 ) : (
-                    <>
-                        {isBuy ? (
-                            <label htmlFor="price">Buy Price</label>
-                        ) : (
-                            <label htmlFor="price">Sell Price</label>
-                        )}
-                    </>
+                    <label
+                        htmlFor="price"
+                        className={`${
+                            isMarket &&
+                            "text-opacity-30 text-white transition-all duration-500"
+                        }  transition-all duration-500`}
+                    >
+                        Sell Price
+                    </label>
                 )}
 
-                {isMarket ? (
-                    <></>
-                ) : (
-                    <>
-                        <TextField
-                            id="price"
-                            placeholder="0.0000"
-                            value={price}
-                            type="number"
-                            onChange={(e) =>
-                                handleInput(
-                                    e.target.value,
-                                    symbols[1],
-                                    setPrice
-                                )
-                            }
-                            variant="standard"
-                            InputProps={{
-                                className: "text-white focus:normal-case",
-                                disableUnderline: true,
-                                inputProps: { min: 0 },
-                            }}
-                            inputProps={{
-                                step: "any",
-                            }}
-                            autoComplete="off"
-                            className="my-2.5 rounded py-2 px-4 transition-all duration-300"
-                            classes={{
-                                root: "bg-bgGray1 w-full",
-                            }}
-                            style={
-                                Number(price) > Number(balances[1])
-                                    ? { border: "1px solid #DD3D32" }
-                                    : { border: "1px solid transparent" }
-                            }
-                        />
-                        <FormHelperText
-                            className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
-                                Number(price) > Number(balances[1])
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                            }`}
-                        >
-                            You don't have enough USDC deposited !
-                        </FormHelperText>
-                    </>
-                )}
+                <TextField
+                    id="price"
+                    placeholder={
+                        isMarket
+                            ? "Disabled"
+                            : chainId && symbols[1]
+                            ? getPlaceholder(symbols[1])
+                            : "0"
+                    }
+                    value={price}
+                    type="number"
+                    onChange={(e) => {
+                        if (!isMarket) {
+                            handleInput(e.target.value, symbols[1], setPrice)
+                        }
+                    }}
+                    variant="standard"
+                    InputProps={{
+                        className: "text-white focus:normal-case",
+                        disableUnderline: true,
+                        inputProps: { min: 0 },
+                    }}
+                    inputProps={{
+                        step: "any",
+                    }}
+                    autoComplete="off"
+                    className="my-2.5 rounded py-2 px-4 transition-all duration-300"
+                    classes={{
+                        root: `${
+                            isMarket && "bg-opacity-40"
+                        } bg-bgGray1 w-full disabled:bg-white`,
+                    }}
+                    style={
+                        Number(price) > Number(balances[1])
+                            ? { border: "1px solid #DD3D32" }
+                            : { border: "1px solid transparent" }
+                    }
+                />
+
+                <FormHelperText
+                    className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
+                        Number(price) > Number(balances[1])
+                            ? "opacity-100"
+                            : "opacity-0"
+                    }`}
+                >
+                    You don't have enough USDC deposited !
+                </FormHelperText>
 
                 <Button
                     variant="contained"

@@ -69,6 +69,7 @@ module.exports = {
         textGray1: "#767f92",
         bgGray2: "#222D41",
         btnBlue1: "#2187d0",
+        textGreen1: "#25ce8f",
         alertYellow: "#E88A01",
         alertBgYellow: "#191207",
         alertTextYellow: "#FFE2B7",
@@ -84,7 +85,8 @@ module.exports = {
         alertTextBlue: "#9BC4D6"
       }),
       boxShadow: {
-        black1: "0 0 10px 1px black"
+        black1: "0 0 10px 1px black",
+        tableStickyHead: "0 0 .1px .5px rgb(118, 127, 146, .20)"
       },
 
     },

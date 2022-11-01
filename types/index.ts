@@ -48,7 +48,10 @@ export interface IRootState {
 // Order
 
 export interface IOrder {
-    allOrders: IGetOrder[]
+    sellOrders: IGetOrder[]
+    buyOrders: IGetOrder[]
+    myOrders: IGetOrder[]
+    cancelledOrders: IGetOrder[]
 }
 
 export interface IInsertOrder {

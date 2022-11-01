@@ -5,7 +5,8 @@ import { EXCHANGE_ABI, TOKEN_ABI } from "../constants/abi"
 import { v4 as uuidv4 } from "uuid"
 import { actions } from "../features/reducerActions"
 import { AppDispatch } from "../store/store"
-import { IInsertOrder } from "../types"
+import { IGetOrder, IInsertOrder } from "../types"
+import config from "../assets/data/config.json"
 
 export const loadProvider = (dispatch: AppDispatch) => {
     if (typeof window !== "undefined") {
@@ -68,267 +69,108 @@ export const loadExchange = async (
     return exchange
 }
 
-// export const subscribeToEvents = (exchange: any, dispatch: AppDispatch) => {
-//     exchange.on(
-//         "Cancel",
-//         async (
-//             id: any,
-//             user: any,
-//             tokenGet: any,
-//             amountGet: any,
-//             tokenGive: any,
-//             amountGive: any,
-//             timestamp: any,
-//             event: any
-//         ) => {
-//             // const order = event.args;
+// EXCHANGE DEPOSIT AND WITHDRAW
 
-//             const config = {
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                 },
-//             }
+export const deposit = async (
+    chainId: number,
+    userAddress: string,
+    token: any,
+    amount: string,
+    dexchangeAddress: string,
+    provider: any
+) => {
+    const domain = {
+        name: "DeXchange",
+        version: "1",
+        chainId,
+    }
 
-//             const blockNumber = event.blockNumber
-//             const blockHash = event.blockHash
-//             const transactionIndex = event.transactionIndex
-//             const removed = event.removed
-//             const address = event.address
-//             const data = event.data
-//             const topics = event.topics
-//             const transactionHash = event.transactionHash
-//             const logIndex = event.logIndex
-//             const eventName = event.event
-//             const eventSignature = event.eventSignature
-//             const args = [
-//                 {
-//                     id: id._hex,
-//                     user,
-//                     tokenGet,
-//                     amountGet: amountGet._hex,
-//                     tokenGive,
-//                     amountGive: amountGive._hex,
-//                     timestamp: timestamp._hex,
-//                 },
-//             ]
+    const types = {
+        Deposit: [
+            { name: "chainId", type: "uint256" },
+            { name: "nonce", type: "string" },
+            { name: "userAddress", type: "address" },
+            { name: "token", type: "address" },
+            { name: "amount", type: "uint256" },
+        ],
+    }
 
-//             const body = JSON.stringify({
-//                 blockNumber,
-//                 blockHash,
-//                 transactionIndex,
-//                 removed,
-//                 address,
-//                 data,
-//                 topics,
-//                 transactionHash,
-//                 logIndex,
-//                 eventName,
-//                 eventSignature,
-//                 args,
-//             })
+    const parameters = {
+        chainId,
+        nonce: uuidv4(),
+        userAddress,
+        token: token.address,
+        amount: ethers.utils.parseUnits(amount, 8),
+    }
 
-//             try {
-//                 const res = await axios.post("/api/cancelled", body, config)
+    try {
+        const signer = await provider.getSigner()
 
-//                 dispatch(
-//                     actions.order_cancel_success({
-//                         order: res.data.args[0],
-//                         event: res.data,
-//                     })
-//                 )
+        const transaction = await token
+            .connect(signer)
+            .approve(dexchangeAddress, ethers.utils.parseUnits(amount, 8))
 
-//                 // await axios.delete(`/api/cancelled/cancel/:${id._hex.toString()}`);
-//             } catch (error) {
-//                 console.error(error)
-//             }
-//         }
-//     )
+        const signature = await signer._signTypedData(domain, types, parameters)
 
-//     exchange.on(
-//         "Trade",
-//         async (
-//             id: any,
-//             user: any,
-//             tokenGet: any,
-//             amountGet: any,
-//             tokenGive: any,
-//             amountGive: any,
-//             creator: any,
-//             timestamp: any,
-//             event: any
-//         ) => {
-//             // const order = event.args;
+        console.log(parameters)
+        console.log(signature)
 
-//             const config = {
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                 },
-//             }
+        const res = await axios.post("http://localhost:5001/api/deposit", {
+            parameters,
+            signature,
+        })
 
-//             const blockNumber = event.blockNumber
-//             const blockHash = event.blockHash
-//             const transactionIndex = event.transactionIndex
-//             const removed = event.removed
-//             const address = event.address
-//             const data = event.data
-//             const topics = event.topics
-//             const transactionHash = event.transactionHash
-//             const logIndex = event.logIndex
-//             const eventName = event.event
-//             const eventSignature = event.eventSignature
-//             const args = [
-//                 {
-//                     id: id._hex,
-//                     user,
-//                     tokenGet,
-//                     amountGet: amountGet._hex,
-//                     tokenGive,
-//                     amountGive: amountGive._hex,
-//                     timestamp: timestamp._hex,
-//                 },
-//             ]
+        console.log(res.data)
+    } catch (error) {
+        console.log(error)
+    }
+}
 
-//             const body = JSON.stringify({
-//                 blockNumber,
-//                 blockHash,
-//                 transactionIndex,
-//                 removed,
-//                 address,
-//                 data,
-//                 topics,
-//                 transactionHash,
-//                 logIndex,
-//                 eventName,
-//                 eventSignature,
-//                 args,
-//             })
+export const withdraw = async (
+    chainId: number,
+    userAddress: string,
+    token: string,
+    amount: string,
+    provider: any
+) => {
+    const domain = {
+        name: "DeXchange",
+        version: "1",
+        chainId,
+    }
 
-//             try {
-//                 const tradeStream = await axios.get("/api/trades")
-//                 const filledOrders = tradeStream.data.map(
-//                     (event: any) => event.args[0]
-//                 )
-//                 const index = filledOrders.findIndex(
-//                     (order: any) => order.id.toString() === id._hex.toString()
-//                 )
-//                 let res
-//                 if (index === -1) {
-//                     res = await axios.post("/api/trades", body, config)
-//                 }
+    const types = {
+        Deposit: [
+            { name: "chainId", type: "uint256" },
+            { name: "nonce", type: "string" },
+            { name: "userAddress", type: "address" },
+            { name: "token", type: "address" },
+            { name: "amount", type: "uint256" },
+        ],
+    }
 
-//                 dispatch(
-//                     actions.order_fill_success({
-//                         // @ts-ignore
-//                         order: res.data.args[0],
-//                         // @ts-ignore
-//                         event: res.data,
-//                     })
-//                 )
-//             } catch (error) {
-//                 console.error(error)
-//             }
-//         }
-//     )
+    const parameters = {
+        chainId,
+        nonce: uuidv4(),
+        userAddress,
+        token,
+        amount: ethers.utils.parseUnits(amount, 8),
+    }
 
-//     exchange.on(
-//         "Deposit",
-//         (token: any, user: any, amount: any, balance: any, event: any) => {
-//             dispatch(actions.success_transfer(event))
-//         }
-//     )
+    try {
+        const signer = await provider.getSigner()
+        const signature = await signer._signTypedData(domain, types, parameters)
 
-//     exchange.on(
-//         "Withdraw",
-//         (token: any, user: any, amount: any, balance: any, event: any) => {
-//             dispatch(actions.success_transfer(event))
-//         }
-//     )
+        const res = await axios.post("http://localhost:5001/api/withdraw", {
+            parameters,
+            signature,
+        })
 
-//     exchange.on(
-//         "OrderLogged",
-//         async (
-//             id: any,
-//             user: any,
-//             tokenGet: any,
-//             amountGet: any,
-//             tokenGive: any,
-//             amountGive: any,
-//             timestamp: any,
-//             event: any
-//         ) => {
-//             // const order = event.args;
-
-//             const config = {
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                 },
-//             }
-
-//             const blockNumber = event.blockNumber
-//             const blockHash = event.blockHash
-//             const transactionIndex = event.transactionIndex
-//             const removed = event.removed
-//             const address = event.address
-//             const data = event.data
-//             const topics = event.topics
-//             const transactionHash = event.transactionHash
-//             const logIndex = event.logIndex
-//             const eventName = event.event
-//             const eventSignature = event.eventSignature
-//             const args = [
-//                 {
-//                     id: id._hex,
-//                     user,
-//                     tokenGet,
-//                     amountGet: amountGet._hex,
-//                     tokenGive,
-//                     amountGive: amountGive._hex,
-//                     timestamp: timestamp._hex,
-//                 },
-//             ]
-
-//             const body = JSON.stringify({
-//                 blockNumber,
-//                 blockHash,
-//                 transactionIndex,
-//                 removed,
-//                 address,
-//                 data,
-//                 topics,
-//                 transactionHash,
-//                 logIndex,
-//                 eventName,
-//                 eventSignature,
-//                 args,
-//             })
-
-//             try {
-//                 const orderStream = await axios.get("/api/orders")
-//                 const allOrders = orderStream.data.map(
-//                     (event: any) => event.args[0]
-//                 )
-//                 const index = allOrders.findIndex(
-//                     (order: any) => order.id.toString() === id._hex.toString()
-//                 )
-//                 let res
-//                 if (index === -1) {
-//                     res = await axios.post("/api/orders", body, config)
-//                 }
-
-//                 dispatch(
-//                     actions.success_new_order({
-//                         // @ts-ignore
-//                         order: res.data.args[0],
-//                         // @ts-ignore
-//                         event: res.data,
-//                     })
-//                 )
-//             } catch (error) {
-//                 console.error(error)
-//             }
-//         }
-//     )
-// }
+        console.log(res.data)
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 // --------------------------
 // LOAD USER BALANCES (WALLET AND EXCHANGE BALANCES)
@@ -337,26 +179,34 @@ export const loadBalances = async (
     exchange: any,
     tokens: any,
     account: string,
+    symbols: string[],
+    chainId: number,
     dispatch: AppDispatch
 ) => {
     let balance = ethers.utils.formatUnits(
         await tokens[0].balanceOf(account),
-        18
+        // @ts-ignore
+        config[chainId][symbols[0]].decimal_places
     )
     dispatch(actions.load_token_1_balance(balance))
 
     balance = ethers.utils.formatUnits(
         await exchange.balanceOf(tokens[0].address, account),
-        18
+        // @ts-ignore
+        config[chainId][symbols[0]].decimal_places
     )
     dispatch(actions.load_exchange_token_1(balance))
 
-    balance = ethers.utils.formatUnits(await tokens[1].balanceOf(account), 18)
+    balance = ethers.utils.formatUnits(
+        await tokens[1].balanceOf(account), // @ts-ignore
+        config[chainId][symbols[1]].decimal_places
+    )
     dispatch(actions.load_token_2_balance(balance))
 
     balance = ethers.utils.formatUnits(
         await exchange.balanceOf(tokens[1].address, account),
-        18
+        // @ts-ignore
+        config[chainId][symbols[1]].decimal_places
     )
     dispatch(actions.load_exchange_token_2(balance))
 }
@@ -400,6 +250,22 @@ export const transferTokens = async (
     }
 }
 
+export const getAssetBalance = async (
+    wallet: string,
+    asset: string,
+    dispatch: AppDispatch
+) => {
+    try {
+        const res = await axios.get(
+            `http://localhost:5001/api/balances?wallet=${wallet}&asset=${asset}`
+        )
+        console.log(res.data)
+        // dispatch(actions.load_my_orders(res.data)) //todo -> dispatch my balance load here
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 // ORDER
 
 export const insertOrder = async (
@@ -419,11 +285,10 @@ export const insertOrder = async (
         }>
     >
 ) => {
-    console.log("yo")
     const domain = {
         name: "DeXchange",
         version: "1",
-        chainId: 5,
+        chainId,
     }
 
     const types = {
@@ -444,8 +309,8 @@ export const insertOrder = async (
         nonce: uuidv4(),
         wallet,
         market,
-        type,
-        side,
+        type: type.toLowerCase(),
+        side: side.toLowerCase(),
         amount,
         price,
     }
@@ -458,19 +323,89 @@ export const insertOrder = async (
             signature,
         }
         const res = await axios.post("http://localhost:5001/api/orders", order)
-        dispatch(actions.insert_new_order(res.data))
-        setSnackbarSuccess({open: true, message: "Your order has been placed successfully."})
-
-        console.log(res.data)
+        if (side.toLowerCase() === "sell") {
+            dispatch(actions.insert_sell_order(res.data))
+        } else {
+            dispatch(actions.insert_buy_order(res.data))
+        }
+        setSnackbarSuccess({
+            open: true,
+            message: "Your order has been placed successfully.",
+        })
     } catch (error) {
         console.log(error)
     }
 }
 
-export const getOrders = async (dispatch: AppDispatch) => {
+export const getBuyOrders = async (dispatch: AppDispatch) => {
     try {
-        const res = await axios.get("http://localhost:5001/api/orders")
-        dispatch(actions.load_all_orders(res.data))
+        const res = await axios.get(
+            "http://localhost:5001/api/orders?side=buy&type=limit&status=open"
+        )
+        dispatch(actions.load_buy_orders(res.data))
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const getSellOrders = async (dispatch: AppDispatch) => {
+    try {
+        const res = await axios.get(
+            "http://localhost:5001/api/orders?side=sell&type=limit&status=open"
+        )
+        dispatch(actions.load_sell_orders(res.data))
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const getMyOrders = async (wallet: string, dispatch: AppDispatch) => {
+    try {
+        const res = await axios.get(
+            `http://localhost:5001/api/orders?type=limit&status=open&wallet=${wallet}`
+        )
+        dispatch(actions.load_my_orders(res.data))
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const getCancelledOrders = async (
+    wallet: string,
+    dispatch: AppDispatch
+) => {
+    try {
+        const res = await axios.get(
+            `http://localhost:5001/api/cancelled/${wallet}`
+        )
+        dispatch(actions.load_cancelled_orders(res.data))
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const cancelOrder = async (
+    order: IGetOrder,
+    dispatch: AppDispatch,
+    setSnackbarInfo: React.Dispatch<
+        React.SetStateAction<{
+            open: boolean
+            message: string
+        }>
+    >
+) => {
+    try {
+        console.log(order._id)
+        await axios.post(
+            `http://localhost:5001/api/cancelled/${order._id.toString()}`
+        )
+
+        dispatch(actions.cancel_order(order))
+
+        setSnackbarInfo({
+            open: true,
+            message: "Your order has been cancelled !",
+        })
     } catch (error) {
         console.log(error)
     }
