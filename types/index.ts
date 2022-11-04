@@ -20,8 +20,10 @@ export interface IExchange {
         data: IOrder[]
     }
     events: any[]
-    balances: string[]
+    balances: { deposited: string; blocked: string }[]
     transferInProgress: boolean
+    currentDeposit: boolean
+    currentWithdraw: boolean
 }
 
 export interface ITokens {
@@ -29,6 +31,16 @@ export interface ITokens {
     contracts: any[]
     symbols: string[]
     balances: string[]
+    pair: ITokenPair
+}
+
+export interface ITokenPair {
+    baseAsset: string
+    baseAssetAddress: string
+    baseAssetPrecision: number
+    quoteAsset: string
+    quoteAssetAddress: string
+    quoteAssetPrecision: number
 }
 
 export interface IProvider {
@@ -45,6 +57,18 @@ export interface IRootState {
     order: IOrder
 }
 
+// Balance
+export interface IDeposit {
+    parameters: {
+        chainId: number
+        nonce: string
+        userAddress: string
+        token: string
+        amount: string
+    }
+    signature: string
+}
+
 // Order
 
 export interface IOrder {
@@ -52,6 +76,11 @@ export interface IOrder {
     buyOrders: IGetOrder[]
     myOrders: IGetOrder[]
     cancelledOrders: IGetOrder[]
+}
+
+export interface ITrade {
+    myTrades: IGetOrder[]
+    allTrades: IGetOrder[] 
 }
 
 export interface IInsertOrder {

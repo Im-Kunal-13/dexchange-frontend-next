@@ -6,7 +6,6 @@ import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Paper from "@mui/material/Paper"
-import { truncateDecimals } from "../../utility/index"
 
 const Trades = () => {
     const symbols = useAppSelector((state) => state.tokens.symbols)
@@ -37,7 +36,7 @@ const Trades = () => {
                                 className="text-textGray1 whitespace-nowrap"
                             >
                                 <span className="flex w-fit ml-auto justify-start items-center">
-                                    {symbols && symbols[0]}
+                                    AMOUNT ({symbols && symbols[0]})
                                     <img src="/images/sort.svg" alt="Sort" />
                                 </span>
                             </TableCell>
@@ -47,8 +46,7 @@ const Trades = () => {
                                 className=" whitespace-nowrap bg-black"
                             >
                                 <span className="flex items-center mx-auto w-fit text-textGray1">
-                                    {symbols && symbols[0]} /{" "}
-                                    {symbols && symbols[1]}
+                                    PRICE ({symbols && symbols[1]})
                                     <img src="/images/sort.svg" alt="Sort" />
                                 </span>
                             </TableCell>
@@ -67,7 +65,9 @@ const Trades = () => {
                                     <TableCell
                                         component="th"
                                         scope="row"
-                                        className={`text-white border-none  h-5 py-2.5 whitespace-nowrap`}
+                                        className={`text-white border-none  h-5 py-0 my-0 whitespace-nowrap ${
+                                            index === 0 ? "pt-2.5" : "pt-0"
+                                        }`}
                                         align="center"
                                     >
                                         {order.time}
@@ -78,7 +78,9 @@ const Trades = () => {
                                             index % 2 === 0 // todo -> change to side === 'buy' when real data comes
                                                 ? "text-textGreen1"
                                                 : "text-inputErrorRed"
-                                        }  border-none text-center text-white h-5 py-2.5`}
+                                        }  border-none text-center text-white h-5 py-0 my-0 ${
+                                            index === 0 ? "pt-2.5" : "pt-0"
+                                        }`}
                                     >
                                         <span className="ml-7 w-fit">
                                             {order.side === "sell" ? "-" : "+"}{" "}
@@ -87,15 +89,11 @@ const Trades = () => {
                                     </TableCell>
                                     <TableCell
                                         align="center"
-                                        className="text-white border-none h-5 py-2.5"
+                                        className={`text-white border-none h-5 py-0 my-0 ${
+                                            index === 0 ? "pt-2.5" : "pt-0"
+                                        }`}
                                     >
-                                        {truncateDecimals(
-                                            (
-                                                Number(order.amount) /
-                                                Number(order.price)
-                                            ).toString(),
-                                            5
-                                        )}
+                                        {order.price}
                                     </TableCell>
                                 </TableRow>
                             ))}

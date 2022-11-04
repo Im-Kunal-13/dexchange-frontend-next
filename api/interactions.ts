@@ -5,8 +5,7 @@ import { EXCHANGE_ABI, TOKEN_ABI } from "../constants/abi"
 import { v4 as uuidv4 } from "uuid"
 import { actions } from "../features/reducerActions"
 import { AppDispatch } from "../store/store"
-import { IGetOrder, IInsertOrder } from "../types"
-import config from "../assets/data/config.json"
+import { IDeposit, IGetOrder, IInsertOrder } from "../types"
 
 export const loadProvider = (dispatch: AppDispatch) => {
     if (typeof window !== "undefined") {
@@ -58,6 +57,11 @@ export const loadTokens = async (
     return token
 }
 
+export const loadTokenPair = async (pair: string, dispatch: AppDispatch) => {
+    const res = await axios.get(`http://localhost:5001/api/pairs`)
+    dispatch(actions.load_token_pair(res.data.pairs[pair]))
+}
+
 export const loadExchange = async (
     provider: any,
     address: string,
@@ -77,7 +81,9 @@ export const deposit = async (
     token: any,
     amount: string,
     dexchangeAddress: string,
-    provider: any
+    precision: number,
+    provider: any,
+    dispatch: AppDispatch
 ) => {
     const domain = {
         name: "DeXchange",
@@ -100,25 +106,34 @@ export const deposit = async (
         nonce: uuidv4(),
         userAddress,
         token: token.address,
-        amount: ethers.utils.parseUnits(amount, 8),
+        amount: ethers.utils.parseUnits(amount, precision),
     }
 
     try {
         const signer = await provider.getSigner()
 
-        const transaction = await token
+        await token
             .connect(signer)
             .approve(dexchangeAddress, ethers.utils.parseUnits(amount, 8))
 
         const signature = await signer._signTypedData(domain, types, parameters)
 
-        console.log(parameters)
-        console.log(signature)
-
-        const res = await axios.post("http://localhost:5001/api/deposit", {
-            parameters,
+        const reqBody: IDeposit = {
+            parameters: { ...parameters, amount: parameters.amount.toString() },
             signature,
-        })
+        }
+
+        const res = await axios.post(
+            "http://localhost:5001/api/deposit",
+            reqBody
+        )
+
+        dispatch(actions.deposit_success(true))
+
+        setTimeout(() => {
+            dispatch(actions.deposit_success(false))
+        }, 2000)
+        console.log("Deposit Done!")
 
         console.log(res.data)
     } catch (error) {
@@ -131,7 +146,9 @@ export const withdraw = async (
     userAddress: string,
     token: string,
     amount: string,
-    provider: any
+    precision: number,
+    provider: any,
+    dispatch: AppDispatch
 ) => {
     const domain = {
         name: "DeXchange",
@@ -154,19 +171,30 @@ export const withdraw = async (
         nonce: uuidv4(),
         userAddress,
         token,
-        amount: ethers.utils.parseUnits(amount, 8),
+        amount: ethers.utils.parseUnits(amount, precision),
     }
 
     try {
         const signer = await provider.getSigner()
         const signature = await signer._signTypedData(domain, types, parameters)
 
-        const res = await axios.post("http://localhost:5001/api/withdraw", {
-            parameters,
+        const reqBody = {
+            parameters: { ...parameters, amount: parameters.amount.toString() },
             signature,
-        })
+        }
+
+        const res = await axios.post(
+            "http://localhost:5001/api/withdraw",
+            reqBody
+        )
 
         console.log(res.data)
+
+        dispatch(actions.withdraw_success(true))
+
+        setTimeout(() => {
+            dispatch(actions.withdraw_success(false))
+        }, 2000)
     } catch (error) {
         console.log(error)
     }
@@ -175,40 +203,47 @@ export const withdraw = async (
 // --------------------------
 // LOAD USER BALANCES (WALLET AND EXCHANGE BALANCES)
 
-export const loadBalances = async (
-    exchange: any,
+export const loadTokenBalances = async (
     tokens: any,
     account: string,
-    symbols: string[],
     chainId: number,
+    precisions: number[],
     dispatch: AppDispatch
 ) => {
     let balance = ethers.utils.formatUnits(
         await tokens[0].balanceOf(account),
-        // @ts-ignore
-        config[chainId][symbols[0]].decimal_places
+        precisions[0]
     )
     dispatch(actions.load_token_1_balance(balance))
 
     balance = ethers.utils.formatUnits(
-        await exchange.balanceOf(tokens[0].address, account),
-        // @ts-ignore
-        config[chainId][symbols[0]].decimal_places
-    )
-    dispatch(actions.load_exchange_token_1(balance))
-
-    balance = ethers.utils.formatUnits(
-        await tokens[1].balanceOf(account), // @ts-ignore
-        config[chainId][symbols[1]].decimal_places
+        await tokens[1].balanceOf(account),
+        precisions[1]
     )
     dispatch(actions.load_token_2_balance(balance))
+}
 
-    balance = ethers.utils.formatUnits(
-        await exchange.balanceOf(tokens[1].address, account),
-        // @ts-ignore
-        config[chainId][symbols[1]].decimal_places
+export const loadExchangeBalances = async (
+    tokens: any,
+    account: string,
+    chainId: number,
+    dispatch: AppDispatch
+) => {
+    const res = await axios.get(
+        `http://localhost:5001/api/balances/${chainId}/${account}`
     )
-    dispatch(actions.load_exchange_token_2(balance))
+
+    dispatch(
+        actions.load_exchange_token_1(
+            res.data?.balances[chainId][tokens[0].address]
+        )
+    )
+
+    dispatch(
+        actions.load_exchange_token_2(
+            res.data?.balances[chainId][tokens[1].address]
+        )
+    )
 }
 
 // ------------------------------------------------------------------------------
@@ -269,7 +304,6 @@ export const getAssetBalance = async (
 // ORDER
 
 export const insertOrder = async (
-    provider: any,
     wallet: string,
     market: string,
     type: string,
@@ -277,6 +311,8 @@ export const insertOrder = async (
     amount: string,
     price: string,
     chainId: number,
+    precisions: number[],
+    provider: any,
     dispatch: AppDispatch,
     setSnackbarSuccess: React.Dispatch<
         React.SetStateAction<{
@@ -293,14 +329,14 @@ export const insertOrder = async (
 
     const types = {
         Order: [
+            { name: "chainId", type: "uint256" },
             { name: "nonce", type: "string" },
             { name: "wallet", type: "address" },
             { name: "market", type: "string" },
             { name: "type", type: "string" },
             { name: "side", type: "string" },
             { name: "amount", type: "uint256" },
-            { name: "price", type: "uint256" },
-            { name: "chainId", type: "uint256" },
+            { name: "price", type: type === "limit" ? "uint256" : "string" },
         ],
     }
 
@@ -311,15 +347,23 @@ export const insertOrder = async (
         market,
         type: type.toLowerCase(),
         side: side.toLowerCase(),
-        amount,
-        price,
+        amount: ethers.utils.parseUnits(amount, precisions[0]),
+        price:
+            type === "limit"
+                ? ethers.utils.parseUnits(price, precisions[1])
+                : price,
     }
+
     try {
         const signer = await provider.getSigner()
         const signature = await signer._signTypedData(domain, types, parameters)
 
         const order: IInsertOrder = {
-            parameters,
+            parameters: {
+                ...parameters,
+                amount: parameters.amount.toString(),
+                price: parameters.price.toString(),
+            },
             signature,
         }
         const res = await axios.post("http://localhost:5001/api/orders", order)
@@ -340,7 +384,7 @@ export const insertOrder = async (
 export const getBuyOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders?side=buy&type=limit&status=open"
+            "http://localhost:5001/api/orders?side=buy&type=limit"
         )
         dispatch(actions.load_buy_orders(res.data))
     } catch (error) {
@@ -351,7 +395,7 @@ export const getBuyOrders = async (dispatch: AppDispatch) => {
 export const getSellOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders?side=sell&type=limit&status=open"
+            "http://localhost:5001/api/orders?side=sell&type=limit"
         )
         dispatch(actions.load_sell_orders(res.data))
     } catch (error) {
@@ -406,6 +450,22 @@ export const cancelOrder = async (
             open: true,
             message: "Your order has been cancelled !",
         })
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const getTrades = async (wallet: string = "", dispatch: AppDispatch) => {
+    try {
+        const res = await axios.get(
+            `http://localhost:5001/api/trades/${wallet}`
+        )
+
+        // if (wallet) {
+        //     dispatch(actions.load_trades(res.data))
+        // } else {
+        //     dispatch(actions.load_my_trades(res.data))
+        // }
     } catch (error) {
         console.log(error)
     }

@@ -1,19 +1,16 @@
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import Blockies from "react-blockies"
 import { loadAccount } from "../../api/interactions"
-import config from "../../assets/data/config.json"
 import { Button, MenuItem, Select, SelectChangeEvent } from "@mui/material"
 
 const Navbar = () => {
     const dispatch = useAppDispatch()
-
-    const provider = useAppSelector((state) => state.provider.connection)
-    const chainId = useAppSelector((state) => state.provider.chainId)
-    const account = useAppSelector((state) => state.provider.account)
-    const balance = useAppSelector((state) => state.provider.balance)
+    const { connection, chainId, account, balance } = useAppSelector(
+        (state) => state.provider
+    )
 
     const connectHandler = async () => {
-        await loadAccount(provider, dispatch)
+        await loadAccount(connection, dispatch)
     }
 
     // Metamask method for handling chain change
@@ -38,10 +35,7 @@ const Navbar = () => {
             <div className="col-start-5 col-end-7 top-[21.5px] right-[48px] absolute flex">
                 {chainId && (
                     <Select
-                        value={
-                            // @ts-ignore
-                            config[chainId] ? `0x${chainId.toString(16)}` : `0`
-                        }
+                        value={chainId ? `0x${chainId.toString(16)}` : `0`}
                         variant="standard"
                         name="networks"
                         MenuProps={{
@@ -88,10 +82,7 @@ const Navbar = () => {
                 </p>
                 {account ? (
                     <a
-                        href={
-                            // @ts-ignore
-                            config[chainId] ? `${config[chainId].explorerURL}/address/${account}`: `#`
-                        }
+                        href={`${process.env.EXPLORER_URL}/address/${account}`}
                         target="_blank"
                         rel="noreferrer"
                         className="flex justify-center items-center bg-bgGray2 border-none text-white m-0 rounded-tl-lg rounded-bl-lg rounded-tr rounded-br w-[182px] h-[48px] text-[16px] no-underline transition-all duration-300"

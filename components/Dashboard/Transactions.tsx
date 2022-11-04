@@ -13,11 +13,11 @@ import {
     getCancelledOrders,
     getMyOrders,
 } from "../../api/interactions"
-import { truncateDecimals } from "../../utility/index"
 import { useAppStateContext } from "../../context/contextProvider"
+import { ethers } from "ethers"
 
 const Transactions = () => {
-    const { symbols } = useAppSelector((state) => state.tokens)
+    const { symbols, pair } = useAppSelector((state) => state.tokens)
     const { account } = useAppSelector((state) => state.provider)
     const { myOrders } = useAppSelector((state) => state.order)
 
@@ -77,15 +77,11 @@ const Transactions = () => {
                             <TableRow>
                                 <TableCell
                                     sx={{ borderBottom: "0" }}
-                                    className="text-textGray1 whitespace-nowrap m-0"
-                                    align="center"
+                                    className="text-textGray1 whitespace-nowrap m-0 px-0"
+                                    align="left"
                                 >
-                                    <span className="flex w-full justify-start items-center">
-                                        {symbols && symbols[0]}
-                                        <img
-                                            src="/images/sort.svg"
-                                            alt="Sort"
-                                        />
+                                    <span className="flex justify-start items-center">
+                                        AMOUNT ({symbols && symbols[0]})
                                     </span>
                                 </TableCell>
                                 <TableCell
@@ -94,12 +90,7 @@ const Transactions = () => {
                                     className="text-textGray1 whitespace-nowrap"
                                 >
                                     <span className="flex items-center mx-auto w-fit">
-                                        {symbols && symbols[0]} /{" "}
-                                        {symbols && symbols[1]}
-                                        <img
-                                            src="/images/sort.svg"
-                                            alt="Sort"
-                                        />
+                                        PRICE ({symbols && symbols[1]})
                                     </span>
                                 </TableCell>
                                 <TableCell
@@ -118,8 +109,12 @@ const Transactions = () => {
                                 myOrders
                                     .filter((order) => {
                                         return (
+                                            order.type === "limit" &&
+                                            (order.status === "open" ||
+                                                order.status ===
+                                                    "partially-filled") &&
                                             order.market ===
-                                            `${symbols[0]}-${symbols[1]}`
+                                                `${symbols[0]}-${symbols[1]}`
                                         )
                                     })
                                     .map((order, index) => (
@@ -131,32 +126,49 @@ const Transactions = () => {
                                                     order.side === "buy"
                                                         ? "text-textGreen1"
                                                         : "text-inputErrorRed"
-                                                } text-white border-none px-8 h-5 py-1`}
-                                                align="center"
+                                                } text-white border-none h-5 py-0.5 my-0 ${
+                                                    index === 0
+                                                        ? "pt-2.5"
+                                                        : "pt-0"
+                                                }`}
+                                                align="left"
                                             >
-                                                {order.originalQuantity}
-                                            </TableCell>
-                                            <TableCell
-                                                align="right"
-                                                className="border-none text-center text-white h-5 py-1"
-                                            >
-                                                {truncateDecimals(
-                                                    (
-                                                        Number(
-                                                            order.originalQuantity
-                                                        ) / Number(order.price)
-                                                    ).toString(),
-                                                    5
+                                                {ethers.utils.formatUnits(
+                                                    order.remainingQuantity,
+                                                    pair.baseAssetPrecision !==
+                                                        0
+                                                        ? pair.baseAssetPrecision
+                                                        : 0
                                                 )}
                                             </TableCell>
                                             <TableCell
                                                 align="right"
-                                                className="text-white border-none h-5 py-1"
+                                                className={`border-none text-center text-white h-5 py-0.5 my-0 ${
+                                                    index === 0
+                                                        ? "pt-2.5"
+                                                        : "pt-0"
+                                                }`}
+                                            >
+                                                {ethers.utils.formatUnits(
+                                                    order.price,
+                                                    pair.quoteAssetPrecision !==
+                                                        0
+                                                        ? pair.quoteAssetPrecision
+                                                        : 0
+                                                )}
+                                            </TableCell>
+                                            <TableCell
+                                                align="right"
+                                                className={`text-white border-none h-5 py-0.5 my-0 ${
+                                                    index === 0
+                                                        ? "pt-2.5"
+                                                        : "pt-0"
+                                                }`}
                                             >
                                                 <Button
                                                     variant="outlined"
                                                     type="submit"
-                                                    className="normal-case font-bold py-1 px-3 text-xs rounded flex items-center gap-1 hover:gap-2.5 transition-all duration-500 border-btnBlue1 hover:border-inputErrorRed hover:text-inputErrorRed mx-auto"
+                                                    className="normal-case font-bold py-0.5 px-3 text-xs rounded flex items-center gap-1 hover:gap-2.5 transition-all duration-500 border-btnBlue1 hover:border-inputErrorRed hover:text-inputErrorRed mx-auto"
                                                     onClick={() => {
                                                         cancelOrder(
                                                             order,
@@ -195,7 +207,7 @@ const Transactions = () => {
                                     className="text-textGray1 whitespace-nowrap"
                                 >
                                     <span className="flex w-fit ml-auto justify-start items-center">
-                                        {symbols && symbols[0]}
+                                        AMOUNT ({symbols && symbols[0]})
                                         <img
                                             src="/images/sort.svg"
                                             alt="Sort"
@@ -208,8 +220,7 @@ const Transactions = () => {
                                     className=" whitespace-nowrap bg-black"
                                 >
                                     <span className="flex items-center mx-auto w-fit text-textGray1">
-                                        {symbols && symbols[0]} /{" "}
-                                        {symbols && symbols[1]}
+                                        PRICE ({symbols && symbols[1]})
                                         <img
                                             src="/images/sort.svg"
                                             alt="Sort"
@@ -231,7 +242,9 @@ const Transactions = () => {
                                         <TableCell
                                             component="th"
                                             scope="row"
-                                            className={`text-white border-none  h-5 py-2.5 whitespace-nowrap`}
+                                            className={`text-white border-none  h-5 py-0 my-0 whitespace-nowrap ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
                                             align="center"
                                         >
                                             {order.time}
@@ -242,7 +255,9 @@ const Transactions = () => {
                                                 index % 2 === 0 // todo -> change to side === 'buy' when real data comes
                                                     ? "text-textGreen1"
                                                     : "text-inputErrorRed"
-                                            }  border-none text-center text-white h-5 py-2.5`}
+                                            }  border-none text-center text-white h-5 py-0 my-0 ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
                                         >
                                             <span className="ml-7 w-fit">
                                                 {order.side === "sell"
@@ -253,15 +268,11 @@ const Transactions = () => {
                                         </TableCell>
                                         <TableCell
                                             align="center"
-                                            className="text-white border-none h-5 py-2.5"
+                                            className={`text-white border-none h-5 py-0 my-0 ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
                                         >
-                                            {truncateDecimals(
-                                                (
-                                                    Number(order.amount) /
-                                                    Number(order.price)
-                                                ).toString(),
-                                                5
-                                            )}
+                                            {order.price}
                                         </TableCell>
                                     </TableRow>
                                 ))}

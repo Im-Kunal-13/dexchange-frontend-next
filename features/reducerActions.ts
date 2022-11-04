@@ -1,5 +1,5 @@
 import { createAction } from "@reduxjs/toolkit"
-import { IGetOrder } from "../types"
+import { IGetOrder, ITokenPair } from "../types"
 import * as zksync from "zksync-web3"
 
 export const actions = {
@@ -18,18 +18,21 @@ export const actions = {
         "tokens/token_2_loaded"
     ),
     load_token_2_balance: createAction<string>("tokens/token_2_balance_loaded"),
+    load_token_pair: createAction<ITokenPair>("tokens/token_pair_loaded"),
 
     // exchange
     load_exchange: createAction<zksync.Contract>("exchange/exchange_loaded"),
-    load_exchange_token_1: createAction<string>(
+    load_exchange_token_1: createAction<{ deposited: string; blocked: string }>(
         "exchange/exchange_token_1_balance_loaded"
     ),
-    load_exchange_token_2: createAction<string>(
+    load_exchange_token_2: createAction<{ deposited: string; blocked: string }>(
         "exchange/exchange_token_2_balance_loaded"
     ),
     request_transfer: createAction("exchange/transfer_request"),
     success_transfer: createAction<any>("exchange/transfer_success"),
     failed_transfer: createAction("exchange/transfer_failed"),
+    deposit_success: createAction<boolean>("exchange/deposit_success"),
+    withdraw_success: createAction<boolean>("exchange/withdraw_success"),
 
     // order
 
@@ -38,6 +41,12 @@ export const actions = {
     load_my_orders: createAction<IGetOrder[]>("order/my_orders_loaded"),
     insert_sell_order: createAction<IGetOrder>("order/sell_order_inserted"),
     insert_buy_order: createAction<IGetOrder>("order/buy_order_inserted"),
-    load_cancelled_orders: createAction<IGetOrder[]>("order/cancelled_orders_loaded"),
+    load_cancelled_orders: createAction<IGetOrder[]>(
+        "order/cancelled_orders_loaded"
+    ),
     cancel_order: createAction<IGetOrder>("order/order_cancelled"),
+
+    // trade
+    load_trades: createAction<IGetOrder[]>("trade/trades_loaded"),
+    load_my_trades: createAction<IGetOrder[]>("trade/my_trades_loaded"),
 }

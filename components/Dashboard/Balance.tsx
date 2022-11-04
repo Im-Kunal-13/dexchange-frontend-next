@@ -1,12 +1,17 @@
 import React, { SetStateAction } from "react"
 import { useEffect, useState, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "../../store/store"
-import { deposit, loadBalances, withdraw } from "../../api/interactions"
+import {
+    deposit,
+    loadExchangeBalances,
+    loadTokenBalances,
+    withdraw,
+} from "../../api/interactions"
 import { Button, Divider, TextField } from "@mui/material"
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
 import { useAppStateContext } from "../../context/contextProvider"
 import FormHelperText from "@mui/material/FormHelperText"
-import config from "../../assets/data/config.json"
+import { ethers } from "ethers"
 
 const Balance = () => {
     // @ts-ignore
@@ -15,12 +20,10 @@ const Balance = () => {
     const [isDeposit, setIsDeosit] = useState(true)
     const [token1TransferAmount, setToken1TransferAmount] = useState("")
     const [token2TransferAmount, setToken2TransferAmount] = useState("")
-    const [asset1Balance, setAsset1Balance] = useState("")
-    const [asset2Balance, setAsset2Balance] = useState("")
 
     const dispatch = useAppDispatch()
 
-    const { balances, contracts, symbols } = useAppSelector(
+    const { balances, contracts, symbols, pair } = useAppSelector(
         (state) => state.tokens
     )
 
@@ -30,6 +33,9 @@ const Balance = () => {
 
     const exchange = useAppSelector((state) => state.exchange.contract)
     const exchangeBalances = useAppSelector((state) => state.exchange.balances)
+    const { currentDeposit, currentWithdraw } = useAppSelector(
+        (state) => state.exchange
+    )
     const transferInProgress = useAppSelector(
         (state) => state.exchange.transferInProgress
     )
@@ -43,7 +49,7 @@ const Balance = () => {
         ["LINK", "/images/chainlink-link-logo.svg"],
     ])
 
-    const depositHandler = (token: any) => {
+    const depositHandler = (token: any, baseAsset: boolean) => {
         if (token.address === contracts[0].address) {
             if (Number(token1TransferAmount) > 0) {
                 if (Number(token1TransferAmount) < Number(balances[0])) {
@@ -53,7 +59,13 @@ const Balance = () => {
                         token,
                         token1TransferAmount,
                         exchange.address,
-                        connection
+                        pair[
+                            baseAsset
+                                ? "baseAssetPrecision"
+                                : "quoteAssetPrecision"
+                        ],
+                        connection,
+                        dispatch
                     )
                     setToken1TransferAmount("")
                 } else {
@@ -77,7 +89,13 @@ const Balance = () => {
                         token,
                         token2TransferAmount,
                         exchange.address,
-                        connection
+                        pair[
+                            baseAsset
+                                ? "baseAssetPrecision"
+                                : "quoteAssetPrecision"
+                        ],
+                        connection,
+                        dispatch
                     )
                     setToken2TransferAmount("")
                 } else {
@@ -95,7 +113,7 @@ const Balance = () => {
         }
     }
 
-    const withdrawHandler = (token: any) => {
+    const withdrawHandler = (token: any, baseAsset: boolean) => {
         if (token.address === contracts[0].address) {
             if (Number(token1TransferAmount) > 0) {
                 if (
@@ -106,7 +124,13 @@ const Balance = () => {
                         account,
                         token.address,
                         token1TransferAmount,
-                        connection
+                        pair[
+                            baseAsset
+                                ? "baseAssetPrecision"
+                                : "quoteAssetPrecision"
+                        ],
+                        connection,
+                        dispatch
                     )
                     setToken1TransferAmount("")
                 } else {
@@ -131,7 +155,13 @@ const Balance = () => {
                         account,
                         token.address,
                         token2TransferAmount,
-                        connection
+                        pair[
+                            baseAsset
+                                ? "baseAssetPrecision"
+                                : "quoteAssetPrecision"
+                        ],
+                        connection,
+                        dispatch
                     )
                     setToken2TransferAmount("")
                 } else {
@@ -151,39 +181,21 @@ const Balance = () => {
 
     const handleInput = (
         value: string,
-        symbol: string,
+        baseAsset: boolean,
         setValue: React.Dispatch<SetStateAction<string>>
     ) => {
         if (value.includes(".")) {
             const arr = value.split(".")
 
             if (
-                //@ts-ignore
-                arr.length <= config[chainId][symbol].decimal_places &&
-                //@ts-ignore
-                arr[1].length <= config[chainId][symbol].decimal_places
+                arr[1].length <=
+                pair[baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"]
             ) {
                 setValue(value)
             }
         } else {
             setValue(value)
         }
-    }
-
-    const getPlaceholder = (symbol: string) => {
-        return (
-            "0." +
-            [
-                ...Array(
-                    // @ts-ignore
-                    config[chainId][symbol].decimal_places
-                ),
-            ]
-                .map(() => {
-                    return "0"
-                })
-                .join("")
-        )
     }
 
     useEffect(() => {
@@ -195,28 +207,41 @@ const Balance = () => {
             symbols[0] &&
             symbols[1]
         ) {
-            loadBalances(
-                exchange,
+            loadTokenBalances(
                 contracts,
                 account,
-                symbols,
                 chainId,
+                [pair.baseAssetPrecision, pair.quoteAssetPrecision],
                 dispatch
             )
+            loadExchangeBalances(contracts, account, chainId, dispatch)
         }
     }, [exchange, contracts, account, transferInProgress, dispatch, symbols])
+
+    useEffect(() => {
+        if (
+            contracts[0] &&
+            contracts[1] &&
+            account &&
+            pair &&
+            chainId &&
+            (currentDeposit || currentWithdraw)
+        ) {
+            loadTokenBalances(
+                contracts,
+                account,
+                chainId,
+                [pair.baseAssetPrecision, pair.quoteAssetPrecision],
+                dispatch
+            )
+            loadExchangeBalances(contracts, account, chainId, dispatch)
+        }
+    }, [currentDeposit, currentWithdraw])
 
     useEffect(() => {
         setToken1TransferAmount("")
         setToken2TransferAmount("")
     }, [symbols])
-
-    useEffect(() => {
-        if (account) {
-            // setAsset1Balance(getAssetBalance(account, symbols[0], dispat))
-            // setAsset2Balance(getAssetBalance(account, symbols[0], dispat))
-        }
-    }, [account])
 
     return (
         <div className="col-span-full">
@@ -264,20 +289,28 @@ const Balance = () => {
                         </div>
                     </div>
                     <p className="flex flex-col items-start gap-1">
-                        <small>Wallet</small>
-                        {balances &&
-                            Number(balances[0]).toFixed(
-                                chainId && symbols[0]
-                                    ? // @ts-ignore
-                                      config[chainId][symbols[0]].decimal_places
-                                    : 0
-                            )}
+                        <small>Deposited</small>
+                        {exchangeBalances[0] &&
+                            Number(
+                                ethers.utils.formatUnits(
+                                    exchangeBalances[0].deposited,
+                                    pair.baseAssetPrecision !== 0
+                                        ? pair.baseAssetPrecision
+                                        : 0
+                                )
+                            ).toFixed(4)}
                     </p>
 
                     <p className="flex flex-col items-start gap-1 whitespace-nowrap">
-                        <small>Dexchange</small>
+                        <small>Blocked</small>
                         <span className="whitespace-nowrap">
-                            {exchangeBalances && exchangeBalances[0]}
+                            {exchangeBalances[0] &&
+                                Number(
+                                    ethers.utils.formatUnits(
+                                        exchangeBalances[0].blocked,
+                                        pair.baseAssetPrecision
+                                    )
+                                ).toFixed(4)}
                         </span>
                     </p>
                 </div>
@@ -287,11 +320,11 @@ const Balance = () => {
                         isDeposit
                             ? (e) => {
                                   e.preventDefault()
-                                  depositHandler(contracts[0])
+                                  depositHandler(contracts[0], true)
                               }
                             : (e) => {
                                   e.preventDefault()
-                                  withdrawHandler(contracts[0])
+                                  withdrawHandler(contracts[0], true)
                               }
                     }
                 >
@@ -301,17 +334,13 @@ const Balance = () => {
                     <TextField
                         id="token0"
                         type="number"
-                        placeholder={
-                            chainId && symbols[0]
-                                ? getPlaceholder(symbols[0])
-                                : "0"
-                        }
+                        placeholder={"0.0000"}
                         value={token1TransferAmount}
                         variant="standard"
                         onChange={(e) =>
                             handleInput(
                                 e.target.value,
-                                symbols[0],
+                                true,
                                 setToken1TransferAmount
                             )
                         }
@@ -332,7 +361,10 @@ const Balance = () => {
                             Number(token1TransferAmount) >
                             (isDeposit
                                 ? Number(balances[0])
-                                : Number(exchangeBalances[0]))
+                                : Number(
+                                      exchangeBalances[0] &&
+                                          exchangeBalances[0].blocked
+                                  ))
                                 ? { border: "1px solid #DD3D32" }
                                 : { border: "1px solid transparent" }
                         }
@@ -342,12 +374,15 @@ const Balance = () => {
                             Number(token1TransferAmount) >
                             (isDeposit
                                 ? Number(balances[0])
-                                : Number(exchangeBalances[0]))
+                                : Number(
+                                      exchangeBalances[0] &&
+                                          exchangeBalances[0].blocked
+                                  ))
                                 ? "opacity-100"
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough USDC deposited !
+                        You don't have enough {symbols[0]} deposited !
                     </FormHelperText>
                     <Button
                         variant="outlined"
@@ -381,20 +416,26 @@ const Balance = () => {
                         </div>
                     </div>
                     <p>
-                        <small>Wallet</small>
+                        <small>Deposited</small>
                         <br />
-                        {balances &&
-                            Number(balances[1]).toFixed(
-                                chainId && symbols[1]
-                                    ? // @ts-ignore
-                                      config[chainId][symbols[1]].decimal_places
-                                    : 0
-                            )}
+                        {exchangeBalances[1] &&
+                            Number(
+                                ethers.utils.formatUnits(
+                                    exchangeBalances[1].deposited,
+                                    pair.quoteAssetPrecision
+                                )
+                            ).toFixed(4)}
                     </p>
                     <p>
-                        <small>Dexchange</small>
+                        <small>blocked</small>
                         <br />
-                        {exchangeBalances && exchangeBalances[1]}
+                        {exchangeBalances[1] &&
+                            Number(
+                                ethers.utils.formatUnits(
+                                    exchangeBalances[1].blocked,
+                                    pair.quoteAssetPrecision
+                                )
+                            ).toFixed(4)}
                     </p>
                 </div>
 
@@ -403,11 +444,11 @@ const Balance = () => {
                         isDeposit
                             ? (e) => {
                                   e.preventDefault()
-                                  depositHandler(contracts[1])
+                                  depositHandler(contracts[1], false)
                               }
                             : (e) => {
                                   e.preventDefault()
-                                  withdrawHandler(contracts[1])
+                                  withdrawHandler(contracts[1], false)
                               }
                     }
                 >
@@ -415,11 +456,7 @@ const Balance = () => {
                         {symbols && symbols[1]} Amount
                     </label>
                     <TextField
-                        placeholder={
-                            chainId && symbols[1]
-                                ? getPlaceholder(symbols[1])
-                                : "0"
-                        }
+                        placeholder={"0.0000"}
                         variant="standard"
                         type="number"
                         autoComplete="off"
@@ -436,7 +473,10 @@ const Balance = () => {
                             Number(token2TransferAmount) >
                             (isDeposit
                                 ? Number(balances[1])
-                                : Number(exchangeBalances[1]))
+                                : Number(
+                                      exchangeBalances[1] &&
+                                          exchangeBalances[1].deposited
+                                  ))
                                 ? { border: "1px solid #DD3D32" }
                                 : { border: "1px solid transparent" }
                         }
@@ -445,7 +485,7 @@ const Balance = () => {
                         onChange={(e) =>
                             handleInput(
                                 e.target.value,
-                                symbols[1],
+                                false,
                                 setToken2TransferAmount
                             )
                         }
@@ -460,7 +500,7 @@ const Balance = () => {
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough USDC deposited !
+                        You don't have enough {symbols[1]} deposited !
                     </FormHelperText>
                     <Button
                         variant="outlined"

@@ -11,10 +11,10 @@ import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Paper from "@mui/material/Paper"
-import { truncateDecimals } from "../../utility"
+import { ethers } from "ethers"
 
 const OrderBook = () => {
-    const { symbols } = useAppSelector((state) => state.tokens)
+    const { symbols, pair } = useAppSelector((state) => state.tokens)
     const { buyOrders, sellOrders } = useAppSelector((state) => state.order)
 
     const dispatch = useAppDispatch()
@@ -49,7 +49,7 @@ const OrderBook = () => {
                                             align="center"
                                         >
                                             <span className="flex w-full justify-start items-center">
-                                                {symbols && symbols[0]}
+                                                AMOUNT ({symbols && symbols[0]})
                                                 <img
                                                     src="/images/sort.svg"
                                                     alt="Sort"
@@ -61,22 +61,8 @@ const OrderBook = () => {
                                             sx={{ borderBottom: "0" }}
                                             className="text-textGray1"
                                         >
-                                            <span className="flex items-center mx-auto w-fit">
-                                                {symbols && symbols[0]} /{" "}
-                                                {symbols && symbols[1]}
-                                                <img
-                                                    src="/images/sort.svg"
-                                                    alt="Sort"
-                                                />
-                                            </span>
-                                        </TableCell>
-                                        <TableCell
-                                            align="right"
-                                            sx={{ borderBottom: "0" }}
-                                            className="text-textGray1"
-                                        >
-                                            <span className="flex items-center w-full justify-end ml-auto">
-                                                {symbols && symbols[1]}
+                                            <span className="flex items-center w-fit justify-end mr-auto">
+                                                PRICE ({symbols && symbols[1]})
                                                 <img
                                                     src="/images/sort.svg"
                                                     alt="Sort"
@@ -90,7 +76,10 @@ const OrderBook = () => {
                                         .filter((order) => {
                                             return (
                                                 order.side === "sell" &&
-                                                order.status !== "cancelled" &&
+                                                order.type === "limit" &&
+                                                (order.status === "open" ||
+                                                    order.status ===
+                                                        "partially-filled") &&
                                                 order.market ===
                                                     `${symbols[0]}-${symbols[1]}`
                                             )
@@ -100,30 +89,42 @@ const OrderBook = () => {
                                                 <TableCell
                                                     component="th"
                                                     scope="row"
-                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                    className={`${
+                                                        order.side === "buy"
+                                                            ? "text-textGreen1"
+                                                            : "text-inputErrorRed"
+                                                    } border-none px-8 h-5 py-0 my-0 ${
+                                                        index === 0
+                                                            ? "pt-2.5"
+                                                            : "pt-0"
+                                                    }`}
                                                     align="center"
                                                 >
-                                                    {order.originalQuantity}
-                                                </TableCell>
-                                                <TableCell
-                                                    align="right"
-                                                    className="border-none text-textGreen1 text-center h-5 py-2.5"
-                                                >
-                                                    {truncateDecimals(
-                                                        (
-                                                            Number(
-                                                                order.originalQuantity
-                                                            ) /
-                                                            Number(order.price)
-                                                        ).toString(),
-                                                        5
+                                                    {ethers.utils.formatUnits(
+                                                        order.remainingQuantity,
+                                                        pair &&
+                                                            pair.baseAssetPrecision !==
+                                                                0
+                                                            ? pair.baseAssetPrecision
+                                                            : 0
                                                     )}
                                                 </TableCell>
                                                 <TableCell
-                                                    align="right"
-                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                    align="left"
+                                                    className={`text-white border-none px-8  h-5 py-0 my-0 ${
+                                                        index === 0
+                                                            ? "pt-2.5"
+                                                            : "pt-0"
+                                                    }`}
                                                 >
-                                                    {order.price}
+                                                    {ethers.utils.formatUnits(
+                                                        order.price,
+                                                        pair &&
+                                                            pair.quoteAssetPrecision !==
+                                                                0
+                                                            ? pair.quoteAssetPrecision
+                                                            : 0
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -150,7 +151,7 @@ const OrderBook = () => {
                                             align="center"
                                         >
                                             <span className="flex w-full justify-start items-center">
-                                                {symbols && symbols[0]}
+                                                AMOUNT ({symbols && symbols[0]})
                                                 <img
                                                     src="/images/sort.svg"
                                                     alt="Sort"
@@ -162,22 +163,8 @@ const OrderBook = () => {
                                             sx={{ borderBottom: "0" }}
                                             className="text-textGray1"
                                         >
-                                            <span className="flex items-center mx-auto w-fit">
-                                                {symbols && symbols[0]} /{" "}
-                                                {symbols && symbols[1]}
-                                                <img
-                                                    src="/images/sort.svg"
-                                                    alt="Sort"
-                                                />
-                                            </span>
-                                        </TableCell>
-                                        <TableCell
-                                            align="right"
-                                            sx={{ borderBottom: "0" }}
-                                            className="text-textGray1"
-                                        >
-                                            <span className="flex items-center w-full justify-end ml-auto">
-                                                {symbols && symbols[1]}
+                                            <span className="flex items-center w-fit justify-end mr-auto">
+                                                PRICE ({symbols && symbols[1]})
                                                 <img
                                                     src="/images/sort.svg"
                                                     alt="Sort"
@@ -191,40 +178,55 @@ const OrderBook = () => {
                                         .filter((order) => {
                                             return (
                                                 order.side === "buy" &&
-                                                order.status !== "cancelled" &&
+                                                order.type === "limit" &&
+                                                (order.status === "open" ||
+                                                    order.status ===
+                                                        "partially-filled") &&
                                                 order.market ===
                                                     `${symbols[0]}-${symbols[1]}`
                                             )
                                         })
-                                        .map((order) => (
+                                        .map((order, index) => (
                                             <TableRow key={order._id}>
                                                 <TableCell
                                                     component="th"
                                                     scope="row"
-                                                    className="text-white border-none px-8 mt-0 h-5 py-2.5"
-                                                    align="center"
+                                                    className={`${
+                                                        order.side === "buy"
+                                                            ? "text-textGreen1"
+                                                            : "text-inputErrorRed"
+                                                    } border-none px-8 h-5 py-0 my-0 ${
+                                                        index === 0
+                                                            ? "pt-2.5"
+                                                            : "pt-0"
+                                                    }`}
+                                                    align="left"
                                                 >
-                                                    {order.originalQuantity}
-                                                </TableCell>
-                                                <TableCell
-                                                    align="right"
-                                                    className="border-none text-textGreen1 text-center h-5 py-2.5"
-                                                >
-                                                    {truncateDecimals(
-                                                        (
-                                                            Number(
-                                                                order.originalQuantity
-                                                            ) /
-                                                            Number(order.price)
-                                                        ).toString(),
-                                                        5
+                                                    {ethers.utils.formatUnits(
+                                                        order.remainingQuantity,
+                                                        pair &&
+                                                            pair.baseAssetPrecision !==
+                                                                0
+                                                            ? pair.baseAssetPrecision
+                                                            : 0
                                                     )}
                                                 </TableCell>
                                                 <TableCell
-                                                    align="right"
-                                                    className="text-white border-none px-8 h-5 py-2.5"
+                                                    align="left"
+                                                    className={`text-white border-none px-8  h-5 py-0 my-0 ${
+                                                        index === 0
+                                                            ? "pt-2.5"
+                                                            : "pt-0"
+                                                    }`}
                                                 >
-                                                    {order.price}
+                                                    {ethers.utils.formatUnits(
+                                                        order.price,
+                                                        pair &&
+                                                            pair.quoteAssetPrecision !==
+                                                                0
+                                                            ? pair.quoteAssetPrecision
+                                                            : 0
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

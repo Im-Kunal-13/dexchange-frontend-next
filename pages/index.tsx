@@ -1,13 +1,12 @@
-import config from "../assets/data/config.json"
 import { useEffect } from "react"
-import { useAppDispatch } from "../store/store"
+import { useAppDispatch, useAppSelector } from "../store/store"
 import {
     loadProvider,
     loadNetwork,
     loadAccount,
     loadTokens,
     loadExchange,
-    // subscribeToEvents,
+    loadTokenPair,
 } from "../api/interactions"
 
 import type { NextPage } from "next"
@@ -19,7 +18,6 @@ import Order from "../components/Dashboard/Order"
 import Transactions from "../components/Dashboard/Transactions"
 import Trades from "../components/Dashboard/Trades"
 import OrderBook from "../components/Dashboard/OrderBook"
-import * as zksync from "zksync-web3"
 import AlertWarning from "../components/Alerts/AlertWarning"
 import AlertInfo from "../components/Alerts/AlertInfo"
 import AlertSuccess from "../components/Alerts/AlertSuccess"
@@ -27,6 +25,10 @@ import AlertError from "../components/Alerts/AlertError"
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
+    const { symbols } = useAppSelector((state) => state.tokens)
+    const { currentDeposit, currentWithdraw } = useAppSelector(
+        (state) => state.exchange
+    )
 
     const loadBlockchainData = async () => {
         // Connect to web3 API
@@ -48,28 +50,32 @@ const Home: NextPage = () => {
         }
 
         // Token Smart Contracts
-        //@ts-ignore
-        const BTC = config[chainId].BTC
-        //@ts-ignore
-        const USDC = config[chainId].USDC
-        await loadTokens(provider, [BTC.address, USDC.address], dispatch)
+        const BTC = "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833"
+        const USDC = "0x89126812d7aa022f817465B7197dE668330712E8"
+        await loadTokens(provider, [BTC, USDC], dispatch)
 
         // Exchange Smart contract
-        //@ts-ignore
-        const exchangeConfig = config[chainId].deXchange
-        const exchange = await loadExchange(
+        const exchangeConfig = "0xEaa99f33BCB372F6Bb49eE91d7e47212444da374"
+        await loadExchange(
             provider,
-            exchangeConfig.address,
+            exchangeConfig ? exchangeConfig : "",
             dispatch
         )
-
-        // Listen to events
-        // subscribeToEvents(exchange, dispatch)
     }
 
     useEffect(() => {
-        loadBlockchainData()
-    })
+        if (currentDeposit || currentWithdraw) {
+            loadBlockchainData()
+        } else {
+            loadBlockchainData()
+        }
+    }, [currentDeposit, currentWithdraw, symbols])
+
+    useEffect(() => {
+        if (symbols.length) {
+            loadTokenPair(symbols.join("-"), dispatch)
+        }
+    }, [symbols])
 
     return (
         <div className="bg-bgGray1">
