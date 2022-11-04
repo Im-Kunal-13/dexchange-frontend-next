@@ -69,7 +69,7 @@ const DEFAULT_ORDERS_STATE: IOrder = {
 
 const DEFAULT_TRADES_STATE: ITrade = {
     myTrades: [],
-    allTrades: [] 
+    allTrades: [],
 }
 
 export const provider = createReducer(DEFAULT_PROVIDER_STATE, (builder) => {
