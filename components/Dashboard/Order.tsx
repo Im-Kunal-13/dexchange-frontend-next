@@ -7,7 +7,7 @@ import { useAppStateContext } from "../../context/contextProvider"
 
 const Order = () => {
     // @ts-ignore
-    const { setSnackbarWarning, setSnackbarSuccess } = useAppStateContext()
+    const {setSnackbarWarning, setSnackbarSuccess, setSnackbarLoading, setSnackbarError} = useAppStateContext()
 
     const [isMarket, setIsMarket] = useState(false)
     const [isBuy, setIsBuy] = useState(true)
@@ -40,12 +40,14 @@ const Order = () => {
                     isMarket ? "market" : "limit",
                     isBuy ? "buy" : "sell",
                     amount,
-                    !isMarket ? price : "market price",
+                    !isMarket ? price : "0",
                     chainId,
-                    [pair.baseAssetPrecision, pair.quoteAssetPrecision],
+                    [pair[symbols.join("-")].baseAssetPrecision, pair[symbols.join("-")].quoteAssetPrecision],
                     connection,
                     dispatch,
-                    setSnackbarSuccess
+                    setSnackbarSuccess,
+                    setSnackbarLoading,
+                    setSnackbarError
                 )
                 setAmount("0")
                 setPrice("0")
@@ -78,12 +80,14 @@ const Order = () => {
                     isMarket ? "market" : "limit",
                     isBuy ? "buy" : "sell",
                     amount,
-                    !isMarket ? price : "market price",
+                    !isMarket ? price : "0",
                     chainId,
-                    [pair.baseAssetPrecision, pair.quoteAssetPrecision],
+                    [pair[symbols.join("-")].baseAssetPrecision, pair[symbols.join("-")].quoteAssetPrecision],
                     connection,
                     dispatch,
-                    setSnackbarSuccess
+                    setSnackbarSuccess,
+                    setSnackbarLoading,
+                    setSnackbarError
                 )
                 setAmount("0")
                 setPrice("0")
@@ -110,7 +114,7 @@ const Order = () => {
             const arr = value.split(".")
             if (
                 arr[1].length <=
-                pair[baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"]
+                pair[symbols.join("-")][baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"]
             ) {
                 setValue(value)
             }

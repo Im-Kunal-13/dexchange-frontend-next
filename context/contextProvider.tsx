@@ -41,6 +41,16 @@ export interface AppContextInterface {
             message: string
         }>
     >
+    snackbarLoading: {
+        open: boolean
+        message: string
+    }
+    setSnackbarLoading: React.Dispatch<
+        React.SetStateAction<{
+            open: boolean
+            message: string
+        }>
+    >
 }
 export const AppStateContext = createContext<AppContextInterface | null>(null)
 
@@ -51,15 +61,19 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     })
     const [snackbarError, setSnackbarError] = useState({
         open: false,
-        message: ""
+        message: "",
     })
     const [snackbarSuccess, setSnackbarSuccess] = useState({
         open: false,
-        message: ""
+        message: "",
     })
     const [snackbarInfo, setSnackbarInfo] = useState({
         open: false,
-        message: ""
+        message: "",
+    })
+    const [snackbarLoading, setSnackbarLoading] = useState({
+        open: false,
+        message: "",
     })
 
     return (
@@ -73,6 +87,8 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
                 setSnackbarSuccess,
                 snackbarInfo,
                 setSnackbarInfo,
+                snackbarLoading,
+                setSnackbarLoading,
             }}
         >
             {children}

@@ -1,34 +1,6 @@
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { loadTokens } from "../../api/interactions"
 import { Divider, MenuItem, Select, SelectChangeEvent } from "@mui/material"
-import { useEffect } from "react"
-
-const localPairs = {
-    "BTC-USDC": {
-        baseAsset: "BTC",
-        baseAssetAddress: "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833",
-        baseAssetPrecision: 8,
-        quoteAsset: "USDC",
-        quoteAssetAddress: "0x89126812d7aa022f817465B7197dE668330712E8",
-        quoteAssetPrecision: 6,
-    },
-    "DAI-USDC": {
-        baseAsset: "DAI",
-        baseAssetAddress: "0x9763f852a16534BD0C312e15b4266A1333662101",
-        baseAssetPrecision: 18,
-        quoteAsset: "USDC",
-        quoteAssetAddress: "0x89126812d7aa022f817465B7197dE668330712E8",
-        quoteAssetPrecision: 6,
-    },
-    "LINK-USDC": {
-        baseAsset: "LINK",
-        baseAssetAddress: "0x732A6F0089CFaFd91E7Ad33475A264e1393dFaD8",
-        baseAssetPrecision: 18,
-        quoteAsset: "USDC",
-        quoteAssetAddress: "0x89126812d7aa022f817465B7197dE668330712E8",
-        quoteAssetPrecision: 6,
-    },
-}
 
 const Markets = () => {
     const dispatch = useAppDispatch()
@@ -73,22 +45,15 @@ const Markets = () => {
                 <MenuItem disabled value="">
                     Select Market
                 </MenuItem>
-
-                <MenuItem
-                    value={`${localPairs["BTC-USDC"].baseAssetAddress},${localPairs["BTC-USDC"].quoteAssetAddress}`}
-                >
-                    BTC / USDC
-                </MenuItem>
-                <MenuItem
-                    value={`${localPairs["DAI-USDC"].baseAssetAddress},${localPairs["DAI-USDC"].quoteAssetAddress}`}
-                >
-                    DAI / USDC
-                </MenuItem>
-                <MenuItem
-                    value={`${localPairs["LINK-USDC"].baseAssetAddress},${localPairs["LINK-USDC"].quoteAssetAddress}`}
-                >
-                    LINK / USDC
-                </MenuItem>
+                {pair &&
+                    Object.keys(pair).map((key) => (
+                        <MenuItem
+                            key={key}
+                            value={`${pair[key].baseAssetAddress},${pair[key].quoteAssetAddress}`}
+                        >
+                            {key}
+                        </MenuItem>
+                    ))}
             </Select>
 
             <Divider className="my-7 h-[1px]" />

@@ -22,8 +22,16 @@ export interface IExchange {
     events: any[]
     balances: { deposited: string; blocked: string }[]
     transferInProgress: boolean
-    currentDeposit: boolean
-    currentWithdraw: boolean
+    depositState: {
+        loading: boolean
+        failed: boolean
+        success: boolean
+    }
+    withdrawState: {
+        loading: boolean
+        failed: boolean
+        success: boolean
+    }
 }
 
 export interface ITokens {
@@ -31,16 +39,7 @@ export interface ITokens {
     contracts: any[]
     symbols: string[]
     balances: string[]
-    pair: ITokenPair
-}
-
-export interface ITokenPair {
-    baseAsset: string
-    baseAssetAddress: string
-    baseAssetPrecision: number
-    quoteAsset: string
-    quoteAssetAddress: string
-    quoteAssetPrecision: number
+    pair: any
 }
 
 export interface IProvider {
@@ -55,6 +54,7 @@ export interface IRootState {
     tokens: ITokens
     exchange: IExchange
     order: IOrder
+    trade: ITrade
 }
 
 // Balance
@@ -76,11 +76,17 @@ export interface IOrder {
     buyOrders: IGetOrder[]
     myOrders: IGetOrder[]
     cancelledOrders: IGetOrder[]
+    insertOrderState: {
+        loading: boolean
+        success: boolean
+        error: boolean
+        status: string
+    }
 }
 
 export interface ITrade {
     myTrades: IGetOrder[]
-    allTrades: IGetOrder[] 
+    allTrades: IGetOrder[]
 }
 
 export interface IInsertOrder {
@@ -112,5 +118,14 @@ export interface IGetOrder {
     signature: string
     createdAt: string
     updatedAt: string
-    __v: string
+    __v: number
+    fills: IOrderFill[]
+}
+
+export interface IOrderFill {
+    orderId: string
+    filledQuantity: string
+    price: string
+    createdAt: string
+    updatedAt: string
 }

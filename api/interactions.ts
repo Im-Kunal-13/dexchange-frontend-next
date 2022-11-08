@@ -57,9 +57,9 @@ export const loadTokens = async (
     return token
 }
 
-export const loadTokenPair = async (pair: string, dispatch: AppDispatch) => {
+export const loadTokenPair = async (dispatch: AppDispatch) => {
     const res = await axios.get(`http://localhost:5001/api/pairs`)
-    dispatch(actions.load_token_pair(res.data.pairs[pair]))
+    dispatch(actions.load_token_pair(res.data.pairs))
 }
 
 export const loadExchange = async (
@@ -123,21 +123,20 @@ export const deposit = async (
             signature,
         }
 
+        dispatch(actions.deposit_loading())
         const res = await axios.post(
             "http://localhost:5001/api/deposit",
             reqBody
         )
 
-        dispatch(actions.deposit_success(true))
+        dispatch(actions.deposit_success())
 
-        setTimeout(() => {
-            dispatch(actions.deposit_success(false))
-        }, 2000)
         console.log("Deposit Done!")
 
         console.log(res.data)
     } catch (error) {
         console.log(error)
+        dispatch(actions.deposit_failed())
     }
 }
 
@@ -183,20 +182,17 @@ export const withdraw = async (
             signature,
         }
 
+        dispatch(actions.withdraw_loading())
+
         const res = await axios.post(
             "http://localhost:5001/api/withdraw",
             reqBody
         )
 
-        console.log(res.data)
-
-        dispatch(actions.withdraw_success(true))
-
-        setTimeout(() => {
-            dispatch(actions.withdraw_success(false))
-        }, 2000)
+        dispatch(actions.withdraw_success())
     } catch (error) {
         console.log(error)
+        dispatch(actions.withdraw_failed())
     }
 }
 
@@ -206,7 +202,6 @@ export const withdraw = async (
 export const loadTokenBalances = async (
     tokens: any,
     account: string,
-    chainId: number,
     precisions: number[],
     dispatch: AppDispatch
 ) => {
@@ -229,21 +224,25 @@ export const loadExchangeBalances = async (
     chainId: number,
     dispatch: AppDispatch
 ) => {
-    const res = await axios.get(
-        `http://localhost:5001/api/balances/${chainId}/${account}`
-    )
-
-    dispatch(
-        actions.load_exchange_token_1(
-            res.data?.balances[chainId][tokens[0].address]
+    try {
+        const res = await axios.get(
+            `http://localhost:5001/api/balances/${chainId}/${account}`
         )
-    )
 
-    dispatch(
-        actions.load_exchange_token_2(
-            res.data?.balances[chainId][tokens[1].address]
+        dispatch(
+            actions.load_exchange_token_1(
+                res.data?.balances[chainId][tokens[0].address]
+            )
         )
-    )
+
+        dispatch(
+            actions.load_exchange_token_2(
+                res.data?.balances[chainId][tokens[1].address]
+            )
+        )
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 // ------------------------------------------------------------------------------
@@ -302,7 +301,6 @@ export const getAssetBalance = async (
 }
 
 // ORDER
-
 export const insertOrder = async (
     wallet: string,
     market: string,
@@ -315,6 +313,18 @@ export const insertOrder = async (
     provider: any,
     dispatch: AppDispatch,
     setSnackbarSuccess: React.Dispatch<
+        React.SetStateAction<{
+            open: boolean
+            message: string
+        }>
+    >,
+    setSnackbarLoading: React.Dispatch<
+        React.SetStateAction<{
+            open: boolean
+            message: string
+        }>
+    >,
+    setSnackbarError: React.Dispatch<
         React.SetStateAction<{
             open: boolean
             message: string
@@ -336,7 +346,7 @@ export const insertOrder = async (
             { name: "type", type: "string" },
             { name: "side", type: "string" },
             { name: "amount", type: "uint256" },
-            { name: "price", type: type === "limit" ? "uint256" : "string" },
+            { name: "price", type: "uint256" },
         ],
     }
 
@@ -348,10 +358,7 @@ export const insertOrder = async (
         type: type.toLowerCase(),
         side: side.toLowerCase(),
         amount: ethers.utils.parseUnits(amount, precisions[0]),
-        price:
-            type === "limit"
-                ? ethers.utils.parseUnits(price, precisions[1])
-                : price,
+        price: ethers.utils.parseUnits(price, precisions[1]),
     }
 
     try {
@@ -366,17 +373,16 @@ export const insertOrder = async (
             },
             signature,
         }
+
+        dispatch(actions.insert_order_loading())
+
         const res = await axios.post("http://localhost:5001/api/orders", order)
-        if (side.toLowerCase() === "sell") {
-            dispatch(actions.insert_sell_order(res.data))
-        } else {
-            dispatch(actions.insert_buy_order(res.data))
-        }
-        setSnackbarSuccess({
-            open: true,
-            message: "Your order has been placed successfully.",
-        })
+
+        console.log(res.data)
+
+        dispatch(actions.insert_order_success())
     } catch (error) {
+        dispatch(actions.insert_order_error())
         console.log(error)
     }
 }
@@ -384,7 +390,12 @@ export const insertOrder = async (
 export const getBuyOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders?side=buy&type=limit"
+            "http://localhost:5001/api/orders/buy?type=limit",
+            {
+                params: {
+                    status: ["open", "partially-filled"],
+                },
+            }
         )
         dispatch(actions.load_buy_orders(res.data))
     } catch (error) {
@@ -395,7 +406,12 @@ export const getBuyOrders = async (dispatch: AppDispatch) => {
 export const getSellOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders?side=sell&type=limit"
+            "http://localhost:5001/api/orders/sell?type=limit",
+            {
+                params: {
+                    status: ["open", "partially-filled"],
+                },
+            }
         )
         dispatch(actions.load_sell_orders(res.data))
     } catch (error) {
@@ -406,7 +422,12 @@ export const getSellOrders = async (dispatch: AppDispatch) => {
 export const getMyOrders = async (wallet: string, dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            `http://localhost:5001/api/orders?type=limit&status=open&wallet=${wallet}`
+            `http://localhost:5001/api/orders/user/${wallet}?type=limit`,
+            {
+                params: {
+                    status: ["open", "partially-filled"],
+                },
+            }
         )
         dispatch(actions.load_my_orders(res.data))
     } catch (error) {
@@ -455,17 +476,20 @@ export const cancelOrder = async (
     }
 }
 
-export const getTrades = async (wallet: string = "", dispatch: AppDispatch) => {
+export const loadTrades = async (
+    dispatch: AppDispatch,
+    wallet: string = ""
+) => {
     try {
         const res = await axios.get(
             `http://localhost:5001/api/trades/${wallet}`
         )
 
-        // if (wallet) {
-        //     dispatch(actions.load_trades(res.data))
-        // } else {
-        //     dispatch(actions.load_my_trades(res.data))
-        // }
+        if (wallet) {
+            dispatch(actions.load_my_trades(res.data))
+        } else {
+            dispatch(actions.load_trades(res.data))
+        }
     } catch (error) {
         console.log(error)
     }

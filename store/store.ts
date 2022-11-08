@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { useDispatch, TypedUseSelectorHook, useSelector } from "react-redux"
-import { provider, tokens, exchange, order } from "../features/reducers"
+import { provider, tokens, exchange, order, trade } from "../features/reducers"
 import thunk from "redux-thunk"
 import { IRootState } from "../types"
 
@@ -10,6 +10,7 @@ export const store = configureStore({
         tokens,
         exchange,
         order,
+        trade,
     },
     middleware: [thunk],
 })

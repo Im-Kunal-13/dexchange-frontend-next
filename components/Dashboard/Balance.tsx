@@ -33,7 +33,7 @@ const Balance = () => {
 
     const exchange = useAppSelector((state) => state.exchange.contract)
     const exchangeBalances = useAppSelector((state) => state.exchange.balances)
-    const { currentDeposit, currentWithdraw } = useAppSelector(
+    const { withdrawState, depositState } = useAppSelector(
         (state) => state.exchange
     )
     const transferInProgress = useAppSelector(
@@ -59,7 +59,7 @@ const Balance = () => {
                         token,
                         token1TransferAmount,
                         exchange.address,
-                        pair[
+                        pair[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -89,7 +89,7 @@ const Balance = () => {
                         token,
                         token2TransferAmount,
                         exchange.address,
-                        pair[
+                        pair[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -205,18 +205,22 @@ const Balance = () => {
             contracts[1] &&
             account &&
             symbols[0] &&
-            symbols[1]
+            symbols[1] &&
+            pair
         ) {
             loadTokenBalances(
                 contracts,
                 account,
-                chainId,
-                [pair.baseAssetPrecision, pair.quoteAssetPrecision],
+
+                pair && [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
                 dispatch
             )
             loadExchangeBalances(contracts, account, chainId, dispatch)
         }
-    }, [exchange, contracts, account, transferInProgress, dispatch, symbols])
+    }, [exchange, contracts, account, dispatch, symbols, pair])
 
     useEffect(() => {
         if (
@@ -225,18 +229,20 @@ const Balance = () => {
             account &&
             pair &&
             chainId &&
-            (currentDeposit || currentWithdraw)
+            (withdrawState.success || depositState.success)
         ) {
             loadTokenBalances(
                 contracts,
                 account,
-                chainId,
-                [pair.baseAssetPrecision, pair.quoteAssetPrecision],
+                pair && [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
                 dispatch
             )
             loadExchangeBalances(contracts, account, chainId, dispatch)
         }
-    }, [currentDeposit, currentWithdraw])
+    }, [withdrawState.success, depositState.success])
 
     useEffect(() => {
         setToken1TransferAmount("")
@@ -294,8 +300,10 @@ const Balance = () => {
                             Number(
                                 ethers.utils.formatUnits(
                                     exchangeBalances[0].deposited,
-                                    pair.baseAssetPrecision !== 0
-                                        ? pair.baseAssetPrecision
+                                    pair[symbols.join("-")]
+                                        .baseAssetPrecision !== 0
+                                        ? pair[symbols.join("-")]
+                                              .baseAssetPrecision
                                         : 0
                                 )
                             ).toFixed(4)}
@@ -308,7 +316,8 @@ const Balance = () => {
                                 Number(
                                     ethers.utils.formatUnits(
                                         exchangeBalances[0].blocked,
-                                        pair.baseAssetPrecision
+                                        pair[symbols.join("-")]
+                                            .baseAssetPrecision
                                     )
                                 ).toFixed(4)}
                         </span>
@@ -422,7 +431,7 @@ const Balance = () => {
                             Number(
                                 ethers.utils.formatUnits(
                                     exchangeBalances[1].deposited,
-                                    pair.quoteAssetPrecision
+                                    pair[symbols.join("-")].quoteAssetPrecision
                                 )
                             ).toFixed(4)}
                     </p>
@@ -433,7 +442,7 @@ const Balance = () => {
                             Number(
                                 ethers.utils.formatUnits(
                                     exchangeBalances[1].blocked,
-                                    pair.quoteAssetPrecision
+                                    pair[symbols.join("-")].quoteAssetPrecision
                                 )
                             ).toFixed(4)}
                     </p>

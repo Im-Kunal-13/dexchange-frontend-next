@@ -1,8 +1,6 @@
-import { useAppDispatch, useAppSelector } from "../../store/store"
-import { useEffect } from "react"
+import { useAppSelector } from "../../store/store"
 
 // Import Interactions
-import { getBuyOrders, getSellOrders } from "../../api/interactions"
 import * as React from "react"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
@@ -16,13 +14,6 @@ import { ethers } from "ethers"
 const OrderBook = () => {
     const { symbols, pair } = useAppSelector((state) => state.tokens)
     const { buyOrders, sellOrders } = useAppSelector((state) => state.order)
-
-    const dispatch = useAppDispatch()
-
-    useEffect(() => {
-        getBuyOrders(dispatch)
-        getSellOrders(dispatch)
-    }, [])
 
     return (
         <div className="relative bg-black py-[0.75em] px-[1.75em] m-[0.75em] col-span-full overflow-y-scroll shadow-black1">
@@ -103,9 +94,19 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.remainingQuantity,
                                                         pair &&
-                                                            pair.baseAssetPrecision !==
+                                                            pair[
+                                                                symbols.join(
+                                                                    "-"
+                                                                )
+                                                            ]
+                                                                .baseAssetPrecision !==
                                                                 0
-                                                            ? pair.baseAssetPrecision
+                                                            ? pair[
+                                                                  symbols.join(
+                                                                      "-"
+                                                                  )
+                                                              ]
+                                                                  .baseAssetPrecision
                                                             : 0
                                                     )}
                                                 </TableCell>
@@ -120,9 +121,19 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.price,
                                                         pair &&
-                                                            pair.quoteAssetPrecision !==
+                                                            pair[
+                                                                symbols.join(
+                                                                    "-"
+                                                                )
+                                                            ]
+                                                                .quoteAssetPrecision !==
                                                                 0
-                                                            ? pair.quoteAssetPrecision
+                                                            ? pair[
+                                                                  symbols.join(
+                                                                      "-"
+                                                                  )
+                                                              ]
+                                                                  .quoteAssetPrecision
                                                             : 0
                                                     )}
                                                 </TableCell>
@@ -205,9 +216,19 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.remainingQuantity,
                                                         pair &&
-                                                            pair.baseAssetPrecision !==
+                                                            pair[
+                                                                symbols.join(
+                                                                    "-"
+                                                                )
+                                                            ]
+                                                                .baseAssetPrecision !==
                                                                 0
-                                                            ? pair.baseAssetPrecision
+                                                            ? pair[
+                                                                  symbols.join(
+                                                                      "-"
+                                                                  )
+                                                              ]
+                                                                  .baseAssetPrecision
                                                             : 0
                                                     )}
                                                 </TableCell>
@@ -222,9 +243,19 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.price,
                                                         pair &&
-                                                            pair.quoteAssetPrecision !==
+                                                            pair[
+                                                                symbols.join(
+                                                                    "-"
+                                                                )
+                                                            ]
+                                                                .quoteAssetPrecision !==
                                                                 0
-                                                            ? pair.quoteAssetPrecision
+                                                            ? pair[
+                                                                  symbols.join(
+                                                                      "-"
+                                                                  )
+                                                              ]
+                                                                  .quoteAssetPrecision
                                                             : 0
                                                     )}
                                                 </TableCell>

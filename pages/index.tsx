@@ -7,6 +7,9 @@ import {
     loadTokens,
     loadExchange,
     loadTokenPair,
+    getBuyOrders,
+    getSellOrders,
+    loadTrades,
 } from "../api/interactions"
 
 import type { NextPage } from "next"
@@ -22,13 +25,26 @@ import AlertWarning from "../components/Alerts/AlertWarning"
 import AlertInfo from "../components/Alerts/AlertInfo"
 import AlertSuccess from "../components/Alerts/AlertSuccess"
 import AlertError from "../components/Alerts/AlertError"
+import { useAppStateContext } from "../context/contextProvider"
+import AlertLoading from "../components/Alerts/AlertLoading"
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
-    const { symbols } = useAppSelector((state) => state.tokens)
-    const { currentDeposit, currentWithdraw } = useAppSelector(
+    const { symbols, contracts } = useAppSelector((state) => state.tokens)
+    const { depositState, withdrawState } = useAppSelector(
         (state) => state.exchange
     )
+    const { insertOrderState } = useAppSelector((state) => state.order)
+    const { account } = useAppSelector((state) => state.provider)
+
+    const {
+        // @ts-ignore
+        setSnackbarError,
+        // @ts-ignore
+        setSnackbarLoading,
+        // @ts-ignore
+        setSnackbarSuccess,
+    } = useAppStateContext()
 
     const loadBlockchainData = async () => {
         // Connect to web3 API
@@ -50,8 +66,16 @@ const Home: NextPage = () => {
         }
 
         // Token Smart Contracts
-        const BTC = "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833"
-        const USDC = "0x89126812d7aa022f817465B7197dE668330712E8"
+        let BTC, USDC
+
+        if (contracts.length > 0) {
+            BTC = contracts[0].address
+            USDC = contracts[1].address
+        } else {
+            BTC = "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833"
+            USDC = "0x89126812d7aa022f817465B7197dE668330712E8"
+        }
+
         await loadTokens(provider, [BTC, USDC], dispatch)
 
         // Exchange Smart contract
@@ -64,18 +88,87 @@ const Home: NextPage = () => {
     }
 
     useEffect(() => {
-        if (currentDeposit || currentWithdraw) {
-            loadBlockchainData()
-        } else {
+        loadBlockchainData()
+    }, [])
+
+    useEffect(() => {
+        if (depositState.success || withdrawState.success) {
             loadBlockchainData()
         }
-    }, [currentDeposit, currentWithdraw, symbols])
+    }, [depositState.success, withdrawState.success])
+
+    useEffect(() => {
+        if (depositState.loading) {
+            setSnackbarLoading({
+                open: true,
+                message: "Depositing tokens...",
+            })
+        } else if (depositState.success) {
+            setSnackbarLoading({
+                open: false,
+                message: "Depositing tokens...",
+            })
+            setSnackbarSuccess({
+                open: true,
+                message: "Tokens deposited successfully",
+            })
+        } else if (depositState.failed) {
+            setSnackbarLoading({
+                open: false,
+                message: "Depositing tokens...",
+            })
+            setSnackbarError({
+                open: true,
+                message: "Token deposit unsuccessful",
+            })
+        }
+    }, [depositState.success, depositState.loading, depositState.failed])
+
+    useEffect(() => {
+        if (insertOrderState.loading) {
+            setSnackbarLoading({
+                open: true,
+                message: "Placing your order...",
+            })
+        } else if (insertOrderState.success) {
+            getBuyOrders(dispatch)
+            getSellOrders(dispatch)
+            loadTrades(dispatch)
+            loadTrades(dispatch, account)
+            setSnackbarLoading({
+                open: false,
+                message: "Placing your order...",
+            })
+            setSnackbarSuccess({
+                open: true,
+                message: "Your order has beed placed",
+            })
+        } else if (insertOrderState.error) {
+            setSnackbarLoading({
+                open: false,
+                message: "Placing your order...",
+            })
+            setSnackbarError({
+                open: true,
+                message: "Failed to place order !",
+            })
+        }
+    }, [
+        insertOrderState.success,
+        insertOrderState.loading,
+        insertOrderState.error,
+    ])
 
     useEffect(() => {
         if (symbols.length) {
-            loadTokenPair(symbols.join("-"), dispatch)
+            loadTokenPair(dispatch)
         }
     }, [symbols])
+
+    useEffect(() => {
+        getBuyOrders(dispatch)
+        getSellOrders(dispatch)
+    }, [])
 
     return (
         <div className="bg-bgGray1">
@@ -100,6 +193,7 @@ const Home: NextPage = () => {
             <AlertInfo />
             <AlertSuccess />
             <AlertError />
+            <AlertLoading />
         </div>
     )
 }

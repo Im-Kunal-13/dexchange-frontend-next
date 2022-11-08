@@ -1,5 +1,5 @@
 import { createAction } from "@reduxjs/toolkit"
-import { IGetOrder, ITokenPair } from "../types"
+import { IGetOrder, IOrderFill } from "../types"
 import * as zksync from "zksync-web3"
 
 export const actions = {
@@ -18,7 +18,7 @@ export const actions = {
         "tokens/token_2_loaded"
     ),
     load_token_2_balance: createAction<string>("tokens/token_2_balance_loaded"),
-    load_token_pair: createAction<ITokenPair>("tokens/token_pair_loaded"),
+    load_token_pair: createAction<any>("tokens/token_pair_loaded"),
 
     // exchange
     load_exchange: createAction<zksync.Contract>("exchange/exchange_loaded"),
@@ -31,8 +31,12 @@ export const actions = {
     request_transfer: createAction("exchange/transfer_request"),
     success_transfer: createAction<any>("exchange/transfer_success"),
     failed_transfer: createAction("exchange/transfer_failed"),
-    deposit_success: createAction<boolean>("exchange/deposit_success"),
-    withdraw_success: createAction<boolean>("exchange/withdraw_success"),
+    deposit_success: createAction("exchange/deposit_success"),
+    deposit_failed: createAction("exchange/deposit_failed"),
+    deposit_loading: createAction("exchange/deposit_loading"),
+    withdraw_success: createAction("exchange/withdraw_success"),
+    withdraw_failed: createAction("exchange/withdraw_failed"),
+    withdraw_loading: createAction("exchange/withdraw_loading"),
 
     // order
 
@@ -41,12 +45,22 @@ export const actions = {
     load_my_orders: createAction<IGetOrder[]>("order/my_orders_loaded"),
     insert_sell_order: createAction<IGetOrder>("order/sell_order_inserted"),
     insert_buy_order: createAction<IGetOrder>("order/buy_order_inserted"),
+    update_buy_order: createAction<IOrderFill>("order/buy_order_updated"),
+    update_sell_order: createAction<IOrderFill>("order/sell_order_updated"),
     load_cancelled_orders: createAction<IGetOrder[]>(
         "order/cancelled_orders_loaded"
     ),
     cancel_order: createAction<IGetOrder>("order/order_cancelled"),
+    // remove_
+    insert_order_status: createAction<string>("trade/insert_order_status"),
+    insert_order_loading: createAction("trade/insert_order_loading"),
+    insert_order_success: createAction("trade/insert_order_success"),
+    insert_order_error: createAction("trade/insert_order_error"),
 
     // trade
     load_trades: createAction<IGetOrder[]>("trade/trades_loaded"),
     load_my_trades: createAction<IGetOrder[]>("trade/my_trades_loaded"),
+    insert_my_trade: createAction<IGetOrder>("trade/insert_my_trade"),
+    insert_trade: createAction<IGetOrder>("trade/insert_trade"),
+    update_trade: createAction<IGetOrder>("trade/update_trade"),
 }
