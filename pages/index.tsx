@@ -135,6 +135,7 @@ const Home: NextPage = () => {
             getSellOrders(dispatch)
             loadTrades(dispatch)
             loadTrades(dispatch, account)
+
             setSnackbarLoading({
                 open: false,
                 message: "Placing your order...",
