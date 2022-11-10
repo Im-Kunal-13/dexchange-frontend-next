@@ -18,15 +18,15 @@ const OrderBook = () => {
     return (
         <div className="relative bg-black py-[0.75em] px-[1.75em] m-[0.75em] col-span-full overflow-y-scroll shadow-black1">
             <div className="flex items-center justify-between">
-                <h2>Order Book</h2>
+                <h2 className="text-white">Order Book</h2>
             </div>
 
             <div className="flex items-center gap-5 max-h-[550px]">
                 {false ? (
-                    <p className="flex-center">No Sell Orders</p>
+                    <p className="flex-center text-white">No Sell Orders</p>
                 ) : (
                     <div className="flex flex-col my-10 h-full mb-auto">
-                        <span className="text-lg px-4">Selling</span>
+                        <span className="text-lg px-4 text-white">Selling</span>
                         <TableContainer
                             component={Paper}
                             className="rounded-lg overflow-scroll bg-black min-h-[250px] max-h-[500px]"
@@ -148,7 +148,7 @@ const OrderBook = () => {
                     <p className="flex-center">No Buy Orders</p>
                 ) : (
                     <div className="my-10 flex flex-col mb-auto">
-                        <span className="text-lg px-4">Buying</span>
+                        <span className="text-lg px-4 text-white">Buying</span>
                         <TableContainer
                             component={Paper}
                             className="rounded-lg overflow-scroll bg-black min-h-[250px] max-h-[500px]"

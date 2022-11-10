@@ -73,7 +73,7 @@ const Navbar = () => {
                         My Balance
                     </span>
                     {balance ? (
-                        <span className="text-lg">
+                        <span className="text-lg text-white">
                             {Number(balance).toFixed(4)}
                         </span>
                     ) : (

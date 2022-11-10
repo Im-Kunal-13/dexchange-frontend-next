@@ -203,7 +203,7 @@ const Balance = () => {
     return (
         <div className="col-span-full">
             <div className="flex items-center justify-between">
-                <h2>Balance</h2>
+                <h2 className="text-white">Balance</h2>
                 <div className="bg-bgGray1 rounded p-[0.2em]">
                     <button
                         onClick={() => {
@@ -236,7 +236,7 @@ const Balance = () => {
                 <div className="flex items-center justify-between py-[1.25rem]">
                     <div className="flex flex-col items-start gap-1">
                         <small>Token</small>
-                        <div className="flex items-center">
+                        <div className="flex items-center text-white">
                             <img
                                 src={logoMap.get(symbols[0])}
                                 alt="Token Logo"
@@ -245,14 +245,14 @@ const Balance = () => {
                             {symbols && symbols[0]}
                         </div>
                     </div>
-                    <p className="flex flex-col items-start gap-1">
+                    <p className="flex flex-col items-start gap-1 text-white">
                         <small>Deposited</small>
                         {exchangeBalances[0] &&
                             symbols[0] &&
                             Number(exchangeBalances[0].deposited).toFixed(4)}
                     </p>
 
-                    <p className="flex flex-col items-start gap-1 whitespace-nowrap">
+                    <p className="flex flex-col items-start gap-1 whitespace-nowrap text-white">
                         <small>Blocked</small>
                         <span className="whitespace-nowrap">
                             {exchangeBalances[0] &&
@@ -275,7 +275,7 @@ const Balance = () => {
                               }
                     }
                 >
-                    <label htmlFor="token0">
+                    <label htmlFor="token0" className="text-white">
                         {symbols && symbols[0]} Amount
                     </label>
                     <TextField
@@ -334,7 +334,7 @@ const Balance = () => {
                     <Button
                         variant="outlined"
                         type="submit"
-                        className="w-full normal-case font-bold py-3.5 mt-2 rounded flex items-center gap-1 hover:gap-2.5 transition-all duration-300 border-btnBlue1 hover:border-white hover:text-white"
+                        className="w-full normal-case font-bold py-3.5 mt-2 rounded flex items-center justify-center gap-1 hover:gap-2.5 transition-all duration-300 border-btnBlue1 hover:border-white hover:text-white"
                     >
                         {isDeposit ? (
                             <span>Deposit</span>
@@ -354,7 +354,7 @@ const Balance = () => {
                 <div className="flex items-center justify-between py-[1.25rem]">
                     <div className="flex flex-col items-start gap-1">
                         <small>Token</small>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 text-white">
                             <img
                                 src={logoMap.get(symbols[1])}
                                 alt="Token Logo"
@@ -362,14 +362,14 @@ const Balance = () => {
                             {symbols && symbols[1]}
                         </div>
                     </div>
-                    <p>
+                    <p className="text-white">
                         <small>Deposited</small>
                         <br />
                         {exchangeBalances[1] &&
                             symbols[0] &&
                             Number(exchangeBalances[1].deposited).toFixed(4)}
                     </p>
-                    <p>
+                    <p className="text-white">
                         <small>blocked</small>
                         <br />
                         {exchangeBalances[1] &&
@@ -391,7 +391,7 @@ const Balance = () => {
                               }
                     }
                 >
-                    <label htmlFor="token1">
+                    <label htmlFor="token1" className="text-white">
                         {symbols && symbols[1]} Amount
                     </label>
                     <TextField

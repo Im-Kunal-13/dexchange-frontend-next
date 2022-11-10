@@ -139,7 +139,7 @@ const Order = () => {
     return (
         <div className="col-span-full flex flex-col gap-5">
             <div className="flex items-center justify-between">
-                <h2>Order Type</h2>
+                <h2 className="text-white">Order Type</h2>
                 <div className="bg-bgGray1 rounded p-[0.2em]">
                     <button
                         onClick={() => {
@@ -167,7 +167,7 @@ const Order = () => {
             </div>
 
             <div className="flex items-center justify-between">
-                <h2>Order Side</h2>
+                <h2 className="text-white">Order Side</h2>
                 <div className="bg-bgGray1 rounded p-[0.2em]">
                     <button
                         onClick={() => {
@@ -196,9 +196,13 @@ const Order = () => {
 
             <form>
                 {isBuy ? (
-                    <label htmlFor="amount">Buy Amount</label>
+                    <label htmlFor="amount" className="text-white">
+                        Buy Amount
+                    </label>
                 ) : (
-                    <label htmlFor="amount">Sell Amount</label>
+                    <label htmlFor="amount" className="text-white">
+                        Sell Amount
+                    </label>
                 )}
                 <TextField
                     id="amount"
@@ -249,20 +253,20 @@ const Order = () => {
                         htmlFor="price"
                         className={`${
                             isMarket &&
-                            "text-opacity-30 text-white transition-all duration-500"
+                            "text-opacity-30 transition-all duration-500"
                         }  transition-all duration-500`}
                     >
-                        Buy Price
+                        <span className="text-white">Buy Price</span>
                     </label>
                 ) : (
                     <label
                         htmlFor="price"
                         className={`${
                             isMarket &&
-                            "text-opacity-30 text-white transition-all duration-500"
+                            "text-opacity-30  transition-all duration-500"
                         }  transition-all duration-500`}
                     >
-                        Sell Price
+                        <span className="text-white">Sell Price</span>
                     </label>
                 )}
 

@@ -15,7 +15,7 @@ const Markets = () => {
     return (
         <div className="relative col-span-full">
             <div className="mb-[0.75em]">
-                <h2 className="font-semibold">Select Market</h2>
+                <h2 className="font-semibold text-white">Select Market</h2>
             </div>
 
             <Select
