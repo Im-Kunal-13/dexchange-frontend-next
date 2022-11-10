@@ -6,17 +6,13 @@ const nextConfig = {
 
 module.exports = nextConfig
 
-// module.exports = () => {
-//   const rewrites = () => {
-//     return [
-//       {
-//         source: '/api/:path*',
-//         destination: 'https://mail.google.com/api/:path*' // Proxy to Backend
-//       }
-//     ]
-//   }
-
-//   return {
-//     rewrites
-//   }
-// }
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://seashell-app-5u4ct.ondigitalocean.app/api/:path*' // Proxy to Backend
+      }
+    ]
+  }
+}

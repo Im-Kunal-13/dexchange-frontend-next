@@ -19,9 +19,7 @@ export interface IExchange {
         loaded: boolean
         data: IOrder[]
     }
-    events: any[]
     balances: { deposited: string; blocked: string }[]
-    transferInProgress: boolean
     depositState: {
         loading: boolean
         failed: boolean

@@ -43,7 +43,7 @@ const AlertError = () => {
                 classes={{ icon: "relative bottom-0.5" }}
             >
                 <div className="h-full w-1 absolute bg-alertRed left-0 top-0" />
-                <span className="mr-3">Token must be greater than zero !</span>
+                <span className="mr-3">{snackbarError.message}</span>
                 <CloseIcon
                     className="relative bottom-0.5 hover:bg-alertTextRed hover:text-alertBgRed rounded-full transition-all duration-300 cursor-pointer"
                     onClick={() => {

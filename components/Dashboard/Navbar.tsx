@@ -11,6 +11,7 @@ const Navbar = () => {
 
     const connectHandler = async () => {
         await loadAccount(connection, dispatch)
+        localStorage.setItem("isWalletConnected", "true")
     }
 
     // Metamask method for handling chain change
@@ -62,7 +63,6 @@ const Navbar = () => {
                         </MenuItem>
                         <MenuItem value="0x5">Goerli</MenuItem>
                         <MenuItem value="0x13881">Polygon Mumbai</MenuItem>
-                        <MenuItem value="0x2a">Kovan</MenuItem>
                     </Select>
                 )}
             </div>

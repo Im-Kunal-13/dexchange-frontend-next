@@ -247,80 +247,71 @@ const Transactions = () => {
                                         (order.status === "filled" ||
                                             order.status ===
                                                 "partially-filled") &&
-                                        order.market ===
-                                            `${symbols[0]}-${symbols[1]}`
+                                        order.market === symbols.join("-")
                                     )
                                 })
-                                .map((order) => {
-                                    return order.fills.map((fill, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                                className={`text-white border-none  h-5 py-0 my-0 whitespace-nowrap ${
-                                                    index === 0
-                                                        ? "pt-2.5"
-                                                        : "pt-0"
-                                                }`}
-                                                align="center"
-                                            >
-                                                {formatTimestamp(
-                                                    fill.updatedAt
-                                                )}
-                                            </TableCell>
-                                            <TableCell
-                                                align="right"
-                                                className={`${
-                                                    order.side === "buy"
-                                                        ? "text-textGreen1"
-                                                        : "text-inputErrorRed"
-                                                }  border-none text-center text-white h-5 py-0 my-0 ${
-                                                    index === 0
-                                                        ? "pt-2.5"
-                                                        : "pt-0"
-                                                }`}
-                                            >
-                                                <span className="ml-7 w-fit">
-                                                    {order.side === "sell"
-                                                        ? "-"
-                                                        : "+"}{" "}
-                                                    {ethers.utils.formatUnits(
-                                                        fill.filledQuantity,
-                                                        pair[symbols.join("-")]
-                                                            .baseAssetPrecision !==
-                                                            0
-                                                            ? pair[
-                                                                  symbols.join(
-                                                                      "-"
-                                                                  )
-                                                              ]
-                                                                  .baseAssetPrecision
-                                                            : 0
-                                                    )}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell
-                                                align="center"
-                                                className={`text-white border-none h-5 py-0 my-0 ${
-                                                    index === 0
-                                                        ? "pt-2.5"
-                                                        : "pt-0"
-                                                }`}
-                                            >
+                                .map((order, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell
+                                            component="th"
+                                            scope="row"
+                                            className={`text-white border-none  h-5 py-0 my-0 whitespace-nowrap ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
+                                            align="center"
+                                        >
+                                            {formatTimestamp(order.updatedAt)}
+                                        </TableCell>
+                                        <TableCell
+                                            align="right"
+                                            className={`${
+                                                order.side === "buy"
+                                                    ? "text-textGreen1"
+                                                    : "text-inputErrorRed"
+                                            }  border-none text-center text-white h-5 py-0 my-0 ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
+                                        >
+                                            <span className="ml-7 w-fit">
+                                                {order.side === "sell"
+                                                    ? "-"
+                                                    : "+"}{" "}
                                                 {ethers.utils.formatUnits(
-                                                    fill.price,
+                                                    (
+                                                        Number(
+                                                            order.originalQuantity
+                                                        ) -
+                                                        Number(
+                                                            order.remainingQuantity
+                                                        )
+                                                    ).toString(),
                                                     pair[symbols.join("-")]
-                                                        .quoteAssetPrecision !==
+                                                        .baseAssetPrecision !==
                                                         0
                                                         ? pair[
                                                               symbols.join("-")
-                                                          ].quoteAssetPrecision
+                                                          ].baseAssetPrecision
                                                         : 0
                                                 )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                })}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            className={`text-white border-none h-5 py-0 my-0 ${
+                                                index === 0 ? "pt-2.5" : "pt-0"
+                                            }`}
+                                        >
+                                            {ethers.utils.formatUnits(
+                                                order.price,
+                                                pair[symbols.join("-")]
+                                                    .quoteAssetPrecision !== 0
+                                                    ? pair[symbols.join("-")]
+                                                          .quoteAssetPrecision
+                                                    : 0
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                         </TableBody>
                     </Table>
                 </TableContainer>

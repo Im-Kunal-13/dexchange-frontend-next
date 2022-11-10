@@ -31,9 +31,10 @@ const DEFAULT_EXCHANGE_STATE: IExchange = {
         loaded: false,
         data: [],
     },
-    events: [],
-    balances: [],
-    transferInProgress: false,
+    balances: [
+        { deposited: "0", blocked: "0" },
+        { deposited: "0", blocked: "0" },
+    ],
     depositState: {
         loading: false,
         failed: false,
@@ -112,6 +113,7 @@ export const tokens = createReducer(DEFAULT_TOKENS_STATE, (builder) => {
 
 export const exchange = createReducer(DEFAULT_EXCHANGE_STATE, (builder) => {
     builder
+        // CONTRACT
         .addCase(actions.load_exchange, (state, action) => {
             state.loaded = true
             state.contract = action.payload
@@ -126,26 +128,6 @@ export const exchange = createReducer(DEFAULT_EXCHANGE_STATE, (builder) => {
         })
 
         // TRANSFER CASES (DEPOSIT & WITHDRAWS)
-        .addCase(actions.request_transfer, (state) => {
-            state.transaction.transactionType = "Transfer"
-            state.transaction.isPending = true
-            state.transaction.isSuccessful = false
-            state.transferInProgress = true
-        })
-        .addCase(actions.success_transfer, (state, action) => {
-            state.transaction.transactionType = "Transfer"
-            state.transaction.isPending = false
-            state.transaction.isSuccessful = true
-            state.transferInProgress = false
-            state.events.push(action.payload)
-        })
-        .addCase(actions.failed_transfer, (state) => {
-            state.transaction.transactionType = "Transfer"
-            state.transaction.isPending = false
-            state.transaction.isSuccessful = false
-            state.transaction.isError = true
-            state.transferInProgress = false
-        })
         .addCase(actions.deposit_loading, (state) => {
             state.depositState.loading = true
             state.depositState.success = false
@@ -180,14 +162,6 @@ export const exchange = createReducer(DEFAULT_EXCHANGE_STATE, (builder) => {
 
 export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
     builder
-        .addCase(actions.insert_sell_order, (state, action) => {
-            state.sellOrders.push(action.payload)
-            state.myOrders.push(action.payload)
-        })
-        .addCase(actions.insert_buy_order, (state, action) => {
-            state.buyOrders.push(action.payload)
-            state.myOrders.push(action.payload)
-        })
         .addCase(actions.load_buy_orders, (state, action) => {
             state.buyOrders = action.payload
         })
@@ -216,67 +190,8 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
 
             state.cancelledOrders.push(action.payload)
         })
-        .addCase(actions.update_sell_order, (state, action) => {
-            let foundIndex = state.sellOrders.findIndex(
-                (sellOrder) => sellOrder._id === action.payload.orderId
-            )
 
-            if (foundIndex !== -1) {
-                state.sellOrders[foundIndex] = {
-                    ...state.sellOrders[foundIndex],
-                    updatedAt: action.payload.updatedAt,
-                    remainingQuantity: (
-                        Number(state.sellOrders[foundIndex].remainingQuantity) -
-                        Number(action.payload.filledQuantity)
-                    ).toString(),
-                    status:
-                        state.sellOrders[foundIndex].originalQuantity ===
-                        action.payload.filledQuantity
-                            ? "filled"
-                            : "partially-filled",
-                }
-            }
-        })
-        .addCase(actions.update_buy_order, (state, action) => {
-            console.log("Updating buy order...")
-            let foundIndex = state.buyOrders.findIndex(
-                (buyOrder) => buyOrder._id === action.payload.orderId
-            )
-
-            if (foundIndex !== -1) {
-                state.buyOrders[foundIndex] = {
-                    ...state.buyOrders[foundIndex],
-                    updatedAt: action.payload.updatedAt,
-                    remainingQuantity: (
-                        Number(state.buyOrders[foundIndex].remainingQuantity) -
-                        Number(action.payload.filledQuantity)
-                    ).toString(),
-                    status:
-                        state.buyOrders[foundIndex].remainingQuantity ===
-                        action.payload.filledQuantity
-                            ? "filled"
-                            : "partially-filled",
-                }
-            }
-        })
-
-        // .addCase(actions._order, (state, action) => {
-        //     state.myOrders = state.myOrders.filter(
-        //         (order) => order._id !== action.payload._id
-        //     )
-        //     if (action.payload.side === "sell") {
-        //         state.sellOrders = state.sellOrders.filter(
-        //             (order) => order._id !== action.payload._id
-        //         )
-        //     } else {
-        //         state.buyOrders = state.buyOrders.filter(
-        //             (order) => order._id !== action.payload._id
-        //         )
-        //     }
-
-        //     state.cancelledOrders.push(action.payload)
-        // })
-
+        // INSERT ORDER STATES
         .addCase(actions.insert_order_status, (state, action) => {
             state.insertOrderState.status = action.payload
         })
@@ -304,25 +219,5 @@ export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {
         })
         .addCase(actions.load_my_trades, (state, action) => {
             state.myTrades = action.payload
-        })
-        .addCase(actions.insert_my_trade, (state, action) => {
-            state.myTrades.push(action.payload)
-        })
-        .addCase(actions.insert_trade, (state, action) => {
-            state.allTrades.push(action.payload)
-        })
-        .addCase(actions.update_trade, (state, action) => {
-            action.payload.fills.forEach((fill) => {
-                let foundIndex = state.allTrades.findIndex(
-                    (trade) => trade._id === fill.orderId
-                )
-                if (foundIndex !== -1) {
-                    state.allTrades[foundIndex].fills.push(
-                        action.payload.fills[0]
-                    )
-                } else {
-                    //todo -> fetch and push the order here
-                }
-            })
         })
 })

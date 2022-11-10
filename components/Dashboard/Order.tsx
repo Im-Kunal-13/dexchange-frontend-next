@@ -6,8 +6,10 @@ import { Button, FormHelperText, TextField } from "@mui/material"
 import { useAppStateContext } from "../../context/contextProvider"
 
 const Order = () => {
-    // @ts-ignore
-    const {setSnackbarWarning, setSnackbarSuccess, setSnackbarLoading, setSnackbarError} = useAppStateContext()
+    const {
+        // @ts-ignore
+        setSnackbarWarning,
+    } = useAppStateContext()
 
     const [isMarket, setIsMarket] = useState(false)
     const [isBuy, setIsBuy] = useState(true)
@@ -17,7 +19,8 @@ const Order = () => {
     const { connection, account, chainId } = useAppSelector(
         (state) => state.provider
     )
-    const { symbols, balances, pair } = useAppSelector((state) => state.tokens)
+    const { symbols, pair } = useAppSelector((state) => state.tokens)
+    const { balances } = useAppSelector((state) => state.exchange)
 
     const dispatch = useAppDispatch()
 
@@ -29,11 +32,11 @@ const Order = () => {
 
     const buyHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault()
-        if (
-            (isMarket && Number(amount) > 0) ||
-            (Number(amount) > 0 && Number(price) > 0)
-        ) {
-            if (Number(price) <= Number(balances[1])) {
+        if (Number(amount) > 0 && (isMarket || Number(price) > 0)) {
+            if (
+                Number(price) <=
+                Number(balances[1].deposited) - Number(balances[1].blocked)
+            ) {
                 insertOrder(
                     account,
                     `${symbols[0]}-${symbols[1]}`,
@@ -42,12 +45,12 @@ const Order = () => {
                     amount,
                     !isMarket ? price : "0",
                     chainId,
-                    [pair[symbols.join("-")].baseAssetPrecision, pair[symbols.join("-")].quoteAssetPrecision],
+                    [
+                        pair[symbols.join("-")].baseAssetPrecision,
+                        pair[symbols.join("-")].quoteAssetPrecision,
+                    ],
                     connection,
-                    dispatch,
-                    setSnackbarSuccess,
-                    setSnackbarLoading,
-                    setSnackbarError
+                    dispatch
                 )
                 setAmount("0")
                 setPrice("0")
@@ -73,7 +76,10 @@ const Order = () => {
             (isMarket && Number(amount) > 0) ||
             (Number(amount) > 0 && Number(price) > 0)
         ) {
-            if (Number(amount) <= Number(balances[0])) {
+            if (
+                Number(amount) <=
+                Number(balances[0].deposited) - Number(balances[1].blocked)
+            ) {
                 insertOrder(
                     account,
                     `${symbols[0]}-${symbols[1]}`,
@@ -82,12 +88,12 @@ const Order = () => {
                     amount,
                     !isMarket ? price : "0",
                     chainId,
-                    [pair[symbols.join("-")].baseAssetPrecision, pair[symbols.join("-")].quoteAssetPrecision],
+                    [
+                        pair[symbols.join("-")].baseAssetPrecision,
+                        pair[symbols.join("-")].quoteAssetPrecision,
+                    ],
                     connection,
-                    dispatch,
-                    setSnackbarSuccess,
-                    setSnackbarLoading,
-                    setSnackbarError
+                    dispatch
                 )
                 setAmount("0")
                 setPrice("0")
@@ -114,7 +120,9 @@ const Order = () => {
             const arr = value.split(".")
             if (
                 arr[1].length <=
-                pair[symbols.join("-")][baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"]
+                pair[symbols.join("-")][
+                    baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+                ]
             ) {
                 setValue(value)
             }
@@ -215,14 +223,20 @@ const Order = () => {
                         root: "bg-bgGray1 w-full",
                     }}
                     style={
-                        Number(amount) > Number(balances[0])
+                        !isBuy &&
+                        Number(amount) >
+                            Number(balances[0].deposited) -
+                                Number(balances[0].blocked)
                             ? { border: "1px solid #DD3D32" }
                             : { border: "1px solid transparent" }
                     }
                 />
                 <FormHelperText
                     className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
-                        Number(amount) > Number(balances[0])
+                        !isBuy &&
+                        Number(amount) >
+                            Number(balances[0].deposited) -
+                                Number(balances[0].blocked)
                             ? "opacity-100"
                             : "opacity-0"
                     }`}
@@ -255,7 +269,7 @@ const Order = () => {
                 <TextField
                     id="price"
                     placeholder={isMarket ? "Disabled" : "0.0000"}
-                    value={price}
+                    value={isMarket ? "" : price}
                     type="number"
                     onChange={(e) => {
                         if (!isMarket) {
@@ -272,14 +286,17 @@ const Order = () => {
                         step: "any",
                     }}
                     autoComplete="off"
-                    className="my-2.5 rounded py-2 px-4 transition-all duration-300"
+                    className="my-2.5 rounded py-2 px-4 transition-all duration-300 text-black"
                     classes={{
                         root: `${
                             isMarket && "bg-opacity-40"
                         } bg-bgGray1 w-full disabled:bg-white`,
                     }}
                     style={
-                        Number(price) > Number(balances[1])
+                        isBuy &&
+                        Number(price) >
+                            Number(balances[1].deposited) -
+                                Number(balances[1].blocked)
                             ? { border: "1px solid #DD3D32" }
                             : { border: "1px solid transparent" }
                     }
@@ -287,7 +304,10 @@ const Order = () => {
 
                 <FormHelperText
                     className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
-                        Number(price) > Number(balances[1])
+                        isBuy &&
+                        Number(price) >
+                            Number(balances[1].deposited) -
+                                Number(balances[1].blocked)
                             ? "opacity-100"
                             : "opacity-0"
                     }`}

@@ -1,9 +1,7 @@
-import React from "react"
-import DemoChart from "../components/Dashboard/DemoChart"
-import PriceChart from "../components/Dashboard/PriceChart"
+import ApexCandleStickChart from "../components/Dashboard/ApexCandleStickChart"
 
 const chart = () => {
-    return <DemoChart />
+    return <ApexCandleStickChart />
 }
 
 export default chart

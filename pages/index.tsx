@@ -10,6 +10,9 @@ import {
     getBuyOrders,
     getSellOrders,
     loadTrades,
+    loadTokenBalances,
+    loadExchangeBalances,
+    getMyOrders,
 } from "../api/interactions"
 
 import type { NextPage } from "next"
@@ -30,12 +33,14 @@ import AlertLoading from "../components/Alerts/AlertLoading"
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
-    const { symbols, contracts } = useAppSelector((state) => state.tokens)
-    const { depositState, withdrawState } = useAppSelector(
+    const { contracts, pair, symbols } = useAppSelector((state) => state.tokens)
+    const { depositState, withdrawState, contract } = useAppSelector(
         (state) => state.exchange
     )
     const { insertOrderState } = useAppSelector((state) => state.order)
-    const { account } = useAppSelector((state) => state.provider)
+    const { account, chainId, connection } = useAppSelector(
+        (state) => state.provider
+    )
 
     const {
         // @ts-ignore
@@ -47,12 +52,6 @@ const Home: NextPage = () => {
     } = useAppStateContext()
 
     const loadBlockchainData = async () => {
-        // Connect to web3 API
-        const provider: any = loadProvider(dispatch)
-
-        // Fetch current network chain id
-        const chainId = await loadNetwork(provider, dispatch)
-
         if (typeof window !== "undefined") {
             // Reload page on network change
             window.ethereum.on("chainChanged", () => {
@@ -61,35 +60,41 @@ const Home: NextPage = () => {
 
             // Fetch current account and balance from metamask when changed
             window.ethereum.on("accountsChanged", () => {
-                loadAccount(provider, dispatch)
+                loadAccount(connection, dispatch)
             })
         }
 
         // Token Smart Contracts
-        let BTC, USDC
+        let token_1_address, token_2_address
 
         if (contracts.length > 0) {
-            BTC = contracts[0].address
-            USDC = contracts[1].address
+            token_1_address = contracts[0].address
+            token_2_address = contracts[1].address
         } else {
-            BTC = "0x8c769d033934009fF7dB8A2976d3BdabFa3Dd833"
-            USDC = "0x89126812d7aa022f817465B7197dE668330712E8"
+            token_1_address = pair["BTC-USDC"].baseAssetAddress
+            token_2_address = pair["BTC-USDC"].quoteAssetAddress
         }
 
-        await loadTokens(provider, [BTC, USDC], dispatch)
+        await loadTokens(
+            connection,
+            [token_1_address, token_2_address],
+            dispatch
+        )
 
         // Exchange Smart contract
-        const exchangeConfig = "0xEaa99f33BCB372F6Bb49eE91d7e47212444da374"
+        const dexchangeAddress = "0xEaa99f33BCB372F6Bb49eE91d7e47212444da374"
         await loadExchange(
-            provider,
-            exchangeConfig ? exchangeConfig : "",
+            connection,
+            dexchangeAddress ? dexchangeAddress : "",
             dispatch
         )
     }
 
     useEffect(() => {
-        loadBlockchainData()
-    }, [])
+        if (pair && connection && chainId) {
+            loadBlockchainData()
+        }
+    }, [pair, connection, chainId])
 
     useEffect(() => {
         if (depositState.success || withdrawState.success) {
@@ -119,26 +124,84 @@ const Home: NextPage = () => {
             })
             setSnackbarError({
                 open: true,
-                message: "Token deposit unsuccessful",
+                message: "Token deposit unsuccessful !",
             })
         }
     }, [depositState.success, depositState.loading, depositState.failed])
 
     useEffect(() => {
+        if (withdrawState.loading) {
+            setSnackbarLoading({
+                open: true,
+                message: "Withdrawing tokens...",
+            })
+        } else if (withdrawState.success) {
+            setSnackbarLoading({
+                open: false,
+                message: "Withdrawing tokens...",
+            })
+            setSnackbarSuccess({
+                open: true,
+                message: "Tokens withdrawn successfully !",
+            })
+        } else if (withdrawState.failed) {
+            setSnackbarLoading({
+                open: false,
+                message: "Withdrawing tokens...",
+            })
+            setSnackbarError({
+                open: true,
+                message: "Token withdraw unsuccessful !",
+            })
+        }
+    }, [withdrawState.success, withdrawState.loading, withdrawState.failed])
+
+    useEffect(() => {
         if (insertOrderState.loading) {
             setSnackbarLoading({
                 open: true,
-                message: "Placing your order...",
+                message: "Order in progress...",
             })
         } else if (insertOrderState.success) {
             getBuyOrders(dispatch)
             getSellOrders(dispatch)
+            getMyOrders(account, dispatch)
             loadTrades(dispatch)
             loadTrades(dispatch, account)
 
+            if (
+                contract &&
+                contracts[0] &&
+                contracts[1] &&
+                account &&
+                symbols[0] &&
+                symbols[1] &&
+                pair
+            ) {
+                loadTokenBalances(
+                    contracts,
+                    account,
+                    pair && [
+                        pair[symbols.join("-")].baseAssetPrecision,
+                        pair[symbols.join("-")].quoteAssetPrecision,
+                    ],
+                    dispatch
+                )
+                loadExchangeBalances(
+                    [
+                        pair[symbols.join("-")].baseAssetPrecision,
+                        pair[symbols.join("-")].quoteAssetPrecision,
+                    ],
+                    contracts,
+                    account,
+                    chainId,
+                    dispatch
+                )
+            }
+
             setSnackbarLoading({
                 open: false,
-                message: "Placing your order...",
+                message: "Order in progress...",
             })
             setSnackbarSuccess({
                 open: true,
@@ -147,7 +210,7 @@ const Home: NextPage = () => {
         } else if (insertOrderState.error) {
             setSnackbarLoading({
                 open: false,
-                message: "Placing your order...",
+                message: "Order in progress...",
             })
             setSnackbarError({
                 open: true,
@@ -161,14 +224,85 @@ const Home: NextPage = () => {
     ])
 
     useEffect(() => {
-        if (symbols.length) {
-            loadTokenPair(dispatch)
+        if (chainId) {
+            loadTokenPair(chainId, dispatch)
         }
-    }, [symbols])
+    }, [chainId])
+
+    useEffect(() => {
+        if (
+            contract &&
+            contracts[0] &&
+            contracts[1] &&
+            account &&
+            symbols[0] &&
+            symbols[1] &&
+            pair
+        ) {
+            loadTokenBalances(
+                contracts,
+                account,
+                pair && [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
+                dispatch
+            )
+            loadExchangeBalances(
+                [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
+                contracts,
+                account,
+                chainId,
+                dispatch
+            )
+        }
+    }, [contract, contracts, account, dispatch, symbols, pair])
+
+    useEffect(() => {
+        if (
+            contracts[0] &&
+            contracts[1] &&
+            account &&
+            pair &&
+            chainId &&
+            (withdrawState.success || depositState.success)
+        ) {
+            loadTokenBalances(
+                contracts,
+                account,
+                pair && [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
+                dispatch
+            )
+            loadExchangeBalances(
+                [
+                    pair[symbols.join("-")].baseAssetPrecision,
+                    pair[symbols.join("-")].quoteAssetPrecision,
+                ],
+                contracts,
+                account,
+                chainId,
+                dispatch
+            )
+        }
+    }, [withdrawState.success, depositState.success])
 
     useEffect(() => {
         getBuyOrders(dispatch)
         getSellOrders(dispatch)
+        loadTrades(dispatch)
+
+        const provider: any = loadProvider(dispatch)
+        loadNetwork(provider, dispatch)
+
+        if (localStorage?.getItem("isWalletConnected") === "true") {
+            loadAccount(provider, dispatch)
+        }
     }, [])
 
     return (

@@ -33,12 +33,7 @@ const Balance = () => {
 
     const exchange = useAppSelector((state) => state.exchange.contract)
     const exchangeBalances = useAppSelector((state) => state.exchange.balances)
-    const { withdrawState, depositState } = useAppSelector(
-        (state) => state.exchange
-    )
-    const transferInProgress = useAppSelector(
-        (state) => state.exchange.transferInProgress
-    )
+
     const depositRef = useRef(null)
     const withdrawRef = useRef(null)
 
@@ -189,7 +184,9 @@ const Balance = () => {
 
             if (
                 arr[1].length <=
-                pair[baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"]
+                pair[symbols.join("-")][
+                    baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+                ]
             ) {
                 setValue(value)
             }
@@ -197,52 +194,6 @@ const Balance = () => {
             setValue(value)
         }
     }
-
-    useEffect(() => {
-        if (
-            exchange &&
-            contracts[0] &&
-            contracts[1] &&
-            account &&
-            symbols[0] &&
-            symbols[1] &&
-            pair
-        ) {
-            loadTokenBalances(
-                contracts,
-                account,
-
-                pair && [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
-            loadExchangeBalances(contracts, account, chainId, dispatch)
-        }
-    }, [exchange, contracts, account, dispatch, symbols, pair])
-
-    useEffect(() => {
-        if (
-            contracts[0] &&
-            contracts[1] &&
-            account &&
-            pair &&
-            chainId &&
-            (withdrawState.success || depositState.success)
-        ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
-            loadExchangeBalances(contracts, account, chainId, dispatch)
-        }
-    }, [withdrawState.success, depositState.success])
 
     useEffect(() => {
         setToken1TransferAmount("")
@@ -297,29 +248,16 @@ const Balance = () => {
                     <p className="flex flex-col items-start gap-1">
                         <small>Deposited</small>
                         {exchangeBalances[0] &&
-                            Number(
-                                ethers.utils.formatUnits(
-                                    exchangeBalances[0].deposited,
-                                    pair[symbols.join("-")]
-                                        .baseAssetPrecision !== 0
-                                        ? pair[symbols.join("-")]
-                                              .baseAssetPrecision
-                                        : 0
-                                )
-                            ).toFixed(4)}
+                            symbols[0] &&
+                            Number(exchangeBalances[0].deposited).toFixed(4)}
                     </p>
 
                     <p className="flex flex-col items-start gap-1 whitespace-nowrap">
                         <small>Blocked</small>
                         <span className="whitespace-nowrap">
                             {exchangeBalances[0] &&
-                                Number(
-                                    ethers.utils.formatUnits(
-                                        exchangeBalances[0].blocked,
-                                        pair[symbols.join("-")]
-                                            .baseAssetPrecision
-                                    )
-                                ).toFixed(4)}
+                                symbols[0] &&
+                                Number(exchangeBalances[0].blocked).toFixed(4)}
                         </span>
                     </p>
                 </div>
@@ -428,23 +366,15 @@ const Balance = () => {
                         <small>Deposited</small>
                         <br />
                         {exchangeBalances[1] &&
-                            Number(
-                                ethers.utils.formatUnits(
-                                    exchangeBalances[1].deposited,
-                                    pair[symbols.join("-")].quoteAssetPrecision
-                                )
-                            ).toFixed(4)}
+                            symbols[0] &&
+                            Number(exchangeBalances[1].deposited).toFixed(4)}
                     </p>
                     <p>
                         <small>blocked</small>
                         <br />
                         {exchangeBalances[1] &&
-                            Number(
-                                ethers.utils.formatUnits(
-                                    exchangeBalances[1].blocked,
-                                    pair[symbols.join("-")].quoteAssetPrecision
-                                )
-                            ).toFixed(4)}
+                            symbols[0] &&
+                            Number(exchangeBalances[1].blocked).toFixed(4)}
                     </p>
                 </div>
 
