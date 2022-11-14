@@ -89,7 +89,7 @@ const Home: NextPage = () => {
         )
 
         // Exchange Smart contract
-        const dexchangeAddress = "0xEaa99f33BCB372F6Bb49eE91d7e47212444da374"
+        const dexchangeAddress = pair.dexchange
         await loadExchange(
             connection,
             dexchangeAddress ? dexchangeAddress : "",
@@ -312,6 +312,7 @@ const Home: NextPage = () => {
         }
     }, [])
 
+    // Listening to Socket.io events
     useEffect(() => {
         socket.on("new_order_inserted", (data: IGetOrder) => {
             getBuyOrders(dispatch)
