@@ -30,6 +30,13 @@ import AlertSuccess from "../components/Alerts/AlertSuccess"
 import AlertError from "../components/Alerts/AlertError"
 import { useAppStateContext } from "../context/contextProvider"
 import AlertLoading from "../components/Alerts/AlertLoading"
+import io from "socket.io-client"
+import { IGetOrder } from "../types"
+
+// Getting the socket from the io object we imported.
+
+// @ts-ignore
+const socket = io.connect("http://localhost:5001")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
@@ -304,6 +311,18 @@ const Home: NextPage = () => {
             loadAccount(provider, dispatch)
         }
     }, [])
+
+    useEffect(() => {
+        socket.on("new_order_inserted", (data: IGetOrder) => {
+            getBuyOrders(dispatch)
+            getSellOrders(dispatch)
+            getMyOrders(account, dispatch)
+        })
+
+        return () => {
+            socket.off("new_order_inserted")
+        }
+    }, [socket])
 
     return (
         <div className="bg-bgGray1">

@@ -82,7 +82,7 @@ module.exports = {
         alertTextRed: "#CFA8A8",
         alertBlue: "#26A5DF",
         alertBgBlue: "#071318",
-        alertTextBlue: "#9BC4D6"
+        alertTextBlue: "#9BC4D6",
       }),
       boxShadow: {
         black1: "0 0 10px 1px black",
