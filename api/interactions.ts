@@ -63,7 +63,7 @@ export const loadTokens = async (
 
 export const loadTokenPair = async (chainId: number, dispatch: AppDispatch) => {
     try {
-        const res = await axios.get(`http://localhost:5001/api/pairs/${chainId}`)
+        const res = await axios.get(`/api/pairs/${chainId}`)
         dispatch(actions.load_token_pair(res.data.pairs))
     } catch (error) {
         console.log(error)
@@ -134,7 +134,7 @@ export const deposit = async (
         }
 
         dispatch(actions.deposit_loading())
-        const res = await axios.post("http://localhost:5001/api/deposit", reqBody)
+        const res = await axios.post("/api/deposit", reqBody)
 
         dispatch(actions.deposit_success())
 
@@ -189,7 +189,7 @@ export const withdraw = async (
 
         dispatch(actions.withdraw_loading())
 
-        const res = await axios.post("http://localhost:5001/api/withdraw", reqBody)
+        const res = await axios.post("/api/withdraw", reqBody)
 
         dispatch(actions.withdraw_success())
     } catch (error) {
@@ -227,7 +227,7 @@ export const loadExchangeBalances = async (
 ) => {
     try {
         const res = await axios.get(
-            `http://localhost:5001/api/balances/${chainId}/${account}`
+            `/api/balances/${chainId}/${account}`
         )
 
         dispatch(
@@ -318,7 +318,7 @@ export const insertOrder = async (
 
         dispatch(actions.insert_order_loading())
 
-        const res = await axios.post("http://localhost:5001/api/orders", order)
+        const res = await axios.post("/api/orders", order)
 
         console.log(res.data)
 
@@ -332,7 +332,7 @@ export const insertOrder = async (
 export const getBuyOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders/buy?type=limit",
+            "/api/orders/buy?type=limit",
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -348,7 +348,7 @@ export const getBuyOrders = async (dispatch: AppDispatch) => {
 export const getSellOrders = async (dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "http://localhost:5001/api/orders/sell?type=limit",
+            "/api/orders/sell?type=limit",
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -364,7 +364,7 @@ export const getSellOrders = async (dispatch: AppDispatch) => {
 export const getMyOrders = async (wallet: string, dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            `http://localhost:5001/api/orders/user/${wallet}?type=limit`,
+            `/api/orders/user/${wallet}?type=limit`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -382,7 +382,7 @@ export const getCancelledOrders = async (
     dispatch: AppDispatch
 ) => {
     try {
-        const res = await axios.get(`http://localhost:5001/api/cancelled/${wallet}`)
+        const res = await axios.get(`/api/cancelled/${wallet}`)
         dispatch(actions.load_cancelled_orders(res.data))
     } catch (error) {
         console.log(error)
@@ -401,7 +401,7 @@ export const cancelOrder = async (
 ) => {
     try {
         console.log(order._id)
-        await axios.post(`http://localhost:5001/api/cancelled/${order._id.toString()}`)
+        await axios.post(`/api/cancelled/${order._id.toString()}`)
 
         dispatch(actions.cancel_order(order))
 
@@ -421,7 +421,7 @@ export const loadTrades = async (
     wallet: string = ""
 ) => {
     try {
-        const res = await axios.get(`http://localhost:5001/api/trades/${wallet}`)
+        const res = await axios.get(`/api/trades/${wallet}`)
 
         if (wallet) {
             dispatch(actions.load_my_trades(res.data))
