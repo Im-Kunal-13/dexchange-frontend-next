@@ -43,13 +43,17 @@ export const actions = {
     load_cancelled_orders: createAction<IGetOrder[]>(
         "order/cancelled_orders_loaded"
     ),
-    cancel_order: createAction<IGetOrder>("order/order_cancelled"),
-    insert_order_status: createAction<string>("trade/insert_order_status"),
-    insert_order_loading: createAction("trade/insert_order_loading"),
-    insert_order_success: createAction("trade/insert_order_success"),
-    insert_order_error: createAction("trade/insert_order_error"),
+    insert_order_status: createAction<string>("order/insert_order_status"),
+    insert_order_loading: createAction("order/insert_order_loading"),
+    insert_order_success: createAction("order/insert_order_success"),
+    insert_order_error: createAction("order/insert_order_error"),
 
+    // order socket events
+    new_order_inserted: createAction<{order: IGetOrder, account: string}>("order/new_order_inserted_event"),
+    order_cancelled: createAction<{order: IGetOrder, account: string}>("order/order_cancelled_event"),
+    order_filled: createAction<{order: IGetOrder, account: string}>("order/order_filled_event"),
     // trade
     load_trades: createAction<IGetOrder[]>("trade/trades_loaded"),
     load_my_trades: createAction<IGetOrder[]>("trade/my_trades_loaded"),
+    insert_trade: createAction<{order: IGetOrder, account: string}>("trade/insert_trade"),
 }

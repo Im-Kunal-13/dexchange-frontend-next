@@ -32,6 +32,7 @@ import { useAppStateContext } from "../context/contextProvider"
 import AlertLoading from "../components/Alerts/AlertLoading"
 import io from "socket.io-client"
 import { IGetOrder } from "../types"
+import { actions } from "../features/reducerActions"
 
 // Getting the socket from the io object we imported.
 
@@ -170,9 +171,6 @@ const Home: NextPage = () => {
                 message: "Order in progress...",
             })
         } else if (insertOrderState.success) {
-            getBuyOrders(dispatch)
-            getSellOrders(dispatch)
-            getMyOrders(account, dispatch)
             loadTrades(dispatch)
             loadTrades(dispatch, account)
 
@@ -314,16 +312,36 @@ const Home: NextPage = () => {
 
     // Listening to Socket.io events
     useEffect(() => {
-        socket.on("new_order_inserted", (data: IGetOrder) => {
-            getBuyOrders(dispatch)
-            getSellOrders(dispatch)
-            getMyOrders(account, dispatch)
-        })
+        if (account) {
+            socket.on("new_order_inserted", (order: IGetOrder) => {
+                dispatch(
+                    actions.new_order_inserted({ order, account: account })
+                )
+            })
+
+            socket.on("order_cancelled", (order: IGetOrder) => {
+                console.log("order_cancelled event captured")
+                dispatch(actions.order_cancelled({ order, account }))
+            })
+
+            socket.on("order_filled", (order: IGetOrder) => {
+                dispatch(actions.order_filled({ order, account }))
+                dispatch(actions.insert_trade({ order, account }))
+            })
+
+            socket.on("order_partially_filled", (order: IGetOrder) => {})
+            socket.on("order_partially_filled_cancelled", (order: IGetOrder) => {})
+
+        }
 
         return () => {
             socket.off("new_order_inserted")
+            socket.off("order_cancelled")
+            socket.off("order_filled")
+            socket.off("order_partially_filled")
+            socket.off("order_partially_filled_cancelled")
         }
-    }, [socket])
+    }, [socket, account])
 
     return (
         <div className="bg-bgGray1">

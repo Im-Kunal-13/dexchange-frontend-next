@@ -1,5 +1,10 @@
 import { createReducer } from "@reduxjs/toolkit"
 import { IExchange, IProvider, ITokens, IOrder, ITrade } from "../types"
+import {
+    sortByPriceAscending,
+    sortByPriceDescending,
+    sortByTimeStamp,
+} from "../utility"
 import { actions } from "./reducerActions"
 
 const DEFAULT_TOKENS_STATE: ITokens = {
@@ -174,22 +179,6 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
         .addCase(actions.load_cancelled_orders, (state, action) => {
             state.cancelledOrders = action.payload
         })
-        .addCase(actions.cancel_order, (state, action) => {
-            state.myOrders = state.myOrders.filter(
-                (order) => order._id !== action.payload._id
-            )
-            if (action.payload.side === "sell") {
-                state.sellOrders = state.sellOrders.filter(
-                    (order) => order._id !== action.payload._id
-                )
-            } else {
-                state.buyOrders = state.buyOrders.filter(
-                    (order) => order._id !== action.payload._id
-                )
-            }
-
-            state.cancelledOrders.push(action.payload)
-        })
 
         // INSERT ORDER STATES
         .addCase(actions.insert_order_status, (state, action) => {
@@ -210,6 +199,63 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
             state.insertOrderState.success = false
             state.insertOrderState.error = true
         })
+
+        // SOCKET EVENTS
+        .addCase(actions.new_order_inserted, (state, action) => {
+            if (action.payload.order.side === "buy") {
+                state.buyOrders = state.buyOrders
+                    .concat([action.payload.order])
+                    .sort(sortByTimeStamp)
+                    .sort(sortByPriceDescending)
+            } else if (action.payload.order.side === "sell") {
+                state.sellOrders = state.sellOrders
+                    .concat([action.payload.order])
+                    .sort(sortByTimeStamp)
+                    .sort(sortByPriceAscending)
+            }
+
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myOrders = state.myOrders
+                    .concat([action.payload.order])
+                    .sort(sortByTimeStamp)
+            }
+        })
+        .addCase(actions.order_cancelled, (state, action) => {
+            if (action.payload.order.side === "buy") {
+                state.buyOrders = state.buyOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            } else if (action.payload.order.side === "sell") {
+                state.sellOrders = state.sellOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myOrders = state.myOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+
+            state.cancelledOrders.push(action.payload.order)
+        })
+        .addCase(actions.order_filled, (state, action) => {
+            if (action.payload.order.side === "buy") {
+                state.buyOrders = state.buyOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            } else if (action.payload.order.side === "sell") {
+                state.sellOrders = state.sellOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myOrders = state.myOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+        })
 })
 
 export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {
@@ -219,5 +265,12 @@ export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {
         })
         .addCase(actions.load_my_trades, (state, action) => {
             state.myTrades = action.payload
+        })
+        .addCase(actions.insert_trade, (state, action) => {
+            state.allTrades.push(action.payload.order)
+
+            if (action.payload.order._id === action.payload.account) {
+                state.myTrades.push(action.payload.order)
+            }
         })
 })
