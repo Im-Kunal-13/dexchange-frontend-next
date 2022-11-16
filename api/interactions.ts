@@ -46,17 +46,16 @@ export const loadAccount = async (provider: any, dispatch: AppDispatch) => {
 export const loadTokens = async (
     provider: any,
     addresses: string[],
+    symbols: string[],
     dispatch: AppDispatch
 ) => {
-    let token, symbol
+    let token
 
     token = new zksync.Contract(addresses[0], TOKEN_ABI, provider)
-    symbol = await token.symbol()
-    dispatch(actions.load_token_1({ token, symbol }))
+    dispatch(actions.load_token_1({ token, symbol: symbols[0] }))
 
     token = new zksync.Contract(addresses[1], TOKEN_ABI, provider)
-    symbol = await token.symbol()
-    dispatch(actions.load_token_2({ token, symbol }))
+    dispatch(actions.load_token_2({ token, symbol: symbols[1] }))
 
     return token
 }
@@ -66,7 +65,7 @@ export const loadTokenPair = async (chainId: number, dispatch: AppDispatch) => {
         const res = await axios.get(
             `/api/pairs/${chainId}`
         )
-        dispatch(actions.load_token_pair(res.data.pairs))
+        dispatch(actions.load_token_pair(res.data))
     } catch (error) {
         console.log(error)
     }
@@ -217,6 +216,7 @@ export const loadTokenBalances = async (
         await tokens[0].balanceOf(account),
         precisions[0]
     )
+
     dispatch(actions.load_token_1_balance(balance))
 
     balance = ethers.utils.formatUnits(

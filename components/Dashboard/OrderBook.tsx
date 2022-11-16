@@ -94,14 +94,14 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.remainingQuantity,
                                                         pair &&
-                                                            pair[
+                                                            pair.pairs[
                                                                 symbols.join(
                                                                     "-"
                                                                 )
                                                             ]
                                                                 .baseAssetPrecision !==
                                                                 0
-                                                            ? pair[
+                                                            ? pair.pairs[
                                                                   symbols.join(
                                                                       "-"
                                                                   )
@@ -121,14 +121,14 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.price,
                                                         pair &&
-                                                            pair[
+                                                            pair.pairs[
                                                                 symbols.join(
                                                                     "-"
                                                                 )
                                                             ]
                                                                 .quoteAssetPrecision !==
                                                                 0
-                                                            ? pair[
+                                                            ? pair.pairs[
                                                                   symbols.join(
                                                                       "-"
                                                                   )
@@ -216,14 +216,14 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.remainingQuantity,
                                                         pair &&
-                                                            pair[
+                                                            pair.pairs[
                                                                 symbols.join(
                                                                     "-"
                                                                 )
                                                             ]
                                                                 .baseAssetPrecision !==
                                                                 0
-                                                            ? pair[
+                                                            ? pair.pairs[
                                                                   symbols.join(
                                                                       "-"
                                                                   )
@@ -243,14 +243,14 @@ const OrderBook = () => {
                                                     {ethers.utils.formatUnits(
                                                         order.price,
                                                         pair &&
-                                                            pair[
+                                                            pair.pairs[
                                                                 symbols.join(
                                                                     "-"
                                                                 )
                                                             ]
                                                                 .quoteAssetPrecision !==
                                                                 0
-                                                            ? pair[
+                                                            ? pair.pairs[
                                                                   symbols.join(
                                                                       "-"
                                                                   )

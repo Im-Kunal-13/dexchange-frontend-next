@@ -46,8 +46,8 @@ const Order = () => {
                     !isMarket ? price : "0",
                     chainId,
                     [
-                        pair[symbols.join("-")].baseAssetPrecision,
-                        pair[symbols.join("-")].quoteAssetPrecision,
+                        pair.pairs[symbols.join("-")].baseAssetPrecision,
+                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
                     ],
                     connection,
                     dispatch
@@ -78,7 +78,7 @@ const Order = () => {
         ) {
             if (
                 Number(amount) <=
-                Number(balances[0].deposited) - Number(balances[1].blocked)
+                Number(balances[0].deposited) - Number(balances[0].blocked)
             ) {
                 insertOrder(
                     account,
@@ -89,8 +89,8 @@ const Order = () => {
                     !isMarket ? price : "0",
                     chainId,
                     [
-                        pair[symbols.join("-")].baseAssetPrecision,
-                        pair[symbols.join("-")].quoteAssetPrecision,
+                        pair.pairs[symbols.join("-")].baseAssetPrecision,
+                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
                     ],
                     connection,
                     dispatch
@@ -120,7 +120,7 @@ const Order = () => {
             const arr = value.split(".")
             if (
                 arr[1].length <=
-                pair[symbols.join("-")][
+                pair.pairs[symbols.join("-")][
                     baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
                 ]
             ) {

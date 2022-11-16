@@ -6,10 +6,19 @@ const Markets = () => {
     const dispatch = useAppDispatch()
 
     const { connection } = useAppSelector((state) => state.provider)
-    const { contracts, pair } = useAppSelector((state) => state.tokens)
+    const { contracts, pair, symbols } = useAppSelector((state) => state.tokens)
 
     const marketHandler = async (e: SelectChangeEvent<`${any},${any}`>) => {
-        loadTokens(connection, e.target.value.split(","), dispatch)
+        console.log(e.target.value.split("-")[0])
+        loadTokens(
+            connection,
+            [
+                pair.pairs[e.target.value].baseAssetAddress,
+                pair.pairs[e.target.value].baseAssetAddress,
+            ],
+            e.target.value.split("-"),
+            dispatch
+        )
     }
 
     return (
@@ -19,11 +28,8 @@ const Markets = () => {
             </div>
 
             <Select
-                value={
-                    contracts.length >= 2
-                        ? `${contracts[0].address},${contracts[1].address}`
-                        : ""
-                }
+                // @ts-ignore
+                value={symbols[0] ? symbols.join("-") : ``}
                 variant="standard"
                 name="markets"
                 id="markets"
@@ -45,12 +51,9 @@ const Markets = () => {
                 <MenuItem disabled value="">
                     Select Market
                 </MenuItem>
-                {pair &&
-                    Object.keys(pair).map((key) => (
-                        <MenuItem
-                            key={key}
-                            value={`${pair[key].baseAssetAddress},${pair[key].quoteAssetAddress}`}
-                        >
+                {pair?.pairs &&
+                    Object.keys(pair.pairs).map((key) => (
+                        <MenuItem key={key} value={key}>
                             {key}
                         </MenuItem>
                     ))}

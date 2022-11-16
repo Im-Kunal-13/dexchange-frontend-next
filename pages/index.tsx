@@ -37,7 +37,7 @@ import { actions } from "../features/reducerActions"
 // Getting the socket from the io object we imported.
 
 // @ts-ignore
-const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app/")
+const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
@@ -75,34 +75,39 @@ const Home: NextPage = () => {
         // Token Smart Contracts
         let token_1_address, token_2_address
 
-        if (contracts.length > 0) {
+        if (contracts.length > 0 && symbols.length > 0) {
             token_1_address = contracts[0].address
             token_2_address = contracts[1].address
-        } else {
-            token_1_address = pair["BTC-USDC"].baseAssetAddress
-            token_2_address = pair["BTC-USDC"].quoteAssetAddress
-        }
 
-        await loadTokens(
-            connection,
-            [token_1_address, token_2_address],
-            dispatch
-        )
+            await loadTokens(
+                connection,
+                [token_1_address, token_2_address],
+                symbols,
+                dispatch
+            )
+        } else {
+            token_1_address = pair.pairs["BTC-USDC"].baseAssetAddress
+            token_2_address = pair.pairs["BTC-USDC"].quoteAssetAddress
+
+            await loadTokens(
+                connection,
+                [token_1_address, token_2_address],
+                ["BTC", "USDC"],
+                dispatch
+            )
+        }
 
         // Exchange Smart contract
         const dexchangeAddress = pair.dexchange
-        await loadExchange(
-            connection,
-            dexchangeAddress ? dexchangeAddress : "",
-            dispatch
-        )
+
+        await loadExchange(connection, dexchangeAddress, dispatch)
     }
 
     useEffect(() => {
         if (pair && connection && chainId) {
             loadBlockchainData()
         }
-    }, [pair, connection, chainId])
+    }, [pair, connection, chainId, symbols])
 
     useEffect(() => {
         if (depositState.success || withdrawState.success) {
@@ -187,15 +192,15 @@ const Home: NextPage = () => {
                     contracts,
                     account,
                     pair && [
-                        pair[symbols.join("-")].baseAssetPrecision,
-                        pair[symbols.join("-")].quoteAssetPrecision,
+                        pair.pairs[symbols.join("-")].baseAssetPrecision,
+                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
                     ],
                     dispatch
                 )
                 loadExchangeBalances(
                     [
-                        pair[symbols.join("-")].baseAssetPrecision,
-                        pair[symbols.join("-")].quoteAssetPrecision,
+                        pair.pairs[symbols.join("-")].baseAssetPrecision,
+                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
                     ],
                     contracts,
                     account,
@@ -248,15 +253,15 @@ const Home: NextPage = () => {
                 contracts,
                 account,
                 pair && [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
                 ],
                 dispatch
             )
             loadExchangeBalances(
                 [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
                 ],
                 contracts,
                 account,
@@ -279,15 +284,15 @@ const Home: NextPage = () => {
                 contracts,
                 account,
                 pair && [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
                 ],
                 dispatch
             )
             loadExchangeBalances(
                 [
-                    pair[symbols.join("-")].baseAssetPrecision,
-                    pair[symbols.join("-")].quoteAssetPrecision,
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
                 ],
                 contracts,
                 account,
@@ -314,6 +319,7 @@ const Home: NextPage = () => {
     useEffect(() => {
         if (account) {
             socket.on("new_order_inserted", (order: IGetOrder) => {
+                console.log(order)
                 dispatch(
                     actions.new_order_inserted({ order, account: account })
                 )
@@ -330,8 +336,10 @@ const Home: NextPage = () => {
             })
 
             socket.on("order_partially_filled", (order: IGetOrder) => {})
-            socket.on("order_partially_filled_cancelled", (order: IGetOrder) => {})
-
+            socket.on(
+                "order_partially_filled_cancelled",
+                (order: IGetOrder) => {}
+            )
         }
 
         return () => {

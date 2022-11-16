@@ -54,7 +54,7 @@ const Balance = () => {
                         token,
                         token1TransferAmount,
                         exchange.address,
-                        pair[symbols.join("-")][
+                        pair.pairs[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -84,7 +84,7 @@ const Balance = () => {
                         token,
                         token2TransferAmount,
                         exchange.address,
-                        pair[symbols.join("-")][
+                        pair.pairs[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -119,7 +119,7 @@ const Balance = () => {
                         account,
                         token.address,
                         token1TransferAmount,
-                        pair[
+                        pair.pairs[
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -150,7 +150,7 @@ const Balance = () => {
                         account,
                         token.address,
                         token2TransferAmount,
-                        pair[
+                        pair.pairs[
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -184,7 +184,7 @@ const Balance = () => {
 
             if (
                 arr[1].length <=
-                pair[symbols.join("-")][
+                pair.pairs[symbols.join("-")][
                     baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
                 ]
             ) {

@@ -102,10 +102,10 @@ const Trades = () => {
                                                             order.remainingQuantity
                                                         )
                                                     ).toString(),
-                                                    pair[symbols.join("-")]
+                                                    pair.pairs[symbols.join("-")]
                                                         .baseAssetPrecision !==
                                                         0
-                                                        ? pair[
+                                                        ? pair.pairs[
                                                               symbols.join("-")
                                                           ].baseAssetPrecision
                                                         : 0
@@ -120,9 +120,9 @@ const Trades = () => {
                                         >
                                             {ethers.utils.formatUnits(
                                                 order.price,
-                                                pair[symbols.join("-")]
+                                                pair.pairs[symbols.join("-")]
                                                     .quoteAssetPrecision !== 0
-                                                    ? pair[symbols.join("-")]
+                                                    ? pair.pairs[symbols.join("-")]
                                                           .quoteAssetPrecision
                                                     : 0
                                             )}

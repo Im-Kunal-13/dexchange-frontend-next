@@ -25,8 +25,6 @@ export const sortByTimeStamp = (order1: IGetOrder, order2: IGetOrder) => {
     const date1 = new Date(order1.createdAt)
     const date2 = new Date(order2.createdAt)
 
-    console.log(date1, date2)
-
     if (date1 > date2) {
         return 1
     } else if (date1 < date2) {
