@@ -256,6 +256,54 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
                 )
             }
         })
+        .addCase(actions.order_partially_filled, (state, action) => {
+            if (action.payload.order.side === "buy") {
+                state.buyOrders.map((order) => {
+                    if (order._id === action.payload.order._id) {
+                        order.status = "partially-filled"
+                        order.remainingQuantity =
+                            action.payload.order.remainingQuantity
+                    }
+                })
+            } else if (action.payload.order.side === "sell") {
+                state.sellOrders.map((order) => {
+                    if (order._id === action.payload.order._id) {
+                        order.status = "partially-filled"
+                        order.remainingQuantity =
+                            action.payload.order.remainingQuantity
+                    }
+                })
+            }
+
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myOrders.map((order) => {
+                    if (order._id === action.payload.order._id) {
+                        order.status = "partially-filled"
+                        order.remainingQuantity =
+                            action.payload.order.remainingQuantity
+                    }
+                })
+            }
+        })
+        .addCase(actions.order_partially_filled_cancelled, (state, action) => {
+            if (action.payload.order.side === "buy") {
+                state.buyOrders = state.buyOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            } else if (action.payload.order.side === "sell") {
+                state.sellOrders = state.sellOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myOrders = state.myOrders.filter(
+                    (order) => order._id !== action.payload.order._id
+                )
+            }
+
+            state.cancelledOrders.push(action.payload.order)
+        })
 })
 
 export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {

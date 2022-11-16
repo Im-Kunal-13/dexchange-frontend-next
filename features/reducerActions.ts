@@ -49,11 +49,26 @@ export const actions = {
     insert_order_error: createAction("order/insert_order_error"),
 
     // order socket events
-    new_order_inserted: createAction<{order: IGetOrder, account: string}>("order/new_order_inserted_event"),
-    order_cancelled: createAction<{order: IGetOrder, account: string}>("order/order_cancelled_event"),
-    order_filled: createAction<{order: IGetOrder, account: string}>("order/order_filled_event"),
+    new_order_inserted: createAction<{ order: IGetOrder; account: string }>(
+        "order/new_order_inserted_event"
+    ),
+    order_cancelled: createAction<{ order: IGetOrder; account: string }>(
+        "order/order_cancelled_event"
+    ),
+    order_filled: createAction<{ order: IGetOrder; account: string }>(
+        "order/order_filled_event"
+    ),
+    order_partially_filled: createAction<{ order: IGetOrder; account: string }>(
+        "order/order_partially_filled"
+    ),
+    order_partially_filled_cancelled: createAction<{ order: IGetOrder; account: string }>(
+        "order/order_partially_filled_cancelled"
+    ),
+
     // trade
     load_trades: createAction<IGetOrder[]>("trade/trades_loaded"),
     load_my_trades: createAction<IGetOrder[]>("trade/my_trades_loaded"),
-    insert_trade: createAction<{order: IGetOrder, account: string}>("trade/insert_trade"),
+    insert_trade: createAction<{ order: IGetOrder; account: string }>(
+        "trade/insert_trade"
+    ),
 }

@@ -37,7 +37,7 @@ import { actions } from "../features/reducerActions"
 // Getting the socket from the io object we imported.
 
 // @ts-ignore
-const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
+const socket = io.connect("http://localhost:5001")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
@@ -335,10 +335,21 @@ const Home: NextPage = () => {
                 dispatch(actions.insert_trade({ order, account }))
             })
 
-            socket.on("order_partially_filled", (order: IGetOrder) => {})
+            socket.on("order_partially_filled", (order: IGetOrder) => {
+                dispatch(actions.order_partially_filled({ order, account }))
+            })
             socket.on(
                 "order_partially_filled_cancelled",
-                (order: IGetOrder) => {}
+                (order: IGetOrder) => {
+                    console.log("order_partially_filled_cancelled event fired")
+                    console.log(order)
+                    dispatch(
+                        actions.order_partially_filled_cancelled({
+                            order,
+                            account,
+                        })
+                    )
+                }
             )
         }
 
