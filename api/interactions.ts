@@ -335,10 +335,10 @@ export const insertOrder = async (
     }
 }
 
-export const getBuyOrders = async (dispatch: AppDispatch) => {
+export const getBuyOrders = async (chainId: number, dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "/api/orders/buy?type=limit",
+            `/api/orders/buy?type=limit&chainId=${chainId}`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -351,10 +351,10 @@ export const getBuyOrders = async (dispatch: AppDispatch) => {
     }
 }
 
-export const getSellOrders = async (dispatch: AppDispatch) => {
+export const getSellOrders = async (chainId: number, dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            "/api/orders/sell?type=limit",
+            `/api/orders/sell?type=limit&chainId=${chainId}`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -367,10 +367,10 @@ export const getSellOrders = async (dispatch: AppDispatch) => {
     }
 }
 
-export const getMyOrders = async (wallet: string, dispatch: AppDispatch) => {
+export const getMyOrders = async (chainId: number, wallet: string, dispatch: AppDispatch) => {
     try {
         const res = await axios.get(
-            `/api/orders/user/${wallet}?type=limit`,
+            `/api/orders/user/${wallet}?type=limit&chainId=${chainId}`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -384,12 +384,13 @@ export const getMyOrders = async (wallet: string, dispatch: AppDispatch) => {
 }
 
 export const getCancelledOrders = async (
+    chainId: number,
     wallet: string,
     dispatch: AppDispatch
 ) => {
     try {
         const res = await axios.get(
-            `/api/cancelled/${wallet}`
+            `/api/cancelled/${wallet}&chainId=${chainId}`
         )
         dispatch(actions.load_cancelled_orders(res.data))
     } catch (error) {
@@ -424,12 +425,13 @@ export const cancelOrder = async (
 // TRADES
 
 export const loadTrades = async (
+    chainId: number,
     dispatch: AppDispatch,
     wallet: string = ""
 ) => {
     try {
         const res = await axios.get(
-            `/api/trades/${wallet}`
+            `/api/trades/${wallet}?chainId=${chainId}`
         )
 
         if (wallet) {

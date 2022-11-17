@@ -6,7 +6,7 @@ const Markets = () => {
     const dispatch = useAppDispatch()
 
     const { connection } = useAppSelector((state) => state.provider)
-    const { contracts, pair, symbols } = useAppSelector((state) => state.tokens)
+    const { pair, symbols } = useAppSelector((state) => state.tokens)
 
     const marketHandler = async (e: SelectChangeEvent<`${any},${any}`>) => {
         console.log(e.target.value.split("-")[0])
@@ -14,7 +14,7 @@ const Markets = () => {
             connection,
             [
                 pair.pairs[e.target.value].baseAssetAddress,
-                pair.pairs[e.target.value].baseAssetAddress,
+                pair.pairs[e.target.value].quoteAssetAddress,
             ],
             e.target.value.split("-"),
             dispatch

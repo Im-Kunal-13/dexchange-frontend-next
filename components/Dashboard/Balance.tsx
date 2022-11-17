@@ -246,6 +246,10 @@ const Balance = () => {
                         </div>
                     </div>
                     <p className="flex flex-col items-start gap-1 text-white">
+                        <small>Wallet</small>
+                        {balances[0] && Number(balances[0]).toFixed(4)}
+                    </p>
+                    <p className="flex flex-col items-start gap-1 text-white">
                         <small>Deposited</small>
                         {exchangeBalances[0] &&
                             symbols[0] &&
@@ -362,6 +366,10 @@ const Balance = () => {
                             {symbols && symbols[1]}
                         </div>
                     </div>
+                    <p className="flex flex-col items-start gap-1 text-white">
+                        <small>Wallet</small>
+                        {balances[1] && Number(balances[1]).toFixed(4)}
+                    </p>
                     <p className="text-white">
                         <small>Deposited</small>
                         <br />

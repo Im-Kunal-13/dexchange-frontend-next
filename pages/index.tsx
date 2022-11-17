@@ -13,6 +13,7 @@ import {
     loadTokenBalances,
     loadExchangeBalances,
     getMyOrders,
+    getCancelledOrders,
 } from "../api/interactions"
 
 import type { NextPage } from "next"
@@ -176,9 +177,6 @@ const Home: NextPage = () => {
                 message: "Order in progress...",
             })
         } else if (insertOrderState.success) {
-            loadTrades(dispatch)
-            loadTrades(dispatch, account)
-
             if (
                 contract &&
                 contracts[0] &&
@@ -302,11 +300,8 @@ const Home: NextPage = () => {
         }
     }, [withdrawState.success, depositState.success])
 
+    // Loading chainId
     useEffect(() => {
-        getBuyOrders(dispatch)
-        getSellOrders(dispatch)
-        loadTrades(dispatch)
-
         const provider: any = loadProvider(dispatch)
         loadNetwork(provider, dispatch)
 
@@ -315,40 +310,64 @@ const Home: NextPage = () => {
         }
     }, [])
 
+    // Loadig orders and trades when chainId is available
+    useEffect(() => {
+        if (chainId) {
+            getBuyOrders(chainId, dispatch)
+            getSellOrders(chainId, dispatch)
+            loadTrades(chainId, dispatch)
+        }
+    }, [chainId])
+
+    // Loading my orders and trades when chainId and account is available
+    useEffect(() => {
+        if (account && chainId) {
+            getMyOrders(chainId, account, dispatch)
+            loadTrades(chainId, dispatch, account)
+            getCancelledOrders(chainId, account, dispatch)
+        }
+    }, [chainId, account])
+
     // Listening to Socket.io events
     useEffect(() => {
         if (account) {
             socket.on("new_order_inserted", (order: IGetOrder) => {
-                console.log(order)
-                dispatch(
-                    actions.new_order_inserted({ order, account: account })
-                )
+                if (order.chainId === chainId) {
+                    dispatch(
+                        actions.new_order_inserted({ order, account: account })
+                    )
+                }
             })
 
             socket.on("order_cancelled", (order: IGetOrder) => {
-                console.log("order_cancelled event captured")
-                dispatch(actions.order_cancelled({ order, account }))
+                if (order.chainId === chainId) {
+                    dispatch(actions.order_cancelled({ order, account }))
+                }
             })
 
             socket.on("order_filled", (order: IGetOrder) => {
-                dispatch(actions.order_filled({ order, account }))
-                dispatch(actions.insert_trade({ order, account }))
+                if (order.chainId === chainId) {
+                    dispatch(actions.order_filled({ order, account }))
+                    dispatch(actions.insert_trade({ order, account }))
+                }
             })
 
             socket.on("order_partially_filled", (order: IGetOrder) => {
-                dispatch(actions.order_partially_filled({ order, account }))
+                if (order.chainId === chainId) {
+                    dispatch(actions.order_partially_filled({ order, account }))
+                }
             })
             socket.on(
                 "order_partially_filled_cancelled",
                 (order: IGetOrder) => {
-                    console.log("order_partially_filled_cancelled event fired")
-                    console.log(order)
-                    dispatch(
-                        actions.order_partially_filled_cancelled({
-                            order,
-                            account,
-                        })
-                    )
+                    if (order.chainId === chainId) {
+                        dispatch(
+                            actions.order_partially_filled_cancelled({
+                                order,
+                                account,
+                            })
+                        )
+                    }
                 }
             )
         }

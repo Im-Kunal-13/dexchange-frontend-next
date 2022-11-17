@@ -8,19 +8,13 @@ import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Paper from "@mui/material/Paper"
 import { Button } from "@mui/material"
-import {
-    cancelOrder,
-    getCancelledOrders,
-    getMyOrders,
-    loadTrades,
-} from "../../api/interactions"
+import { cancelOrder } from "../../api/interactions"
 import { useAppStateContext } from "../../context/contextProvider"
 import { ethers } from "ethers"
 import { formatTimestamp } from "../../utility"
 
 const Transactions = () => {
     const { symbols, pair } = useAppSelector((state) => state.tokens)
-    const { account } = useAppSelector((state) => state.provider)
     const { myOrders } = useAppSelector((state) => state.order)
     const { myTrades } = useAppSelector((state) => state.trade)
 
@@ -33,14 +27,6 @@ const Transactions = () => {
 
     //@ts-ignore
     const { setSnackbarInfo } = useAppStateContext()
-
-    useEffect(() => {
-        if (account) {
-            getMyOrders(account, dispatch)
-            loadTrades(dispatch, account)
-            getCancelledOrders(account, dispatch)
-        }
-    }, [account])
 
     return (
         <div className="relative bg-black py-[0.75em] px-[1.75em] m-[0.75em] col-start-1 col-end-7 overflow-y-scroll shadow-black1">
@@ -140,8 +126,9 @@ const Transactions = () => {
                                                 {ethers.utils.formatUnits(
                                                     order.remainingQuantity,
                                                     pair &&
-                                                        pair.pairs[symbols.join("-")]
-                                                            .baseAssetPrecision !==
+                                                        pair.pairs[
+                                                            symbols.join("-")
+                                                        ].baseAssetPrecision !==
                                                             0
                                                         ? pair.pairs[
                                                               symbols.join("-")
@@ -159,9 +146,9 @@ const Transactions = () => {
                                             >
                                                 {ethers.utils.formatUnits(
                                                     order.price,
-                                                    pair.pairs[symbols.join("-")]
-                                                        .quoteAssetPrecision !==
-                                                        0
+                                                    pair.pairs[
+                                                        symbols.join("-")
+                                                    ].quoteAssetPrecision !== 0
                                                         ? pair.pairs[
                                                               symbols.join("-")
                                                           ].quoteAssetPrecision
@@ -285,9 +272,9 @@ const Transactions = () => {
                                                             order.remainingQuantity
                                                         )
                                                     ).toString(),
-                                                    pair.pairs[symbols.join("-")]
-                                                        .baseAssetPrecision !==
-                                                        0
+                                                    pair.pairs[
+                                                        symbols.join("-")
+                                                    ].baseAssetPrecision !== 0
                                                         ? pair.pairs[
                                                               symbols.join("-")
                                                           ].baseAssetPrecision
@@ -305,8 +292,9 @@ const Transactions = () => {
                                                 order.price,
                                                 pair.pairs[symbols.join("-")]
                                                     .quoteAssetPrecision !== 0
-                                                    ? pair.pairs[symbols.join("-")]
-                                                          .quoteAssetPrecision
+                                                    ? pair.pairs[
+                                                          symbols.join("-")
+                                                      ].quoteAssetPrecision
                                                     : 0
                                             )}
                                         </TableCell>
