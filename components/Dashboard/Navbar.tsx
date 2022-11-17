@@ -49,7 +49,7 @@ const Navbar = () => {
                         onChange={networkHandler}
                         sx={{ color: "white" }}
                         classes={{
-                            select: "w-36 text-white shadow-black1 py-3 px-4",
+                            select: "w-36 text-white whitespace-nowrap shadow-black1 py-3 px-4",
                             icon: "text-white transition-all duration-300 ",
                             nativeInput: "text-white",
                         }}
@@ -63,6 +63,7 @@ const Navbar = () => {
                         </MenuItem>
                         <MenuItem value="0x5">Goerli</MenuItem>
                         <MenuItem value="0x13881">Polygon Mumbai</MenuItem>
+                        <MenuItem value="0x57a">Polygon Hermez</MenuItem>
                     </Select>
                 )}
             </div>
