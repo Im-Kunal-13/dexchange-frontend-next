@@ -37,7 +37,7 @@ import { actions } from "../features/reducerActions"
 // Getting the socket from the io object we imported.
 
 // @ts-ignore
-const socket = io.connect("http://localhost:5001")
+const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
