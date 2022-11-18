@@ -330,8 +330,10 @@ const Home: NextPage = () => {
 
     // Listening to Socket.io events
     useEffect(() => {
-        if (account) {
+        if (account && chainId) {
             socket.on("new_order_inserted", (order: IGetOrder) => {
+                console.log("new_order_inserted")
+                console.log(order.chainId, chainId)
                 if (order.chainId === chainId) {
                     dispatch(
                         actions.new_order_inserted({ order, account: account })
@@ -379,7 +381,7 @@ const Home: NextPage = () => {
             socket.off("order_partially_filled")
             socket.off("order_partially_filled_cancelled")
         }
-    }, [socket, account])
+    }, [socket, account, chainId])
 
     return (
         <div className="bg-bgGray1">
