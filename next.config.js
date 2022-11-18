@@ -7,12 +7,13 @@
 // module.exports = nextConfig
 
 module.exports = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:5001/api/:path*' // Proxy to Backend
-      }
-    ]
-  }
+    async rewrites() {
+        return [
+            {
+                source: "/api/:path*",
+                destination:
+                    "https://seashell-app-5u4ct.ondigitalocean.app/api/:path*", // Proxy to Backend
+            },
+        ]
+    },
 }
