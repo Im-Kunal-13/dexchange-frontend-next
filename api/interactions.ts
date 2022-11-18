@@ -62,9 +62,7 @@ export const loadTokens = async (
 
 export const loadTokenPair = async (chainId: number, dispatch: AppDispatch) => {
     try {
-        const res = await axios.get(
-            `/api/pairs/${chainId}`
-        )
+        const res = await axios.get(`/api/pairs/${chainId}`)
         dispatch(actions.load_token_pair(res.data))
     } catch (error) {
         console.log(error)
@@ -85,6 +83,10 @@ export const loadExchange = async (
 
 // EXCHANGE DEPOSIT AND WITHDRAW
 
+function uuidToDecimal(uuid: string) {
+    return ethers.BigNumber.from(`0x${uuid.replace(/-/g, "")}`).toString()
+}
+
 export const deposit = async (
     chainId: number,
     userAddress: string,
@@ -96,15 +98,22 @@ export const deposit = async (
     dispatch: AppDispatch
 ) => {
     const domain = {
-        name: "DeXchange",
+        name: "Dexchange",
         version: "1",
         chainId,
+        verifyingContract: dexchangeAddress,
     }
 
     const types = {
-        Deposit: [
+        EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "string" },
+            { name: "verifyingContract", type: "address" },
+        ],
+        DepositToken: [
+            { name: "chainId", type: "uint256" },
+            { name: "nonce", type: "uint128" },
             { name: "userAddress", type: "address" },
             { name: "token", type: "address" },
             { name: "amount", type: "uint256" },
@@ -113,32 +122,43 @@ export const deposit = async (
 
     const parameters = {
         chainId,
-        nonce: uuidv4(),
+        nonce: uuidToDecimal(uuidv4()),
         userAddress,
         token: token.address,
-        amount: ethers.utils.parseUnits(amount, precision),
+        amount: ethers.utils.parseUnits(amount, precision).toString(),
     }
+
+    const dataToSign = JSON.stringify({
+        types,
+        domain: domain,
+        primaryType: "DepositToken",
+        message: parameters,
+    })
 
     try {
         const signer = await provider.getSigner()
+        console.log("nonce => ", parameters.nonce)
 
         await token
             .connect(signer)
-            .approve(dexchangeAddress, ethers.utils.parseUnits(amount, 8))
+            .approve(
+                dexchangeAddress,
+                ethers.utils.parseUnits(amount, precision)
+            )
 
-        const signature = await signer._signTypedData(domain, types, parameters)
-        console.log(signature)
+        const signature = await provider.send("eth_signTypedData_v4", [
+            userAddress,
+            dataToSign,
+        ])
+        console.log("signature =>", signature)
 
         const reqBody: IDeposit = {
-            parameters: { ...parameters, amount: parameters.amount.toString() },
+            parameters,
             signature,
         }
 
         dispatch(actions.deposit_loading())
-        const res = await axios.post(
-            "/api/deposit",
-            reqBody
-        )
+        const res = await axios.post("/api/deposit", reqBody)
 
         dispatch(actions.deposit_success())
 
@@ -152,22 +172,30 @@ export const deposit = async (
 export const withdraw = async (
     chainId: number,
     userAddress: string,
-    token: string,
+    token: any,
     amount: string,
+    dexchangeAddress: string,
     precision: number,
     provider: any,
     dispatch: AppDispatch
 ) => {
     const domain = {
-        name: "DeXchange",
+        name: "Dexchange",
         version: "1",
         chainId,
+        verifyingContract: dexchangeAddress,
     }
 
     const types = {
-        Deposit: [
+        EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "string" },
+            { name: "verifyingContract", type: "address" },
+        ],
+        WithdrawToken: [
+            { name: "chainId", type: "uint256" },
+            { name: "nonce", type: "uint128" },
             { name: "userAddress", type: "address" },
             { name: "token", type: "address" },
             { name: "amount", type: "uint256" },
@@ -176,27 +204,33 @@ export const withdraw = async (
 
     const parameters = {
         chainId,
-        nonce: uuidv4(),
+        nonce: uuidToDecimal(uuidv4()),
         userAddress,
-        token,
-        amount: ethers.utils.parseUnits(amount, precision),
+        token: token.address,
+        amount: ethers.utils.parseUnits(amount, precision).toString(),
     }
 
+    const dataToSign = JSON.stringify({
+        types,
+        domain: domain,
+        primaryType: "WithdrawToken",
+        message: parameters,
+    })
+
     try {
-        const signer = await provider.getSigner()
-        const signature = await signer._signTypedData(domain, types, parameters)
+        const signature = await provider.send("eth_signTypedData_v4", [
+            userAddress,
+            dataToSign,
+        ])
 
         const reqBody = {
-            parameters: { ...parameters, amount: parameters.amount.toString() },
+            parameters,
             signature,
         }
 
         dispatch(actions.withdraw_loading())
 
-        const res = await axios.post(
-            "/api/withdraw",
-            reqBody
-        )
+        const res = await axios.post("/api/withdraw", reqBody)
 
         dispatch(actions.withdraw_success())
     } catch (error) {
@@ -234,9 +268,7 @@ export const loadExchangeBalances = async (
     dispatch: AppDispatch
 ) => {
     try {
-        const res = await axios.get(
-            `/api/balances/${chainId}/${account}`
-        )
+        const res = await axios.get(`/api/balances/${chainId}/${account}`)
 
         dispatch(
             actions.load_exchange_token_1({
@@ -277,50 +309,63 @@ export const insertOrder = async (
     amount: string,
     price: string,
     chainId: number,
+    dexchangeAddress: string,
     precisions: number[],
     provider: any,
     dispatch: AppDispatch
 ) => {
     const domain = {
-        name: "DeXchange",
+        name: "Dexchange",
         version: "1",
         chainId,
+        verifyingContract: dexchangeAddress,
     }
 
     const types = {
+        EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+        ],
         Order: [
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "string" },
-            { name: "wallet", type: "address" },
-            { name: "market", type: "string" },
-            { name: "type", type: "string" },
-            { name: "side", type: "string" },
+            { name: "nonce", type: "uint128" },
+            { name: "userAddress", type: "address" },
             { name: "amount", type: "uint256" },
-            { name: "price", type: "uint256" },
+            { name: "market", type: "string" },
+            { name: "orderType", type: "string" },
+            { name: "orderSide", type: "string" },
+            { name: "rate", type: "uint256" },
         ],
     }
 
     const parameters = {
         chainId,
         nonce: uuidv4(),
-        wallet,
+        userAddress: wallet,
+        amount: ethers.utils.parseUnits(amount, precisions[0]).toString(),
         market,
-        type: type.toLowerCase(),
-        side: side.toLowerCase(),
-        amount: ethers.utils.parseUnits(amount, precisions[0]),
-        price: ethers.utils.parseUnits(price, precisions[1]),
+        orderType: type.toLowerCase(),
+        orderSide: side.toLowerCase(),
+        rate: ethers.utils.parseUnits(price, precisions[1]).toString(),
     }
 
+    const dataToSign = JSON.stringify({
+        types,
+        domain: domain,
+        primaryType: "Order",
+        message: parameters,
+    })
+
     try {
-        const signer = await provider.getSigner()
-        const signature = await signer._signTypedData(domain, types, parameters)
+        const signature = await provider.send("eth_signTypedData_v4", [
+            wallet,
+            dataToSign,
+        ])
 
         const order: IInsertOrder = {
-            parameters: {
-                ...parameters,
-                amount: parameters.amount.toString(),
-                price: parameters.price.toString(),
-            },
+            parameters,
             signature,
         }
 
@@ -367,7 +412,11 @@ export const getSellOrders = async (chainId: number, dispatch: AppDispatch) => {
     }
 }
 
-export const getMyOrders = async (chainId: number, wallet: string, dispatch: AppDispatch) => {
+export const getMyOrders = async (
+    chainId: number,
+    wallet: string,
+    dispatch: AppDispatch
+) => {
     try {
         const res = await axios.get(
             `/api/orders/user/${wallet}?type=limit&chainId=${chainId}`,
@@ -409,9 +458,7 @@ export const cancelOrder = async (
     >
 ) => {
     try {
-        await axios.post(
-            `/api/cancelled/${order._id.toString()}`
-        )
+        await axios.post(`/api/cancelled/${order._id.toString()}`)
 
         setSnackbarInfo({
             open: true,
@@ -430,9 +477,7 @@ export const loadTrades = async (
     wallet: string = ""
 ) => {
     try {
-        const res = await axios.get(
-            `/api/trades/${wallet}?chainId=${chainId}`
-        )
+        const res = await axios.get(`/api/trades/${wallet}?chainId=${chainId}`)
 
         if (wallet) {
             dispatch(actions.load_my_trades(res.data))

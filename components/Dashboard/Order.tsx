@@ -21,6 +21,7 @@ const Order = () => {
     )
     const { symbols, pair } = useAppSelector((state) => state.tokens)
     const { balances } = useAppSelector((state) => state.exchange)
+    const exchange = useAppSelector((state) => state.exchange.contract)
 
     const dispatch = useAppDispatch()
 
@@ -45,6 +46,7 @@ const Order = () => {
                     amount,
                     !isMarket ? price : "0",
                     chainId,
+                    exchange.address,
                     [
                         pair.pairs[symbols.join("-")].baseAssetPrecision,
                         pair.pairs[symbols.join("-")].quoteAssetPrecision,
@@ -88,6 +90,7 @@ const Order = () => {
                     amount,
                     !isMarket ? price : "0",
                     chainId,
+                    exchange.address,
                     [
                         pair.pairs[symbols.join("-")].baseAssetPrecision,
                         pair.pairs[symbols.join("-")].quoteAssetPrecision,

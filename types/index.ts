@@ -91,12 +91,12 @@ export interface IInsertOrder {
     parameters: {
         chainId: number
         nonce: string
-        wallet: string
+        userAddress: string
         market: string
-        type: string
-        side: string
+        orderType: string
+        orderSide: string
         amount: string
-        price: string
+        rate: string
     }
     signature: string
 }

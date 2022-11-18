@@ -117,8 +117,9 @@ const Balance = () => {
                     withdraw(
                         chainId,
                         account,
-                        token.address,
+                        token,
                         token1TransferAmount,
+                        exchange.address,
                         pair.pairs[
                             baseAsset
                                 ? "baseAssetPrecision"
@@ -148,8 +149,9 @@ const Balance = () => {
                     withdraw(
                         chainId,
                         account,
-                        token.address,
+                        token,
                         token2TransferAmount,
+                        exchange.address,
                         pair.pairs[
                             baseAsset
                                 ? "baseAssetPrecision"
