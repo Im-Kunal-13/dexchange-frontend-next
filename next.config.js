@@ -11,7 +11,7 @@ module.exports = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://seashell-app-5u4ct.ondigitalocean.app/api/:path*' // Proxy to Backend
+        destination: 'http://localhost:5001/api/:path*' // Proxy to Backend
       }
     ]
   }

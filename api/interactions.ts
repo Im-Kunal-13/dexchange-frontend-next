@@ -113,7 +113,7 @@ export const deposit = async (
         ],
         DepositToken: [
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "uint128" },
+            { name: "nonce", type: "string" },
             { name: "userAddress", type: "address" },
             { name: "token", type: "address" },
             { name: "amount", type: "uint256" },
@@ -122,7 +122,7 @@ export const deposit = async (
 
     const parameters = {
         chainId,
-        nonce: uuidToDecimal(uuidv4()),
+        nonce: uuidv4(),
         userAddress,
         token: token.address,
         amount: ethers.utils.parseUnits(amount, precision).toString(),
@@ -195,7 +195,7 @@ export const withdraw = async (
         ],
         WithdrawToken: [
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "uint128" },
+            { name: "nonce", type: "string" },
             { name: "userAddress", type: "address" },
             { name: "token", type: "address" },
             { name: "amount", type: "uint256" },
@@ -204,7 +204,7 @@ export const withdraw = async (
 
     const parameters = {
         chainId,
-        nonce: uuidToDecimal(uuidv4()),
+        nonce: uuidv4(),
         userAddress,
         token: token.address,
         amount: ethers.utils.parseUnits(amount, precision).toString(),
@@ -330,7 +330,7 @@ export const insertOrder = async (
         ],
         Order: [
             { name: "chainId", type: "uint256" },
-            { name: "nonce", type: "uint128" },
+            { name: "nonce", type: "string" },
             { name: "userAddress", type: "address" },
             { name: "amount", type: "uint256" },
             { name: "market", type: "string" },
