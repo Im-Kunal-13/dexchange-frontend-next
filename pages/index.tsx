@@ -33,7 +33,6 @@ import AlertLoading from "../components/Alerts/AlertLoading"
 import io from "socket.io-client"
 import { IGetOrder } from "../types"
 import { actions } from "../features/reducerActions"
-import PriceChart from "../components/Dashboard/PriceChart"
 import TvChart from "../components/Dashboard/TvChart"
 
 // @ts-ignore

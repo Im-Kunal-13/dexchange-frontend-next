@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers"
 import { IGetOrder } from "../types"
 import moment from "moment"
-import { groupBy, maxBy, minBy, String } from "lodash"
+import { groupBy, maxBy, minBy } from "lodash"
 import { ethers } from "ethers"
 
 export const truncateDecimals = (num: string, truncateLimit: number) => {

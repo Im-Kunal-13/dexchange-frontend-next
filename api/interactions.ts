@@ -1,11 +1,12 @@
 import * as zksync from "zksync-web3"
 import * as ethers from "ethers"
-import axios from "axios"
 import { EXCHANGE_ABI, TOKEN_ABI } from "../constants/abi"
 import { v4 as uuidv4 } from "uuid"
+import axios from "axios"
 import { actions } from "../features/reducerActions"
 import { AppDispatch } from "../store/store"
 import { IDeposit, IGetOrder, IInsertOrder } from "../types"
+import axiosConfig from "../config/axiosConfig"
 
 // PROVIDER
 export const loadProvider = (dispatch: AppDispatch) => {
@@ -62,7 +63,7 @@ export const loadTokens = async (
 
 export const loadTokenPair = async (chainId: number, dispatch: AppDispatch) => {
     try {
-        const res = await axios.get(`/api/pairs/${chainId}`)
+        const res = await axiosConfig.get(`/api/pairs/${chainId}`)
         dispatch(actions.load_token_pair(res.data))
     } catch (error) {
         console.log(error)
@@ -158,7 +159,7 @@ export const deposit = async (
         }
 
         dispatch(actions.deposit_loading())
-        const res = await axios.post("/api/deposit", reqBody)
+        const res = await axiosConfig.post("/api/deposit", reqBody)
 
         dispatch(actions.deposit_success())
 
@@ -230,7 +231,7 @@ export const withdraw = async (
 
         dispatch(actions.withdraw_loading())
 
-        const res = await axios.post("/api/withdraw", reqBody)
+        const res = await axiosConfig.post("/api/withdraw", reqBody)
 
         dispatch(actions.withdraw_success())
     } catch (error) {
@@ -268,7 +269,7 @@ export const loadExchangeBalances = async (
     dispatch: AppDispatch
 ) => {
     try {
-        const res = await axios.get(`/api/balances/${chainId}/${account}`)
+        const res = await axiosConfig.get(`/api/balances/${chainId}/${account}`)
 
         dispatch(
             actions.load_exchange_token_1({
@@ -371,18 +372,18 @@ export const insertOrder = async (
 
         dispatch(actions.insert_order_loading())
 
-        await axios.post("/api/orders", order)
+        await axiosConfig.post("/api/orders", order)
 
         dispatch(actions.insert_order_success())
     } catch (error) {
         dispatch(actions.insert_order_error())
-        console.log(error)
+        console.log("Insert order error: " + error)
     }
 }
 
 export const getBuyOrders = async (chainId: number, dispatch: AppDispatch) => {
     try {
-        const res = await axios.get(
+        const res = await axiosConfig.get(
             `/api/orders/buy?type=limit&chainId=${chainId}`,
             {
                 params: {
@@ -398,7 +399,7 @@ export const getBuyOrders = async (chainId: number, dispatch: AppDispatch) => {
 
 export const getSellOrders = async (chainId: number, dispatch: AppDispatch) => {
     try {
-        const res = await axios.get(
+        const res = await axiosConfig.get(
             `/api/orders/sell?type=limit&chainId=${chainId}`,
             {
                 params: {
@@ -418,8 +419,8 @@ export const getMyOrders = async (
     dispatch: AppDispatch
 ) => {
     try {
-        const res = await axios.get(
-            `/api/orders/${chainId}?wallet=${wallet}&type=limit`,
+        const res = await axiosConfig.get(
+            `/api/orders/?chainId=${chainId}?wallet=${wallet}&type=limit`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -438,7 +439,7 @@ export const getCancelledOrders = async (
     dispatch: AppDispatch
 ) => {
     try {
-        const res = await axios.get(
+        const res = await axiosConfig.get(
             `/api/cancelled/${wallet}&chainId=${chainId}`
         )
         dispatch(actions.load_cancelled_orders(res.data))
@@ -457,7 +458,7 @@ export const cancelOrder = async (
     >
 ) => {
     try {
-        await axios.post(`/api/cancelled/${order._id.toString()}`)
+        await axiosConfig.post(`/api/cancelled/${order._id.toString()}`)
 
         setSnackbarInfo({
             open: true,
@@ -477,7 +478,7 @@ export const loadTrades = async (
     wallet: string = ""
 ) => {
     try {
-        const res = await axios.get(
+        const res = await axiosConfig.get(
             `/api/trades/${chainId}/${market}?wallet=${wallet}`
         )
 
