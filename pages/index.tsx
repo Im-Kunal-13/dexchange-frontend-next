@@ -34,6 +34,7 @@ import io from "socket.io-client"
 import { IGetOrder } from "../types"
 import { actions } from "../features/reducerActions"
 import PriceChart from "../components/Dashboard/PriceChart"
+import TvChart from "../components/Dashboard/TvChart"
 
 // @ts-ignore
 const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
@@ -393,8 +394,8 @@ const Home: NextPage = () => {
                     <Order />
                 </section>
                 <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
-                    {/* <TvChart /> */}
-                    <PriceChart />
+                    <TvChart />
+                    {/* <PriceChart /> */}
                     <Transactions />
                     <Trades />
                     <OrderBook />
