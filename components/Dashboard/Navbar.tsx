@@ -8,6 +8,7 @@ const Navbar = () => {
     const { connection, chainId, account, balance } = useAppSelector(
         (state) => state.provider
     )
+    const { pair } = useAppSelector((state) => state.tokens)
 
     const connectHandler = async () => {
         await loadAccount(connection, dispatch)
@@ -83,7 +84,7 @@ const Navbar = () => {
                 </p>
                 {account ? (
                     <a
-                        href={`https://explorer.zksync.io/address/${account}`}
+                        href={`${pair?.blockExplorerUrl}/address/${account}`}
                         target="_blank"
                         rel="noreferrer"
                         className="flex justify-center items-center bg-bgGray2 border-none text-white m-0 rounded-tl-lg rounded-bl-lg rounded-tr rounded-br w-[182px] h-[48px] text-[16px] no-underline transition-all duration-300"

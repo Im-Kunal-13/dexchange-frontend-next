@@ -170,7 +170,6 @@ const Transactions = () => {
                                                     onClick={() => {
                                                         cancelOrder(
                                                             order,
-                                                            dispatch,
                                                             setSnackbarInfo
                                                         )
                                                     }}

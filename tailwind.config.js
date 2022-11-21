@@ -83,6 +83,15 @@ module.exports = {
         alertBlue: "#26A5DF",
         alertBgBlue: "#071318",
         alertTextBlue: "#9BC4D6",
+        purple1: "#6000FF",
+        blue1: "#3453FF",
+        bgBlack1: "#0D0D0F",
+        bgSidebarGray1: "#111113",
+        textGray1: "#8A8991",
+        bgLightGray1: "#262627",
+        green1: "#1DB954",
+        red1: "#E60000",
+        orange1: "#FC472E"
       }),
       boxShadow: {
         black1: "0 0 10px 1px black",

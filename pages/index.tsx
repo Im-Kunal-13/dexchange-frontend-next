@@ -19,7 +19,6 @@ import {
 import type { NextPage } from "next"
 import Navbar from "../components/Dashboard/Navbar"
 import Markets from "../components/Dashboard/Markets"
-import TvChart from "../components/Dashboard/TvChart"
 import Balance from "../components/Dashboard/Balance"
 import Order from "../components/Dashboard/Order"
 import Transactions from "../components/Dashboard/Transactions"
@@ -34,8 +33,7 @@ import AlertLoading from "../components/Alerts/AlertLoading"
 import io from "socket.io-client"
 import { IGetOrder } from "../types"
 import { actions } from "../features/reducerActions"
-
-// Getting the socket from the io object we imported.
+import PriceChart from "../components/Dashboard/PriceChart"
 
 // @ts-ignore
 const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
@@ -312,21 +310,21 @@ const Home: NextPage = () => {
 
     // Loadig orders and trades when chainId is available
     useEffect(() => {
-        if (chainId) {
+        if (chainId && symbols) {
             getBuyOrders(chainId, dispatch)
             getSellOrders(chainId, dispatch)
-            loadTrades(chainId, dispatch)
+            loadTrades(chainId, symbols.join("-"), dispatch)
         }
-    }, [chainId])
+    }, [chainId, symbols])
 
     // Loading my orders and trades when chainId and account is available
     useEffect(() => {
-        if (account && chainId) {
+        if (account && chainId && symbols) {
             getMyOrders(chainId, account, dispatch)
-            loadTrades(chainId, dispatch, account)
+            loadTrades(chainId, symbols.join("-"), dispatch, account)
             getCancelledOrders(chainId, account, dispatch)
         }
-    }, [chainId, account])
+    }, [chainId, account, symbols])
 
     // Listening to Socket.io events
     useEffect(() => {
@@ -395,13 +393,15 @@ const Home: NextPage = () => {
                     <Order />
                 </section>
                 <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
-                    <TvChart />
+                    {/* <TvChart /> */}
+                    <PriceChart />
                     <Transactions />
                     <Trades />
                     <OrderBook />
                 </section>
             </main>
 
+            {/* Alerts */}
             <AlertWarning />
             <AlertInfo />
             <AlertSuccess />

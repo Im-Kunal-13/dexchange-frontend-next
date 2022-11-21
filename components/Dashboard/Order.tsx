@@ -54,8 +54,8 @@ const Order = () => {
                     connection,
                     dispatch
                 )
-                setAmount("0")
-                setPrice("0")
+                setAmount("")
+                setPrice("")
             } else {
                 setSnackbarWarning({
                     open: true,
@@ -98,8 +98,8 @@ const Order = () => {
                     connection,
                     dispatch
                 )
-                setAmount("0")
-                setPrice("0")
+                setAmount("")
+                setPrice("")
             } else {
                 setSnackbarWarning({
                     open: true,

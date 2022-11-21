@@ -51,6 +51,10 @@ export interface AppContextInterface {
             message: string
         }>
     >
+    metamaskModalActive: boolean
+    setMetamaskModalActive: React.Dispatch<React.SetStateAction<boolean>>
+    sidebarToggleCollapse: boolean
+    setSidebarToggleCollapse: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const AppStateContext = createContext<AppContextInterface | null>(null)
 
@@ -75,6 +79,8 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
         open: false,
         message: "",
     })
+    const [metamaskModalActive, setMetamaskModalActive] = useState(false)
+    const [sidebarToggleCollapse, setSidebarToggleCollapse] = useState(false)
 
     return (
         <AppStateContext.Provider
@@ -89,6 +95,10 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
                 setSnackbarInfo,
                 snackbarLoading,
                 setSnackbarLoading,
+                metamaskModalActive,
+                setMetamaskModalActive,
+                sidebarToggleCollapse,
+                setSidebarToggleCollapse,
             }}
         >
             {children}

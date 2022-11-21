@@ -344,10 +344,10 @@ export const insertOrder = async (
         chainId,
         nonce: uuidv4(),
         userAddress: wallet,
-        amount: ethers.utils.parseUnits(amount, precisions[0]).toString(),
         market,
         orderType: type.toLowerCase(),
         orderSide: side.toLowerCase(),
+        amount: ethers.utils.parseUnits(amount, precisions[0]).toString(),
         rate: ethers.utils.parseUnits(price, precisions[1]).toString(),
     }
 
@@ -419,7 +419,7 @@ export const getMyOrders = async (
 ) => {
     try {
         const res = await axios.get(
-            `/api/orders/user/${wallet}?type=limit&chainId=${chainId}`,
+            `/api/orders/${chainId}?wallet=${wallet}&type=limit`,
             {
                 params: {
                     status: ["open", "partially-filled"],
@@ -449,7 +449,6 @@ export const getCancelledOrders = async (
 
 export const cancelOrder = async (
     order: IGetOrder,
-    dispatch: AppDispatch,
     setSnackbarInfo: React.Dispatch<
         React.SetStateAction<{
             open: boolean
@@ -473,11 +472,14 @@ export const cancelOrder = async (
 
 export const loadTrades = async (
     chainId: number,
+    market: string,
     dispatch: AppDispatch,
     wallet: string = ""
 ) => {
     try {
-        const res = await axios.get(`/api/trades/${wallet}?chainId=${chainId}`)
+        const res = await axios.get(
+            `/api/trades/${chainId}/${market}?wallet=${wallet}`
+        )
 
         if (wallet) {
             dispatch(actions.load_my_trades(res.data))
