@@ -189,7 +189,7 @@ const signin = () => {
                                 ) : (
                                     <>
                                         <FiberManualRecordIcon className="text-red1 text-[16px]" />
-                                        <span className="leading-[1.25] tracking-[-.5px] text-white font-semibold text-[14px]">
+                                        <span className="leading-[1.25] tracking-[-.5px] text-white font-semibold text-[14px] normal-case">
                                             Not connected
                                         </span>
                                     </>
