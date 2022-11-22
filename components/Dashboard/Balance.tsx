@@ -1,17 +1,12 @@
 import React, { SetStateAction } from "react"
 import { useEffect, useState, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "../../store/store"
-import {
-    deposit,
-    loadExchangeBalances,
-    loadTokenBalances,
-    withdraw,
-} from "../../api/interactions"
+import { deposit, withdraw } from "../../api/interactions"
 import { Button, Divider, TextField } from "@mui/material"
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
 import { useAppStateContext } from "../../context/contextProvider"
 import FormHelperText from "@mui/material/FormHelperText"
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 
 const Balance = () => {
     // @ts-ignore
@@ -45,9 +40,22 @@ const Balance = () => {
     ])
 
     const depositHandler = (token: any, baseAsset: boolean) => {
+        const token1BigNum = ethers.utils.parseUnits(
+            token1TransferAmount || "0",
+            pair?.pairs[symbols.join("-")].baseAssetPrecision
+        )
+
+        const token2BigNum = ethers.utils.parseUnits(
+            token2TransferAmount || "0",
+            pair?.pairs[symbols.join("-")].quoteAssetPrecision
+        )
+
+        const balance1 = balances[0]
+        const balance2 = balances[1]
+
         if (token.address === contracts[0].address) {
-            if (Number(token1TransferAmount) > 0) {
-                if (Number(token1TransferAmount) < Number(balances[0])) {
+            if (!token1BigNum.isZero()) {
+                if (token1BigNum.lt(balance1)) {
                     deposit(
                         chainId,
                         account,
@@ -76,8 +84,8 @@ const Balance = () => {
                 })
             }
         } else {
-            if (Number(token2TransferAmount) > 0) {
-                if (Number(token2TransferAmount) < Number(balances[1])) {
+            if (!token2BigNum.isZero()) {
+                if (token2BigNum.lt(balance2)) {
                     deposit(
                         chainId,
                         account,
@@ -109,18 +117,32 @@ const Balance = () => {
     }
 
     const withdrawHandler = (token: any, baseAsset: boolean) => {
+        const token1BigNum = ethers.utils.parseUnits(
+            token1TransferAmount || "0",
+            pair?.pairs[symbols.join("-")].baseAssetPrecision
+        )
+        const token2BigNum = ethers.utils.parseUnits(
+            token2TransferAmount || "0",
+            pair?.pairs[symbols.join("-")].quoteAssetPrecision
+        )
+
+        const bal1Deposited = exchangeBalances[0].deposited
+
+        const bal1Blocked = exchangeBalances[0].blocked
+
+        const bal2Deposited = exchangeBalances[1].deposited
+        const bal2Blocked = exchangeBalances[1].blocked
+
         if (token.address === contracts[0].address) {
-            if (Number(token1TransferAmount) > 0) {
-                if (
-                    Number(token1TransferAmount) <= Number(exchangeBalances[0])
-                ) {
+            if (!token1BigNum.isZero()) {
+                if (token1BigNum.lte(bal1Deposited.sub(bal1Blocked))) {
                     withdraw(
                         chainId,
                         account,
                         token,
                         token1TransferAmount,
                         exchange.address,
-                        pair.pairs[
+                        pair.pairs[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -142,17 +164,15 @@ const Balance = () => {
                 })
             }
         } else {
-            if (Number(token2TransferAmount) > 0) {
-                if (
-                    Number(token2TransferAmount) <= Number(exchangeBalances[1])
-                ) {
+            if (!token2BigNum.isZero()) {
+                if (token2BigNum.lte(bal2Deposited.sub(bal2Blocked))) {
                     withdraw(
                         chainId,
                         account,
                         token,
                         token2TransferAmount,
                         exchange.address,
-                        pair.pairs[
+                        pair?.pairs[symbols.join("-")][
                             baseAsset
                                 ? "baseAssetPrecision"
                                 : "quoteAssetPrecision"
@@ -249,13 +269,22 @@ const Balance = () => {
                     </div>
                     <p className="flex flex-col items-start gap-1 text-white">
                         <small>Wallet</small>
-                        {balances[0] && Number(balances[0]).toFixed(4)}
+                        {balances[0] &&
+                            ethers.utils.formatUnits(
+                                balances[0].toString(),
+                                pair?.pairs[symbols.join("-")]
+                                    .baseAssetPrecision
+                            )}
                     </p>
                     <p className="flex flex-col items-start gap-1 text-white">
                         <small>Deposited</small>
                         {exchangeBalances[0] &&
                             symbols[0] &&
-                            Number(exchangeBalances[0].deposited).toFixed(4)}
+                            ethers.utils.formatUnits(
+                                exchangeBalances[0].deposited.toString(),
+                                pair?.pairs[symbols.join("-")]
+                                    .baseAssetPrecision
+                            )}
                     </p>
 
                     <p className="flex flex-col items-start gap-1 whitespace-nowrap text-white">
@@ -263,7 +292,11 @@ const Balance = () => {
                         <span className="whitespace-nowrap">
                             {exchangeBalances[0] &&
                                 symbols[0] &&
-                                Number(exchangeBalances[0].blocked).toFixed(4)}
+                                ethers.utils.formatUnits(
+                                    exchangeBalances[0].blocked.toString(),
+                                    pair?.pairs[symbols.join("-")]
+                                        .baseAssetPrecision
+                                )}
                         </span>
                     </p>
                 </div>
@@ -286,7 +319,7 @@ const Balance = () => {
                     </label>
                     <TextField
                         id="token0"
-                        type="number"
+                        type="string"
                         placeholder={"0.0000"}
                         value={token1TransferAmount}
                         variant="standard"
@@ -311,26 +344,48 @@ const Balance = () => {
                             root: "bg-bgGray1 w-full",
                         }}
                         style={
-                            Number(token1TransferAmount) >
-                            (isDeposit
-                                ? Number(balances[0])
-                                : Number(
-                                      exchangeBalances[0] &&
-                                          exchangeBalances[0].blocked
-                                  ))
-                                ? { border: "1px solid #DD3D32" }
-                                : { border: "1px solid transparent" }
+                            balances[0] && exchangeBalances[0]
+                                ? BigNumber.from(
+                                      Number(token1TransferAmount) > 0
+                                          ? ethers.utils.parseUnits(
+                                                token1TransferAmount
+                                                    ? token1TransferAmount
+                                                    : "0",
+                                                pair?.pairs[symbols.join("-")]
+                                                    .baseAssetPrecision
+                                            )
+                                          : "0"
+                                  ).gt(
+                                      isDeposit
+                                          ? balances[0]
+                                          : exchangeBalances[0].deposited.sub(
+                                                exchangeBalances[0].blocked
+                                            )
+                                  )
+                                    ? { border: "1px solid #DD3D32" }
+                                    : { border: "1px solid transparent" }
+                                : {}
                         }
                     />
                     <FormHelperText
                         className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
-                            Number(token1TransferAmount) >
-                            (isDeposit
-                                ? Number(balances[0])
-                                : Number(
-                                      exchangeBalances[0] &&
+                            balances[0] &&
+                            exchangeBalances[0] &&
+                            BigNumber.from(
+                                Number(token1TransferAmount) > 0
+                                    ? ethers.utils.parseUnits(
+                                          token1TransferAmount,
+                                          pair?.pairs[symbols.join("-")]
+                                              .baseAssetPrecision
+                                      )
+                                    : "0"
+                            ).gt(
+                                isDeposit
+                                    ? balances[0]
+                                    : exchangeBalances[0].deposited.sub(
                                           exchangeBalances[0].blocked
-                                  ))
+                                      )
+                            )
                                 ? "opacity-100"
                                 : "opacity-0"
                         }`}
@@ -370,21 +425,34 @@ const Balance = () => {
                     </div>
                     <p className="flex flex-col items-start gap-1 text-white">
                         <small>Wallet</small>
-                        {balances[1] && Number(balances[1]).toFixed(4)}
+                        {balances[1] &&
+                            ethers.utils.formatUnits(
+                                balances[1].toString(),
+                                pair?.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision
+                            )}
                     </p>
                     <p className="text-white">
                         <small>Deposited</small>
                         <br />
                         {exchangeBalances[1] &&
                             symbols[0] &&
-                            Number(exchangeBalances[1].deposited).toFixed(4)}
+                            ethers.utils.formatUnits(
+                                exchangeBalances[1].deposited.toString(),
+                                pair?.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision
+                            )}
                     </p>
                     <p className="text-white">
                         <small>blocked</small>
                         <br />
                         {exchangeBalances[1] &&
                             symbols[0] &&
-                            Number(exchangeBalances[1].blocked).toFixed(4)}
+                            ethers.utils.formatUnits(
+                                exchangeBalances[1].blocked.toString(),
+                                pair?.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision
+                            )}
                     </p>
                 </div>
 
@@ -407,7 +475,7 @@ const Balance = () => {
                     <TextField
                         placeholder={"0.0000"}
                         variant="standard"
-                        type="number"
+                        type="string"
                         autoComplete="off"
                         InputProps={{
                             className: "text-white focus:normal-case",
@@ -419,15 +487,25 @@ const Balance = () => {
                             root: "bg-bgGray1 w-full",
                         }}
                         style={
-                            Number(token2TransferAmount) >
-                            (isDeposit
-                                ? Number(balances[1])
-                                : Number(
-                                      exchangeBalances[1] &&
-                                          exchangeBalances[1].deposited
-                                  ))
-                                ? { border: "1px solid #DD3D32" }
-                                : { border: "1px solid transparent" }
+                            balances[1] && exchangeBalances[1]
+                                ? BigNumber.from(
+                                      Number(token2TransferAmount) > 0
+                                          ? ethers.utils.parseUnits(
+                                                token2TransferAmount,
+                                                pair?.pairs[symbols.join("-")]
+                                                    .quoteAssetPrecision
+                                            )
+                                          : "0"
+                                  ).gt(
+                                      isDeposit
+                                          ? balances[1]
+                                          : exchangeBalances[1].deposited.sub(
+                                                exchangeBalances[1].blocked
+                                            )
+                                  )
+                                    ? { border: "1px solid #DD3D32" }
+                                    : { border: "1px solid transparent" }
+                                : {}
                         }
                         id="token1"
                         value={token2TransferAmount}
@@ -441,10 +519,23 @@ const Balance = () => {
                     />
                     <FormHelperText
                         className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
-                            Number(token2TransferAmount) >
-                            (isDeposit
-                                ? Number(balances[1])
-                                : Number(exchangeBalances[1]))
+                            balances[1] &&
+                            exchangeBalances[1] &&
+                            BigNumber.from(
+                                Number(token2TransferAmount) > 0
+                                    ? ethers.utils.parseUnits(
+                                          token2TransferAmount,
+                                          pair?.pairs[symbols.join("-")]
+                                              .quoteAssetPrecision
+                                      )
+                                    : "0"
+                            ).gt(
+                                isDeposit
+                                    ? balances[1]
+                                    : exchangeBalances[1].deposited.sub(
+                                          exchangeBalances[1].blocked
+                                      )
+                            )
                                 ? "opacity-100"
                                 : "opacity-0"
                         }`}

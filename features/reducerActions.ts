@@ -1,6 +1,7 @@
 import { createAction } from "@reduxjs/toolkit"
 import { IGetOrder } from "../types"
 import * as zksync from "zksync-web3"
+import { BigNumber } from "ethers";
 
 export const actions = {
     // provider
@@ -13,19 +14,19 @@ export const actions = {
     load_token_1: createAction<{ symbol: string; token: any }>(
         "tokens/token_1_loaded"
     ),
-    load_token_1_balance: createAction<string>("tokens/token_1_balance_loaded"),
+    load_token_1_balance: createAction<BigNumber>("tokens/token_1_balance_loaded"),
     load_token_2: createAction<{ symbol: string; token: any }>(
         "tokens/token_2_loaded"
     ),
-    load_token_2_balance: createAction<string>("tokens/token_2_balance_loaded"),
+    load_token_2_balance: createAction<BigNumber>("tokens/token_2_balance_loaded"),
     load_token_pair: createAction<any>("tokens/token_pair_loaded"),
 
     // exchange
     load_exchange: createAction<zksync.Contract>("exchange/exchange_loaded"),
-    load_exchange_token_1: createAction<{ deposited: string; blocked: string }>(
+    load_exchange_token_1: createAction<{ deposited: BigNumber; blocked: BigNumber }>(
         "exchange/exchange_token_1_balance_loaded"
     ),
-    load_exchange_token_2: createAction<{ deposited: string; blocked: string }>(
+    load_exchange_token_2: createAction<{ deposited: BigNumber; blocked: BigNumber }>(
         "exchange/exchange_token_2_balance_loaded"
     ),
     // exchange -> deposit and withdraw

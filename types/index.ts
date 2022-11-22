@@ -1,3 +1,5 @@
+import { BigNumber } from "ethers"
+
 export interface IExchange {
     loaded: boolean
     contract: any
@@ -19,7 +21,7 @@ export interface IExchange {
         loaded: boolean
         data: IOrder[]
     }
-    balances: { deposited: string; blocked: string }[]
+    balances: { deposited: BigNumber; blocked: BigNumber }[]
     depositState: {
         loading: boolean
         failed: boolean
@@ -36,7 +38,7 @@ export interface ITokens {
     loaded: boolean
     contracts: any[]
     symbols: string[]
-    balances: string[]
+    balances: BigNumber[]
     pair: any
 }
 

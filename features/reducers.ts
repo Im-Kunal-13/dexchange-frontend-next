@@ -37,10 +37,7 @@ const DEFAULT_EXCHANGE_STATE: IExchange = {
         loaded: false,
         data: [],
     },
-    balances: [
-        { deposited: "0", blocked: "0" },
-        { deposited: "0", blocked: "0" },
-    ],
+    balances: [],
     depositState: {
         loading: false,
         failed: false,
@@ -322,8 +319,8 @@ export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {
 
             if (action.payload.order.wallet === action.payload.account) {
                 state.myTrades = state.myTrades
-                .concat([action.payload.order])
-                .sort(sortByTimeStampDescending)
+                    .concat([action.payload.order])
+                    .sort(sortByTimeStampDescending)
             }
         })
 })

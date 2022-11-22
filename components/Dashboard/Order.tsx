@@ -4,6 +4,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
 import { insertOrder } from "../../api/interactions"
 import { Button, FormHelperText, TextField } from "@mui/material"
 import { useAppStateContext } from "../../context/contextProvider"
+import { BigNumber, ethers } from "ethers"
 
 const Order = () => {
     const {
@@ -33,10 +34,18 @@ const Order = () => {
 
     const buyHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault()
-        if (Number(amount) > 0 && (isMarket || Number(price) > 0)) {
+        const amountBigNum = ethers.utils.parseUnits(
+            amount || "0",
+            pair?.pairs[symbols.join("-")].baseAssetPrecision
+        )
+        const priceBigNum = ethers.utils.parseUnits(
+            amount || "0",
+            pair?.pairs[symbols.join("-")].quoteAssetPrecision
+        )
+
+        if (!amountBigNum.isZero() && (isMarket || !priceBigNum.isZero())) {
             if (
-                Number(price) <=
-                Number(balances[1].deposited) - Number(balances[1].blocked)
+                priceBigNum.lte(balances[1].deposited.sub(balances[1].blocked))
             ) {
                 insertOrder(
                     account,
@@ -230,20 +239,30 @@ const Order = () => {
                         root: "bg-bgGray1 w-full",
                     }}
                     style={
-                        !isBuy &&
-                        Number(amount) >
-                            Number(balances[0].deposited) -
-                                Number(balances[0].blocked)
-                            ? { border: "1px solid #DD3D32" }
-                            : { border: "1px solid transparent" }
+                        !isBuy && balances[0]
+                            ? BigNumber.from(
+                                  ethers.utils.parseUnits(
+                                      amount ? amount : "0",
+                                      pair?.pairs[symbols.join("-")]
+                                          .baseAssetPrecision
+                                  )
+                              ).gt(balances[0].deposited)
+                                ? { border: "1px solid #DD3D32" }
+                                : { border: "1px solid transparent" }
+                            : {}
                     }
                 />
                 <FormHelperText
                     className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
                         !isBuy &&
-                        Number(amount) >
-                            Number(balances[0].deposited) -
-                                Number(balances[0].blocked)
+                        balances[0] &&
+                        BigNumber.from(
+                            ethers.utils.parseUnits(
+                                amount ? amount : "0",
+                                pair?.pairs[symbols.join("-")]
+                                    .baseAssetPrecision
+                            )
+                        ).gt(balances[0].deposited)
                             ? "opacity-100"
                             : "opacity-0"
                     }`}
@@ -300,21 +319,31 @@ const Order = () => {
                         } bg-bgGray1 w-full disabled:bg-white`,
                     }}
                     style={
-                        isBuy &&
-                        Number(price) >
-                            Number(balances[1].deposited) -
-                                Number(balances[1].blocked)
-                            ? { border: "1px solid #DD3D32" }
-                            : { border: "1px solid transparent" }
+                        isBuy && balances[1]
+                            ? BigNumber.from(
+                                  ethers.utils.parseUnits(
+                                      price ? price : "0",
+                                      pair?.pairs[symbols.join("-")]
+                                          .quoteAssetPrecision
+                                  )
+                              ).gt(balances[1].deposited)
+                                ? { border: "1px solid #DD3D32" }
+                                : { border: "1px solid transparent" }
+                            : {}
                     }
                 />
 
                 <FormHelperText
                     className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
                         isBuy &&
-                        Number(price) >
-                            Number(balances[1].deposited) -
-                                Number(balances[1].blocked)
+                        balances[1] &&
+                        BigNumber.from(
+                            ethers.utils.parseUnits(
+                                price ? price : "0",
+                                pair?.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision
+                            )
+                        ).gt(balances[1].deposited)
                             ? "opacity-100"
                             : "opacity-0"
                     }`}

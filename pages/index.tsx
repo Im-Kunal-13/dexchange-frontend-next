@@ -276,6 +276,8 @@ const Home: NextPage = () => {
             chainId &&
             (withdrawState.success || depositState.success)
         ) {
+            console.log("Hey ! you have entered success useEffect")
+
             loadTokenBalances(
                 contracts,
                 account,
@@ -285,6 +287,7 @@ const Home: NextPage = () => {
                 ],
                 dispatch
             )
+
             loadExchangeBalances(
                 [
                     pair.pairs[symbols.join("-")].baseAssetPrecision,

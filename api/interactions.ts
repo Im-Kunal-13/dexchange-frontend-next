@@ -7,6 +7,7 @@ import { actions } from "../features/reducerActions"
 import { AppDispatch } from "../store/store"
 import { IDeposit, IGetOrder, IInsertOrder } from "../types"
 import axiosConfig from "../config/axiosConfig"
+import { BigNumber } from "ethers"
 
 // PROVIDER
 export const loadProvider = (dispatch: AppDispatch) => {
@@ -180,6 +181,9 @@ export const withdraw = async (
     provider: any,
     dispatch: AppDispatch
 ) => {
+    console.log("amount => ", amount)
+    console.log("precision => ", precision)
+
     const domain = {
         name: "Dexchange",
         version: "1",
@@ -231,6 +235,7 @@ export const withdraw = async (
 
         dispatch(actions.withdraw_loading())
 
+        console.log("reqBody =>", reqBody)
         const res = await axiosConfig.post("/api/withdraw", reqBody)
 
         dispatch(actions.withdraw_success())
@@ -247,17 +252,16 @@ export const loadTokenBalances = async (
     precisions: number[],
     dispatch: AppDispatch
 ) => {
-    let balance = ethers.utils.formatUnits(
-        await tokens[0].balanceOf(account),
-        precisions[0]
-    )
+    let balance = await tokens[0].balanceOf(account)
+
+    console.log("Balance 1 ->", balance.toString())
 
     dispatch(actions.load_token_1_balance(balance))
 
-    balance = ethers.utils.formatUnits(
-        await tokens[1].balanceOf(account),
-        precisions[1]
-    )
+    balance = await tokens[1].balanceOf(account)
+
+    console.log("Balance 2 ->", balance.toString())
+
     dispatch(actions.load_token_2_balance(balance))
 }
 
@@ -270,29 +274,24 @@ export const loadExchangeBalances = async (
 ) => {
     try {
         const res = await axiosConfig.get(`/api/balances/${chainId}/${account}`)
-
         dispatch(
             actions.load_exchange_token_1({
-                deposited: ethers.utils.formatUnits(
-                    res.data?.balances[chainId][tokens[0].address].deposited,
-                    tokenPrecisions[0]
+                deposited: BigNumber.from(
+                    res.data?.balances[chainId][tokens[0].address].deposited
                 ),
-                blocked: ethers.utils.formatUnits(
-                    res.data?.balances[chainId][tokens[0].address].blocked,
-                    tokenPrecisions[0]
+                blocked: BigNumber.from(
+                    res.data?.balances[chainId][tokens[0].address].blocked
                 ),
             })
         )
 
         dispatch(
             actions.load_exchange_token_2({
-                deposited: ethers.utils.formatUnits(
-                    res.data?.balances[chainId][tokens[1].address].deposited,
-                    tokenPrecisions[1]
+                deposited: BigNumber.from(
+                    res.data?.balances[chainId][tokens[1].address].deposited
                 ),
-                blocked: ethers.utils.formatUnits(
-                    res.data?.balances[chainId][tokens[1].address].blocked,
-                    tokenPrecisions[1]
+                blocked: BigNumber.from(
+                    res.data?.balances[chainId][tokens[1].address].blocked
                 ),
             })
         )
