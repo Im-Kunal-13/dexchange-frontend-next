@@ -80,7 +80,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
         message: "",
     })
     const [metamaskModalActive, setMetamaskModalActive] = useState(false)
-    const [sidebarToggleCollapse, setSidebarToggleCollapse] = useState(false)
+    const [sidebarToggleCollapse, setSidebarToggleCollapse] = useState(true)
 
     return (
         <AppStateContext.Provider

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
@@ -17,8 +17,6 @@ const Transactions = () => {
     const { symbols, pair } = useAppSelector((state) => state.tokens)
     const { myOrders } = useAppSelector((state) => state.order)
     const { myTrades } = useAppSelector((state) => state.trade)
-
-    const dispatch = useAppDispatch()
 
     const tradeRef = useRef(null)
     const orderRef = useRef<HTMLButtonElement>(null)

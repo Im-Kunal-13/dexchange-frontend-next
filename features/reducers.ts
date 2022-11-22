@@ -4,6 +4,7 @@ import {
     sortByPriceAscending,
     sortByPriceDescending,
     sortByTimeStamp,
+    sortByTimeStampDescending,
 } from "../utility"
 import { actions } from "./reducerActions"
 
@@ -315,10 +316,14 @@ export const trade = createReducer(DEFAULT_TRADES_STATE, (builder) => {
             state.myTrades = action.payload
         })
         .addCase(actions.insert_trade, (state, action) => {
-            state.allTrades.push(action.payload.order)
+            state.allTrades = state.allTrades
+                .concat([action.payload.order])
+                .sort(sortByTimeStampDescending)
 
-            if (action.payload.order._id === action.payload.account) {
-                state.myTrades.push(action.payload.order)
+            if (action.payload.order.wallet === action.payload.account) {
+                state.myTrades = state.myTrades
+                .concat([action.payload.order])
+                .sort(sortByTimeStampDescending)
             }
         })
 })

@@ -24,7 +24,7 @@ export const Sidebar = () => {
     )
 
     const wrapperClasses = classNames(
-        "h-screen pt-1 bg-bgSidebarGray1 border-r border-r-white border-opacity-10 max-h-screen flex justify-between flex-col transition-all duration-300 rounded-tr-xl rounded-br-xl",
+        "h-screen pt-1 bg-bgSidebarGray1 border-r border-r-white border-opacity-10 max-h-screen flex justify-between flex-col transition-all duration-300 rounded-tr-xl rounded-br-xl absolute left-0",
         {
             "w-80": !sidebarToggleCollapse,
             "w-24": sidebarToggleCollapse,
@@ -49,7 +49,7 @@ export const Sidebar = () => {
     }
 
     const collapseIconClasses = classNames(
-        "bg-white bg-opacity-10 absolute w-11 h-11 -right-5 top-[90px] rounded-full hover:scale-105 transition-all duration-300",
+        "bg-white bg-opacity-10 absolute w-11 h-11 -right-5 top-[65.5px] rounded-full hover:scale-105 transition-all duration-300",
         {
             "rotate-180": sidebarToggleCollapse,
             "opacity-100": collapseIconActive,
@@ -63,7 +63,7 @@ export const Sidebar = () => {
         link: string
     }) =>
         classNames(
-            "flex py-4 px-3 gap-3 items-center h-full transition-all duration-300 text-white",
+            "flex py-4 px-3 gap-3 items-center h-[56px] transition-all duration-300 text-white",
             {
                 "w-60": !sidebarToggleCollapse,
                 "w-12": sidebarToggleCollapse,
@@ -98,7 +98,7 @@ export const Sidebar = () => {
                     <img
                         src="/images/dexchange_logo7.png"
                         alt="dexchange logo"
-                        className="my-14 min-w-[240px] w-[240px] relative left-1"
+                        className="mt-10 mb-10 min-w-[240px] w-[240px] relative left-1"
                     />
                 </div>
                 <Divider className="bg-white bg-opacity-25 h-[.5px] mb-[14px]" />
