@@ -155,7 +155,7 @@ const Balance = () => {
                 } else {
                     setSnackbarWarning({
                         open: true,
-                        message: "You have insufficient amount of tokens !",
+                        message: "You don't have enough withdrawal balance !",
                     })
                 }
             } else {
@@ -185,7 +185,7 @@ const Balance = () => {
                 } else {
                     setSnackbarWarning({
                         open: true,
-                        message: "You have insufficient amount of tokens !",
+                        message: "You don't have enough withdrawal balance !",
                     })
                 }
             } else {
