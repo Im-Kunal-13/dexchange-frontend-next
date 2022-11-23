@@ -423,8 +423,8 @@ const Home: NextPage = () => {
                     <Order />
                 </section>
                 <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
-                    {/* <TvChart /> */}
-                    <PriceChart />
+                    <TvChart />
+                    {/* <PriceChart /> */}
                     <Transactions />
                     <Trades />
                     <OrderBook />
