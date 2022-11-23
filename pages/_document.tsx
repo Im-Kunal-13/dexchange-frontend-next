@@ -8,8 +8,8 @@ export default class MyDocument extends Document {
         return (
             <Html lang="en">
                 <Head>
-                    {/* PWA primary color */}
-                    <link rel="shortcut icon" href="/favicon.ico" />
+                    <title>Dexchange</title>
+                    <link rel="shortcut icon" href="/images/dexchange_d.png" />
                     <meta name="emotion-insertion-point" content="" />
                 </Head>
                 <body>

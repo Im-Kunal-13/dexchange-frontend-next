@@ -101,7 +101,7 @@ export const Sidebar = () => {
                         className="mt-10 mb-10 min-w-[240px] w-[240px] relative left-1"
                     />
                 </div>
-                <Divider className="bg-white bg-opacity-25 h-[.5px] mb-[14px]" />
+                <Divider className="bg-white bg-opacity-25 h-[0.5px] mb-[14px]" />
                 <button
                     className={collapseIconClasses}
                     onClick={() => {

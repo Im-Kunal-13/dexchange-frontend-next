@@ -393,8 +393,10 @@ const Balance = () => {
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough {symbols[0]}{" "}
-                        {isDeposit ? "in your Wallet" : "deposited"} !
+                        You don't have enough
+                        {isDeposit
+                            ? ` ${symbols[0]} in your Wallet`
+                            : " withdrawal balance"}{" "}
                     </FormHelperText>
                     <Button
                         variant="outlined"
@@ -544,8 +546,10 @@ const Balance = () => {
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough {symbols[1]}{" "}
-                        {isDeposit ? "in your Wallet" : "deposited"} !
+                        You don't have enough
+                        {isDeposit
+                            ? ` ${symbols[1]} in your Wallet`
+                            : " withdrawal balance"}{" "}
                     </FormHelperText>
                     <Button
                         variant="outlined"

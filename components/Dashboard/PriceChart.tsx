@@ -10,6 +10,105 @@ const PriceChart = () => {
     const { pair, symbols } = useAppSelector((state) => state.tokens)
     const [graphInterval, setGraphInterval] = useState("hour")
 
+    const priceChartOptions = {
+        chart: {
+            animations: { enabled: true },
+            type: "candlestick",
+            height: 350,
+            foreColor: "white",
+            background: "black",
+            toolbar: { show: true, offsetX: -30, offsetY: -35 },
+            width: "100px",
+        },
+        title: {
+            text: "",
+            align: "left",
+        },
+        plotOptions: {
+            candlestick: {
+                colors: {
+                    upward: "#00B746",
+                    downward: "#EF403C",
+                },
+                wick: {
+                    useFillColor: true,
+                },
+            },
+        },
+        tooltip: {
+            enabled: true,
+            theme: false,
+            style: {
+                fontSize: "12px",
+                fontFamily: undefined,
+            },
+            x: {
+                show: false,
+                format: "dd MMM",
+                formatter: undefined,
+            },
+            y: {
+                show: true,
+                title: "price",
+            },
+            marker: {
+                show: false,
+            },
+            items: {
+                display: "flex",
+            },
+            fixed: {
+                enabled: false,
+                position: "topRight",
+                offsetX: 0,
+                offsetY: 0,
+            },
+        },
+        grid: {
+            show: true,
+            borderColor: "#767F92",
+            strokeDashArray: 0,
+
+            padding: {
+                left: 50,
+                right: 50, // Also you may want to increase this (based on the length of your labels)
+            },
+        },
+        xaxis: {
+            tickPlacement: "on",
+            type: "datetime",
+            labels: {
+                // formatter: function (value: any) {
+                //     console.log(graphInterval)
+                //     const formattedDate = new Date(value).getHours() + ":" + new Date(value).getMinutes()
+
+                //     return formattedDate
+                // },
+                show: true,
+                style: {
+                    colors: "#767F92",
+                    fontSize: "14px",
+                    cssClass: "apexcharts-xaxis-label",
+                },
+            },
+        },
+        yaxis: {
+            labels: {
+                show: true,
+                minWidth: 0,
+                maxWidth: 160,
+                style: {
+                    color: "#F1F2F9",
+                    fontSize: "14px",
+                    cssClass: "apexcharts-yaxis-label",
+                },
+                offsetX: 0,
+                offsetY: 0,
+                rotate: 0,
+            },
+        },
+    }
+
     return (
         <div
             id="chart"
@@ -50,7 +149,7 @@ const PriceChart = () => {
             {typeof window !== "undefined" ? (
                 <ReactApexChart
                     // @ts-ignore
-                    options={getPriceChartOptions(graphInterval)}
+                    options={priceChartOptions}
                     series={[
                         {
                             data: buildGraphData(

@@ -4,6 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { loadTokens } from "../../api/interactions"
 import NorthIcon from "@mui/icons-material/North"
+import Head from "next/head"
 
 const exchange = () => {
     const dispatch = useAppDispatch()
@@ -36,6 +37,13 @@ const exchange = () => {
 
     return (
         <DashboardLayout>
+            <Head>
+                <title>Dexchange</title>
+                <meta
+                    name="viewport"
+                    content="initial-scale=1.0, width=device-width"
+                />
+            </Head>
             <div className="border-b border-b-white border-opacity-10 grid grid-cols-7 h-[92px]">
                 <Select
                     // @ts-ignore

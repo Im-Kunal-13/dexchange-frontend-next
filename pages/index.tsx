@@ -33,6 +33,8 @@ import { useAppStateContext } from "../context/contextProvider"
 import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
+import PriceChart from "../components/Dashboard/PriceChart"
+import Head from "next/head"
 
 const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
 
@@ -411,6 +413,13 @@ const Home: NextPage = () => {
 
     return (
         <div className="bg-bgGray1">
+            <Head>
+                <title>Dexchange</title>
+                <meta
+                    name="viewport"
+                    content="initial-scale=1.0, width=device-width"
+                />
+            </Head>
             <Navbar />
             <main className="grid">
                 <section className="bg-black shadow-black1 p-[2em] col-start-1 col-end-5 max-h-[82rem]">
@@ -421,8 +430,8 @@ const Home: NextPage = () => {
                     <Order />
                 </section>
                 <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
-                    <TvChart />
-                    {/* <PriceChart /> */}
+                    {/* <TvChart /> */}
+                    <PriceChart />
                     <Transactions />
                     <Trades />
                     <OrderBook />

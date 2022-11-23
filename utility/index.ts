@@ -138,8 +138,11 @@ export const getPriceChartOptions = (graphInterval: string) => ({
         type: "datetime",
         labels: {
             formatter: function (value: any) {
+                console.log(graphInterval)
                 const formattedDate =
-                    new Date(value).getHours() +
+                    (graphInterval === "hour"
+                        ? new Date(value).getHours()
+                        : "") +
                     ":" +
                     new Date(value).getMinutes()
 
