@@ -1,5 +1,19 @@
 import { useEffect } from "react"
+import type { NextPage } from "next"
 import { useAppDispatch, useAppSelector } from "../store/store"
+import Navbar from "../components/Dashboard/Navbar"
+import Markets from "../components/Dashboard/Markets"
+import Balance from "../components/Dashboard/Balance"
+import Order from "../components/Dashboard/Order"
+import Transactions from "../components/Dashboard/Transactions"
+import Trades from "../components/Dashboard/Trades"
+import OrderBook from "../components/Dashboard/OrderBook"
+import AlertWarning from "../components/Alerts/AlertWarning"
+import AlertInfo from "../components/Alerts/AlertInfo"
+import AlertSuccess from "../components/Alerts/AlertSuccess"
+import AlertError from "../components/Alerts/AlertError"
+import AlertLoading from "../components/Alerts/AlertLoading"
+import TvChart from "../components/Dashboard/TvChart"
 import {
     loadProvider,
     loadNetwork,
@@ -15,27 +29,11 @@ import {
     getMyOrders,
     getCancelledOrders,
 } from "../api/interactions"
-
-import type { NextPage } from "next"
-import Navbar from "../components/Dashboard/Navbar"
-import Markets from "../components/Dashboard/Markets"
-import Balance from "../components/Dashboard/Balance"
-import Order from "../components/Dashboard/Order"
-import Transactions from "../components/Dashboard/Transactions"
-import Trades from "../components/Dashboard/Trades"
-import OrderBook from "../components/Dashboard/OrderBook"
-import AlertWarning from "../components/Alerts/AlertWarning"
-import AlertInfo from "../components/Alerts/AlertInfo"
-import AlertSuccess from "../components/Alerts/AlertSuccess"
-import AlertError from "../components/Alerts/AlertError"
 import { useAppStateContext } from "../context/contextProvider"
-import AlertLoading from "../components/Alerts/AlertLoading"
-import io from "socket.io-client"
-import { IGetOrder } from "../types"
 import { actions } from "../features/reducerActions"
-import TvChart from "../components/Dashboard/TvChart"
+import * as io from "socket.io-client"
+import { IGetOrder } from "../types"
 
-// @ts-ignore
 const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
 
 const Home: NextPage = () => {
@@ -44,7 +42,6 @@ const Home: NextPage = () => {
     const { depositState, withdrawState, contract } = useAppSelector(
         (state) => state.exchange
     )
-    const { insertOrderState } = useAppSelector((state) => state.order)
     const { account, chainId, connection } = useAppSelector(
         (state) => state.provider
     )
@@ -65,7 +62,7 @@ const Home: NextPage = () => {
                 window.location.reload()
             })
 
-            // Fetch current account and balance from metamask when changed
+            // Fetch current account and balance from metamask when changed //todo -> Not working
             window.ethereum.on("accountsChanged", () => {
                 loadAccount(connection, dispatch)
             })
@@ -85,8 +82,8 @@ const Home: NextPage = () => {
                 dispatch
             )
         } else {
-            token_1_address = pair.pairs["BTC-USDC"].baseAssetAddress
-            token_2_address = pair.pairs["BTC-USDC"].quoteAssetAddress
+            token_1_address = pair?.pairs["BTC-USDC"].baseAssetAddress
+            token_2_address = pair?.pairs["BTC-USDC"].quoteAssetAddress
 
             await loadTokens(
                 connection,
@@ -102,18 +99,53 @@ const Home: NextPage = () => {
         await loadExchange(connection, dexchangeAddress, dispatch)
     }
 
+    const loadMyBalances = () => {
+        if (
+            contract &&
+            contracts[0] &&
+            contracts[1] &&
+            account &&
+            symbols[0] &&
+            symbols[1] &&
+            pair
+        ) {
+            loadTokenBalances(
+                contracts,
+                account,
+                pair && [
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
+                ],
+                dispatch
+            )
+            loadExchangeBalances(
+                [
+                    pair.pairs[symbols.join("-")].baseAssetPrecision,
+                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
+                ],
+                contracts,
+                account,
+                chainId,
+                dispatch
+            )
+        }
+    }
+
+    // Initially loading the blockchain data on first render
     useEffect(() => {
         if (pair && connection && chainId) {
             loadBlockchainData()
         }
     }, [pair, connection, chainId, symbols])
 
+    // Loading the blockchain data on withdraw or deposit success
     useEffect(() => {
         if (depositState.success || withdrawState.success) {
             loadBlockchainData()
         }
     }, [depositState.success, withdrawState.success])
 
+    // Loading states while depositing tokens
     useEffect(() => {
         if (depositState.loading) {
             setSnackbarLoading({
@@ -141,6 +173,7 @@ const Home: NextPage = () => {
         }
     }, [depositState.success, depositState.loading, depositState.failed])
 
+    // Loading states while withdrawing tokens
     useEffect(() => {
         if (withdrawState.loading) {
             setSnackbarLoading({
@@ -168,73 +201,14 @@ const Home: NextPage = () => {
         }
     }, [withdrawState.success, withdrawState.loading, withdrawState.failed])
 
-    useEffect(() => {
-        if (insertOrderState.loading) {
-            setSnackbarLoading({
-                open: true,
-                message: "Order in progress...",
-            })
-        } else if (insertOrderState.success) {
-            if (
-                contract &&
-                contracts[0] &&
-                contracts[1] &&
-                account &&
-                symbols[0] &&
-                symbols[1] &&
-                pair
-            ) {
-                loadTokenBalances(
-                    contracts,
-                    account,
-                    pair && [
-                        pair.pairs[symbols.join("-")].baseAssetPrecision,
-                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                    ],
-                    dispatch
-                )
-                loadExchangeBalances(
-                    [
-                        pair.pairs[symbols.join("-")].baseAssetPrecision,
-                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                    ],
-                    contracts,
-                    account,
-                    chainId,
-                    dispatch
-                )
-            }
-
-            setSnackbarLoading({
-                open: false,
-                message: "Order in progress...",
-            })
-            setSnackbarSuccess({
-                open: true,
-                message: "Your order has beed placed",
-            })
-        } else if (insertOrderState.error) {
-            setSnackbarLoading({
-                open: false,
-                message: "Order in progress...",
-            })
-            setSnackbarError({
-                open: true,
-                message: "Failed to place order !",
-            })
-        }
-    }, [
-        insertOrderState.success,
-        insertOrderState.loading,
-        insertOrderState.error,
-    ])
-
+    // Loading the token pairs when chainId is there
     useEffect(() => {
         if (chainId) {
             loadTokenPair(chainId, dispatch)
         }
     }, [chainId])
 
+    // Loading the token and dexchange contract balances on the initial render
     useEffect(() => {
         if (
             contract &&
@@ -276,8 +250,6 @@ const Home: NextPage = () => {
             chainId &&
             (withdrawState.success || depositState.success)
         ) {
-            console.log("Hey ! you have entered success useEffect")
-
             loadTokenBalances(
                 contracts,
                 account,
@@ -301,7 +273,7 @@ const Home: NextPage = () => {
         }
     }, [withdrawState.success, depositState.success])
 
-    // Loading chainId
+    // Loading chainId on first render // todo: edge cases check
     useEffect(() => {
         const provider: any = loadProvider(dispatch)
         loadNetwork(provider, dispatch)
@@ -337,12 +309,56 @@ const Home: NextPage = () => {
                     dispatch(
                         actions.new_order_inserted({ order, account: account })
                     )
+
+                    if (order.wallet === account) {
+                        setSnackbarSuccess({
+                            open: true,
+                            message: "Your order has beed placed",
+                        })
+
+                        if (
+                            contract &&
+                            contracts[0] &&
+                            contracts[1] &&
+                            account &&
+                            symbols[0] &&
+                            symbols[1] &&
+                            pair
+                        ) {
+                            loadTokenBalances(
+                                contracts,
+                                account,
+                                pair && [
+                                    pair.pairs[symbols.join("-")]
+                                        .baseAssetPrecision,
+                                    pair.pairs[symbols.join("-")]
+                                        .quoteAssetPrecision,
+                                ],
+                                dispatch
+                            )
+                            loadExchangeBalances(
+                                [
+                                    pair.pairs[symbols.join("-")]
+                                        .baseAssetPrecision,
+                                    pair.pairs[symbols.join("-")]
+                                        .quoteAssetPrecision,
+                                ],
+                                contracts,
+                                account,
+                                chainId,
+                                dispatch
+                            )
+                        }
+                    }
                 }
             })
 
             socket.on("order_cancelled", (order: IGetOrder) => {
                 if (order.chainId === chainId) {
                     dispatch(actions.order_cancelled({ order, account }))
+                }
+                if (order.wallet === account) {
+                    loadMyBalances()
                 }
             })
 
@@ -351,11 +367,18 @@ const Home: NextPage = () => {
                     dispatch(actions.order_filled({ order, account }))
                     dispatch(actions.insert_trade({ order, account }))
                 }
+
+                if (order.wallet === account) {
+                    loadMyBalances()
+                }
             })
 
             socket.on("order_partially_filled", (order: IGetOrder) => {
                 if (order.chainId === chainId) {
                     dispatch(actions.order_partially_filled({ order, account }))
+                }
+                if (order.wallet === account) {
+                    loadMyBalances()
                 }
             })
             socket.on(
@@ -369,6 +392,10 @@ const Home: NextPage = () => {
                             })
                         )
                     }
+
+                    if (order.wallet === account) {
+                        loadMyBalances()
+                    }
                 }
             )
         }
@@ -380,7 +407,7 @@ const Home: NextPage = () => {
             socket.off("order_partially_filled")
             socket.off("order_partially_filled_cancelled")
         }
-    }, [socket, account, chainId])
+    }, [socket, account, chainId, contract, contracts, symbols, pair])
 
     return (
         <div className="bg-bgGray1">

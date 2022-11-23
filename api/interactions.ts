@@ -181,9 +181,6 @@ export const withdraw = async (
     provider: any,
     dispatch: AppDispatch
 ) => {
-    console.log("amount => ", amount)
-    console.log("precision => ", precision)
-
     const domain = {
         name: "Dexchange",
         version: "1",
@@ -235,7 +232,6 @@ export const withdraw = async (
 
         dispatch(actions.withdraw_loading())
 
-        console.log("reqBody =>", reqBody)
         const res = await axiosConfig.post("/api/withdraw", reqBody)
 
         dispatch(actions.withdraw_success())
@@ -254,13 +250,9 @@ export const loadTokenBalances = async (
 ) => {
     let balance = await tokens[0].balanceOf(account)
 
-    console.log("Balance 1 ->", balance.toString())
-
     dispatch(actions.load_token_1_balance(balance))
 
     balance = await tokens[1].balanceOf(account)
-
-    console.log("Balance 2 ->", balance.toString())
 
     dispatch(actions.load_token_2_balance(balance))
 }
@@ -274,6 +266,7 @@ export const loadExchangeBalances = async (
 ) => {
     try {
         const res = await axiosConfig.get(`/api/balances/${chainId}/${account}`)
+
         dispatch(
             actions.load_exchange_token_1({
                 deposited: BigNumber.from(
@@ -376,7 +369,7 @@ export const insertOrder = async (
         dispatch(actions.insert_order_success())
     } catch (error) {
         dispatch(actions.insert_order_error())
-        console.log("Insert order error: " + error)
+        console.log("Insert order error: ", error)
     }
 }
 

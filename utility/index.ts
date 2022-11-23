@@ -33,7 +33,10 @@ export const sortByTimeStamp = (order1: IGetOrder, order2: IGetOrder) => {
         return -1
     } else return 0
 }
-export const sortByTimeStampDescending = (order1: IGetOrder, order2: IGetOrder) => {
+export const sortByTimeStampDescending = (
+    order1: IGetOrder,
+    order2: IGetOrder
+) => {
     const date1 = new Date(order1.createdAt)
     const date2 = new Date(order2.createdAt)
 
@@ -200,4 +203,8 @@ export const buildGraphData = (
     })
 
     return graphData
+}
+
+export const containsOnlyValidNumber = (str: string) => {
+    return /^\d*\.?\d*$/.test(str)
 }

@@ -76,12 +76,6 @@ export interface IOrder {
     buyOrders: IGetOrder[]
     myOrders: IGetOrder[]
     cancelledOrders: IGetOrder[]
-    insertOrderState: {
-        loading: boolean
-        success: boolean
-        error: boolean
-        status: string
-    }
 }
 
 export interface ITrade {

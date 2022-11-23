@@ -26,7 +26,7 @@ html {
     overflow-x: hidden;
 }
 ::-webkit-scrollbar {
-    width: 0;
+    width: 0px;
 }
 
 main {
@@ -483,3 +483,17 @@ input[type="number"]::-webkit-outer-spin-button {
     background-size: 110%;
 }
 
+.mui-style-1x51dt5-MuiInputBase-input-MuiInput-input.Mui-disabled {
+    -webkit-text-fill-color: white !important;
+}
+
+// Custom scrollbar
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #6000ff, rgb(96, 0, 255, 0.3),  rgb(96, 0, 255, 0));
+    background-size: 100%;
+    border-radius: 10px;
+}

@@ -62,12 +62,6 @@ const DEFAULT_ORDERS_STATE: IOrder = {
     buyOrders: [],
     myOrders: [],
     cancelledOrders: [],
-    insertOrderState: {
-        loading: false,
-        success: false,
-        error: false,
-        status: "",
-    },
 }
 
 const DEFAULT_TRADES_STATE: ITrade = {
@@ -177,27 +171,7 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
         .addCase(actions.load_cancelled_orders, (state, action) => {
             state.cancelledOrders = action.payload
         })
-
-        // INSERT ORDER STATES
-        .addCase(actions.insert_order_status, (state, action) => {
-            state.insertOrderState.status = action.payload
-        })
-        .addCase(actions.insert_order_loading, (state) => {
-            state.insertOrderState.loading = true
-            state.insertOrderState.success = false
-            state.insertOrderState.error = false
-        })
-        .addCase(actions.insert_order_success, (state) => {
-            state.insertOrderState.loading = false
-            state.insertOrderState.success = true
-            state.insertOrderState.error = false
-        })
-        .addCase(actions.insert_order_error, (state) => {
-            state.insertOrderState.loading = false
-            state.insertOrderState.success = false
-            state.insertOrderState.error = true
-        })
-
+        
         // SOCKET EVENTS
         .addCase(actions.new_order_inserted, (state, action) => {
             if (action.payload.order.side === "buy") {

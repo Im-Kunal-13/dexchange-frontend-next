@@ -7,6 +7,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
 import { useAppStateContext } from "../../context/contextProvider"
 import FormHelperText from "@mui/material/FormHelperText"
 import { BigNumber, ethers } from "ethers"
+import { containsOnlyValidNumber } from "../../utility"
 
 const Balance = () => {
     // @ts-ignore
@@ -201,19 +202,21 @@ const Balance = () => {
         baseAsset: boolean,
         setValue: React.Dispatch<SetStateAction<string>>
     ) => {
-        if (value.includes(".")) {
-            const arr = value.split(".")
+        if (containsOnlyValidNumber(value)) {
+            if (value.includes(".")) {
+                const arr = value.split(".")
 
-            if (
-                arr[1].length <=
-                pair.pairs[symbols.join("-")][
-                    baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                ]
-            ) {
+                if (
+                    arr[1].length <=
+                    pair.pairs[symbols.join("-")][
+                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+                    ]
+                ) {
+                    setValue(value)
+                }
+            } else {
                 setValue(value)
             }
-        } else {
-            setValue(value)
         }
     }
 
@@ -344,27 +347,27 @@ const Balance = () => {
                             root: "bg-bgGray1 w-full",
                         }}
                         style={
-                            balances[0] && exchangeBalances[0]
-                                ? BigNumber.from(
-                                      Number(token1TransferAmount) > 0
-                                          ? ethers.utils.parseUnits(
-                                                token1TransferAmount
-                                                    ? token1TransferAmount
-                                                    : "0",
-                                                pair?.pairs[symbols.join("-")]
-                                                    .baseAssetPrecision
-                                            )
-                                          : "0"
-                                  ).gt(
-                                      isDeposit
-                                          ? balances[0]
-                                          : exchangeBalances[0].deposited.sub(
-                                                exchangeBalances[0].blocked
-                                            )
-                                  )
-                                    ? { border: "1px solid #DD3D32" }
-                                    : { border: "1px solid transparent" }
-                                : {}
+                            balances[0] &&
+                            exchangeBalances[0] &&
+                            BigNumber.from(
+                                Number(token1TransferAmount) > 0
+                                    ? ethers.utils.parseUnits(
+                                          token1TransferAmount
+                                              ? token1TransferAmount
+                                              : "0",
+                                          pair?.pairs[symbols.join("-")]
+                                              .baseAssetPrecision
+                                      )
+                                    : "0"
+                            ).gt(
+                                isDeposit
+                                    ? balances[0]
+                                    : exchangeBalances[0].deposited.sub(
+                                          exchangeBalances[0].blocked
+                                      )
+                            )
+                                ? { border: "1px solid #DD3D32" }
+                                : { border: "1px solid transparent" }
                         }
                     />
                     <FormHelperText
@@ -390,7 +393,8 @@ const Balance = () => {
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough {symbols[0]} deposited !
+                        You don't have enough {symbols[0]}{" "}
+                        {isDeposit ? "in your Wallet" : "deposited"} !
                     </FormHelperText>
                     <Button
                         variant="outlined"
@@ -487,25 +491,25 @@ const Balance = () => {
                             root: "bg-bgGray1 w-full",
                         }}
                         style={
-                            balances[1] && exchangeBalances[1]
-                                ? BigNumber.from(
-                                      Number(token2TransferAmount) > 0
-                                          ? ethers.utils.parseUnits(
-                                                token2TransferAmount,
-                                                pair?.pairs[symbols.join("-")]
-                                                    .quoteAssetPrecision
-                                            )
-                                          : "0"
-                                  ).gt(
-                                      isDeposit
-                                          ? balances[1]
-                                          : exchangeBalances[1].deposited.sub(
-                                                exchangeBalances[1].blocked
-                                            )
-                                  )
-                                    ? { border: "1px solid #DD3D32" }
-                                    : { border: "1px solid transparent" }
-                                : {}
+                            balances[1] &&
+                            exchangeBalances[1] &&
+                            BigNumber.from(
+                                Number(token2TransferAmount) > 0
+                                    ? ethers.utils.parseUnits(
+                                          token2TransferAmount,
+                                          pair?.pairs[symbols.join("-")]
+                                              .quoteAssetPrecision
+                                      )
+                                    : "0"
+                            ).gt(
+                                isDeposit
+                                    ? balances[1]
+                                    : exchangeBalances[1].deposited.sub(
+                                          exchangeBalances[1].blocked
+                                      )
+                            )
+                                ? { border: "1px solid #DD3D32" }
+                                : { border: "1px solid transparent" }
                         }
                         id="token1"
                         value={token2TransferAmount}
@@ -540,7 +544,8 @@ const Balance = () => {
                                 : "opacity-0"
                         }`}
                     >
-                        You don't have enough {symbols[1]} deposited !
+                        You don't have enough {symbols[1]}{" "}
+                        {isDeposit ? "in your Wallet" : "deposited"} !
                     </FormHelperText>
                     <Button
                         variant="outlined"

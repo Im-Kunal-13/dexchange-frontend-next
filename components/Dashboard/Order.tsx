@@ -5,6 +5,7 @@ import { insertOrder } from "../../api/interactions"
 import { Button, FormHelperText, TextField } from "@mui/material"
 import { useAppStateContext } from "../../context/contextProvider"
 import { BigNumber, ethers } from "ethers"
+import { containsOnlyValidNumber } from "../../utility"
 
 const Order = () => {
     const {
@@ -128,18 +129,20 @@ const Order = () => {
         baseAsset: boolean,
         setValue: React.Dispatch<SetStateAction<string>>
     ) => {
-        if (value.includes(".")) {
-            const arr = value.split(".")
-            if (
-                arr[1].length <=
-                pair.pairs[symbols.join("-")][
-                    baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                ]
-            ) {
+        if (containsOnlyValidNumber(value)) {
+            if (value.includes(".")) {
+                const arr = value.split(".")
+                if (
+                    arr[1].length <=
+                    pair.pairs[symbols.join("-")][
+                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+                    ]
+                ) {
+                    setValue(value)
+                }
+            } else {
                 setValue(value)
             }
-        } else {
-            setValue(value)
         }
     }
 
@@ -219,7 +222,7 @@ const Order = () => {
                 <TextField
                     id="amount"
                     placeholder={"0.0000"}
-                    type="number"
+                    type="string"
                     value={amount}
                     autoComplete="off"
                     onChange={(e) => {
@@ -239,17 +242,17 @@ const Order = () => {
                         root: "bg-bgGray1 w-full",
                     }}
                     style={
-                        !isBuy && balances[0]
-                            ? BigNumber.from(
-                                  ethers.utils.parseUnits(
-                                      amount ? amount : "0",
-                                      pair?.pairs[symbols.join("-")]
-                                          .baseAssetPrecision
-                                  )
-                              ).gt(balances[0].deposited)
-                                ? { border: "1px solid #DD3D32" }
-                                : { border: "1px solid transparent" }
-                            : {}
+                        !isBuy &&
+                        balances[0] &&
+                        BigNumber.from(
+                            ethers.utils.parseUnits(
+                                amount ? amount : "0",
+                                pair?.pairs[symbols.join("-")]
+                                    .baseAssetPrecision
+                            )
+                        ).gt(balances[0].deposited)
+                            ? { border: "1px solid #DD3D32" }
+                            : { border: "1px solid transparent" }
                     }
                 />
                 <FormHelperText
@@ -296,12 +299,13 @@ const Order = () => {
                     id="price"
                     placeholder={isMarket ? "Disabled" : "0.0000"}
                     value={isMarket ? "" : price}
-                    type="number"
+                    type="string"
                     onChange={(e) => {
                         if (!isMarket) {
                             handleInput(e.target.value, false, setPrice)
                         }
                     }}
+                    disabled={isMarket}
                     variant="standard"
                     InputProps={{
                         className: "text-white focus:normal-case",
@@ -319,23 +323,25 @@ const Order = () => {
                         } bg-bgGray1 w-full disabled:bg-white`,
                     }}
                     style={
-                        isBuy && balances[1]
-                            ? BigNumber.from(
-                                  ethers.utils.parseUnits(
-                                      price ? price : "0",
-                                      pair?.pairs[symbols.join("-")]
-                                          .quoteAssetPrecision
-                                  )
-                              ).gt(balances[1].deposited)
-                                ? { border: "1px solid #DD3D32" }
-                                : { border: "1px solid transparent" }
-                            : {}
+                        isBuy &&
+                        !isMarket &&
+                        balances[1] &&
+                        BigNumber.from(
+                            ethers.utils.parseUnits(
+                                price ? price : "0",
+                                pair?.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision
+                            )
+                        ).gt(balances[1].deposited)
+                            ? { border: "1px solid #DD3D32" }
+                            : { border: "1px solid transparent" }
                     }
                 />
 
                 <FormHelperText
                     className={`text-inputErrorRed relative bottom-2 transition-all duration-300 ${
                         isBuy &&
+                        !isMarket &&
                         balances[1] &&
                         BigNumber.from(
                             ethers.utils.parseUnits(
