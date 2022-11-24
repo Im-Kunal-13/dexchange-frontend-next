@@ -65,6 +65,7 @@ const Navbar = () => {
                         <MenuItem value="0x5">Goerli</MenuItem>
                         <MenuItem value="0x13881">Polygon Mumbai</MenuItem>
                         <MenuItem value="0x57a">Polygon Hermez</MenuItem>
+                        <MenuItem value="0x82752">Scroll Testnet</MenuItem>
                     </Select>
                 )}
             </div>

@@ -486,6 +486,9 @@ input[type="number"]::-webkit-outer-spin-button {
 .mui-style-1x51dt5-MuiInputBase-input-MuiInput-input.Mui-disabled {
     -webkit-text-fill-color: white !important;
 }
+.mui-style-kk1bwy-MuiButtonBase-root-MuiMenuItem-root.Mui-selected {
+    background-color: transparent !important;
+}
 
 // Custom scrollbar
 .custom-scrollbar::-webkit-scrollbar {
@@ -493,7 +496,12 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #6000ff, rgb(96, 0, 255, 0.3),  rgb(96, 0, 255, 0));
+    background: linear-gradient(
+        90deg,
+        #6000ff,
+        rgb(96, 0, 255, 0.3),
+        rgb(96, 0, 255, 0)
+    );
     background-size: 100%;
     border-radius: 10px;
 }

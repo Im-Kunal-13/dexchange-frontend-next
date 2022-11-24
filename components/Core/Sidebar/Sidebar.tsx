@@ -24,7 +24,7 @@ export const Sidebar = () => {
     )
 
     const wrapperClasses = classNames(
-        "h-screen pt-1 bg-bgSidebarGray1 border-r border-r-white border-opacity-10 max-h-screen flex justify-between flex-col transition-all duration-300 rounded-tr-xl rounded-br-xl absolute left-0 z-10",
+        "h-screen pt-1 bg-bgSidebarGray1 border-r border-r-white border-opacity-10 max-h-screen flex justify-between flex-col transition-all duration-300 absolute left-0 z-10",
         {
             "w-80": !sidebarToggleCollapse,
             "w-24": sidebarToggleCollapse,

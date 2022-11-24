@@ -39,7 +39,7 @@ import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
 
-const socket = io.connect("https://seashell-app-5u4ct.ondigitalocean.app")
+const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app/")
 
 function Layout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch()
@@ -419,6 +419,13 @@ function Layout({ children }: { children: React.ReactNode }) {
             <div className="w-full overflow-y-scroll">
                 <div className="ml-24">{children}</div>
             </div>
+
+            {/* Alerts */}
+            <AlertWarning />
+            <AlertInfo />
+            <AlertSuccess />
+            <AlertError />
+            <AlertLoading />
         </div>
     )
 }

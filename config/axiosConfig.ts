@@ -3,7 +3,7 @@ import axios from "axios"
 // Next we make an 'instance' of it
 const instance = axios.create({
     // .. where we make our configurations
-    baseURL: "https://seashell-app-5u4ct.ondigitalocean.app",
+    baseURL: "https://sea-turtle-app-p4lss.ondigitalocean.app/",
 })
 
 export default instance
