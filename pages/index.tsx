@@ -36,7 +36,7 @@ import { IGetOrder } from "../types"
 import PriceChart from "../components/Dashboard/PriceChart"
 import Head from "next/head"
 
-const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app/")
+const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()

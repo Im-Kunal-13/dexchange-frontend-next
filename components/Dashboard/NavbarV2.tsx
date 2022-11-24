@@ -1,6 +1,5 @@
 import {
     Button,
-    Divider,
     IconButton,
     MenuItem,
     Select,
@@ -53,7 +52,7 @@ const NavbarV2 = () => {
         localStorage.setItem("isWalletConnected", "true")
     }
     return (
-        <div className="grid grid-cols-7 h-[92px] bg-bgSidebarGray1 border-b border-white border-opacity-10">
+        <div className="grid grid-cols-7 h-[92px] bg-bgSidebarGray1 border-b border-white border-opacity-10 fixed top-0 z-10">
             <Select
                 // @ts-ignore
                 value={symbols[0] ? symbols.join("-") : ``}
@@ -120,7 +119,7 @@ const NavbarV2 = () => {
                 </p>
             </div>
             <Select
-                value={chainId ? `0x${chainId.toString(16)}` : `0`}
+                value={chainId ? `0x${chainId.toString(16)}` : ``}
                 variant="standard"
                 classes={{
                     select: "focus:bg-transparent overflow-scroll",
@@ -158,6 +157,11 @@ const NavbarV2 = () => {
                         id: 1402,
                         name: "Hermez",
                         chain: "Polygon",
+                    },
+                    {
+                        id: 534354,
+                        name: "Scroll",
+                        chain: "Ethereum",
                     },
                 ].map(({ id, name, chain }) => (
                     <MenuItem value={`0x${id.toString(16)}`} key={id}>

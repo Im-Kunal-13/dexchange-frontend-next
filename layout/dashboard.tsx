@@ -417,7 +417,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <div className="h-screen relative overflow-hidden flex flex-row justify-start bg-bgBlack1">
             <Sidebar />
             <div className="w-full overflow-y-scroll">
-                <div className="ml-24">{children}</div>
+                <div className="ml-24 mt-24">{children}</div>
             </div>
 
             {/* Alerts */}

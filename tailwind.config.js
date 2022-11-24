@@ -91,7 +91,8 @@ module.exports = {
         bgLightGray1: "#262627",
         green1: "#1DB954",
         red1: "#E60000",
-        orange1: "#FC472E"
+        orange1: "#FC472E",
+        btcYellow: "#F7931A"
       }),
       boxShadow: {
         black1: "0 0 10px 1px black",
