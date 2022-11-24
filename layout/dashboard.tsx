@@ -39,7 +39,7 @@ import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
 
-const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app/")
+const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app")
 
 function Layout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch()

@@ -130,7 +130,7 @@ const NavbarV2 = () => {
                 onChange={networkHandler}
                 MenuProps={{
                     classes: {
-                        paper: "bg-bgSidebarGray1 border border-white border-opacity-10 mt-1.5 rounded-xl w-fit max-h-[300px] overflow-y-scroll custom-scrollbar pl-2",
+                        paper: "bg-bgSidebarGray1 border border-white border-opacity-10 mt-1.5 rounded-xl w-fit max-h-[400px] overflow-y-scroll custom-scrollbar pl-2",
                     },
                 }}
                 IconComponent={() => (
