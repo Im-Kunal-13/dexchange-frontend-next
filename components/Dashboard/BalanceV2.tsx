@@ -8,7 +8,7 @@ import {
     TextField,
 } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
-import { SetStateAction, useEffect, useRef, useState } from "react"
+import { SetStateAction, useEffect, useState } from "react"
 import { deposit, withdraw } from "../../api/interactions"
 import { useAppStateContext } from "../../context/contextProvider"
 import { useAppDispatch, useAppSelector } from "../../store/store"
@@ -36,16 +36,6 @@ const BalanceV2 = () => {
 
     const exchange = useAppSelector((state) => state.exchange.contract)
     const exchangeBalances = useAppSelector((state) => state.exchange.balances)
-
-    const depositRef = useRef(null)
-    const withdrawRef = useRef(null)
-
-    const logoMap = new Map([
-        ["BTC", "/images/bitcoin-btc-logo.svg"],
-        ["DAI", "/images/dai.svg"],
-        ["USDC", "/images/usd-coin-usdc-logo.svg"],
-        ["LINK", "/images/chainlink-link-logo.svg"],
-    ])
 
     const depositHandler = (token: any, baseAsset: boolean) => {
         const tokenBigNum = ethers.utils.parseUnits(
@@ -153,6 +143,7 @@ const BalanceV2 = () => {
     useEffect(() => {
         setTokenTransferAmount("")
     }, [symbols])
+
     return (
         <div>
             <div className="flex items-center gap-2">

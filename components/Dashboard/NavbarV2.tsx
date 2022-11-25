@@ -13,6 +13,8 @@ import DashboardIcon from "@mui/icons-material/Dashboard"
 import DonutSmallIcon from "@mui/icons-material/DonutSmall"
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
+import HelpIcon from "@mui/icons-material/Help"
+import ContactSupportIcon from "@mui/icons-material/ContactSupport"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { loadAccount, loadTokens } from "../../api/interactions"
 
@@ -55,7 +57,7 @@ const NavbarV2 = () => {
         <div className="grid grid-cols-7 h-[92px] bg-bgSidebarGray1 border-b border-white border-opacity-10 fixed top-0 z-10">
             <Select
                 // @ts-ignore
-                value={symbols[0] ? symbols.join("-") : ``}
+                value={symbols[0] ? symbols.join("-") : `pair_default`}
                 variant="standard"
                 classes={{
                     select: "focus:bg-transparent overflow-scroll",
@@ -72,6 +74,25 @@ const NavbarV2 = () => {
                     <KeyboardArrowDownIcon className="text-white relative right-3 bottom-1" />
                 )}
             >
+                {!symbols[0] && (
+                    <MenuItem value={"pair_default"} key={"pair_default"}>
+                        <div className="flex gap-[16px] items-center">
+                            <div className="relative">
+                                <HelpIcon className="text-[40px] text-btcYellow" />
+                                <HelpIcon className="text-[20px] text-blue1 absolute -right-2 bottom-0" />
+                            </div>
+                            <div className="flex flex-col items-start min-w-[86px]">
+                                <span className="font-semibold text-[14px] text-white leading-[1.7]">
+                                    Token
+                                </span>
+                                <span className="text-textGray1 text-[14px] leading-[1.7] font-semibold">
+                                    ? / ?
+                                </span>
+                            </div>
+                        </div>
+                    </MenuItem>
+                )}
+
                 {pair?.pairs &&
                     Object.keys(pair.pairs).map((key) => (
                         <MenuItem value={key} key={key}>
@@ -119,7 +140,7 @@ const NavbarV2 = () => {
                 </p>
             </div>
             <Select
-                value={chainId ? `0x${chainId.toString(16)}` : ``}
+                value={chainId ? `0x${chainId.toString(16)}` : `chain_default`}
                 variant="standard"
                 classes={{
                     select: "focus:bg-transparent overflow-scroll",
@@ -137,6 +158,28 @@ const NavbarV2 = () => {
                     <KeyboardArrowDownIcon className="text-white relative right-3 bottom-1" />
                 )}
             >
+                {!chainId && (
+                    <MenuItem value={"chain_default"} key={"chain_default"}>
+                        <div className="flex gap-[16px] items-center">
+                            <div
+                                className={
+                                    "w-[40px] min-w-[40px] h-[40px] rounded-full flex items-center justify-center"
+                                }
+                            >
+                                <HelpIcon className="text-[40px] text-btcYellow" />
+                            </div>
+
+                            <div className="flex flex-col items-start min-w-[86px]">
+                                <span className="font-semibold text-[14px] text-white leading-[1.7]">
+                                    Chain ?
+                                </span>
+                                <span className="text-textGray1 text-[14px] leading-[1.7] font-semibold overflow-visible">
+                                    Network ?
+                                </span>
+                            </div>
+                        </div>
+                    </MenuItem>
+                )}
                 {[
                     {
                         id: 5,

@@ -18,8 +18,6 @@ export const formatTimestamp = (timestamp: string) => {
         hour: "numeric",
         minute: "numeric",
         second: "numeric",
-        month: "short",
-        day: "numeric",
     })
 }
 
@@ -200,6 +198,43 @@ export const buildGraphData = (
                 ethers.utils.formatUnits(
                     p?.price ? p.price : "0",
                     quoteAssetPrecision
+                )
+            ),
+        }
+    })
+
+    return graphData
+}
+
+export const buildCandleStickData = (
+    orders: IGetOrder[],
+    interval: moment.unitOfTime.StartOf,
+    quoteAssetPrecision: number
+) => {
+    const sortedTrades = orders.slice().sort(sortByTimeStamp)
+
+    const groupedOrders = groupBy(sortedTrades, (order) =>
+        moment(order.createdAt).startOf("minute").format()
+    )
+
+    const hours = Object.keys(groupedOrders)
+
+    const graphData = hours.map((hour, index) => {
+        const group = groupedOrders[hour]
+
+        const open = group[0]
+        const high = maxBy(group, "price")
+        const low = minBy(group, "price")
+        const close = group[group.length - 1]
+
+        return {
+            x: new Date(hour).getTime(),
+            y: [open, high, low, close].map((p) =>
+                Number(
+                    ethers.utils.formatUnits(
+                        p?.price ? p.price : "0",
+                        quoteAssetPrecision
+                    )
                 )
             ),
         }

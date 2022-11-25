@@ -33,10 +33,10 @@ import { useAppStateContext } from "../context/contextProvider"
 import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
-import PriceChart from "../components/Dashboard/PriceChart"
 import Head from "next/head"
+import { BACKEND_DEV_URL } from "../constants/links"
 
-const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app")
+const socket = io.connect(BACKEND_DEV_URL)
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()
@@ -413,6 +413,13 @@ const Home: NextPage = () => {
 
     return (
         <div className="bg-bgGray1">
+            <Head>
+                <title>Dexchange</title>
+                <meta
+                    name="viewport"
+                    content="initial-scale=1.0, width=device-width"
+                />
+            </Head>
             <Navbar />
             <main className="grid">
                 <section className="bg-black shadow-black1 p-[2em] col-start-1 col-end-5 max-h-[82rem]">

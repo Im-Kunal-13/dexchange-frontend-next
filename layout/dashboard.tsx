@@ -1,24 +1,12 @@
 import { Sidebar } from "../components/Core/Sidebar/Sidebar"
-import { MenuItem, Select, SelectChangeEvent } from "@mui/material"
-import React, { useState } from "react"
-import DashboardLayout from "../layout/dashboard"
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { useEffect } from "react"
-import type { NextPage } from "next"
 import { useAppDispatch, useAppSelector } from "../store/store"
-import Navbar from "../components/Dashboard/Navbar"
-import Markets from "../components/Dashboard/Markets"
-import Balance from "../components/Dashboard/Balance"
-import Order from "../components/Dashboard/Order"
-import Transactions from "../components/Dashboard/Transactions"
-import Trades from "../components/Dashboard/Trades"
-import OrderBook from "../components/Dashboard/OrderBook"
 import AlertWarning from "../components/Alerts/AlertWarning"
 import AlertInfo from "../components/Alerts/AlertInfo"
 import AlertSuccess from "../components/Alerts/AlertSuccess"
 import AlertError from "../components/Alerts/AlertError"
 import AlertLoading from "../components/Alerts/AlertLoading"
-import TvChart from "../components/Dashboard/TvChart"
+
 import {
     loadProvider,
     loadNetwork,
@@ -38,8 +26,10 @@ import { useAppStateContext } from "../context/contextProvider"
 import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
+import MetamaskModal from "../components/Core/Modal/MetamaskModal"
+import { BACKEND_DEV_URL } from "../constants/links"
 
-const socket = io.connect("https://sea-turtle-app-p4lss.ondigitalocean.app")
+const socket = io.connect(BACKEND_DEV_URL)
 
 function Layout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch()
@@ -58,6 +48,12 @@ function Layout({ children }: { children: React.ReactNode }) {
         setSnackbarLoading,
         // @ts-ignore
         setSnackbarSuccess,
+        // @ts-ignore
+        setSnackbarInfo,
+        // @ts-ignore
+        setMetamaskModalActive,
+        // @ts-ignore
+        metamaskModalActive,
     } = useAppStateContext()
 
     const loadBlockchainData = async () => {
@@ -280,13 +276,16 @@ function Layout({ children }: { children: React.ReactNode }) {
 
     // Loading chainId on first render // todo: edge cases check
     useEffect(() => {
-        const provider: any = loadProvider(dispatch)
-        loadNetwork(provider, dispatch)
-
-        if (localStorage?.getItem("isWalletConnected") === "true") {
-            loadAccount(provider, dispatch)
+        if (typeof window.ethereum !== "undefined") {
+            const provider: any = loadProvider(dispatch)
+            loadNetwork(provider, dispatch)
+            if (localStorage?.getItem("isWalletConnected") === "true") {
+                loadAccount(provider, dispatch)
+            }
+        } else {
+            setMetamaskModalActive(true)
         }
-    }, [])
+    }, [metamaskModalActive])
 
     // Loadig orders and trades when chainId is available
     useEffect(() => {
@@ -310,6 +309,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (account && chainId) {
             socket.on("new_order_inserted", (order: IGetOrder) => {
+                console.log("new_order_inserted evnet triggered", order)
                 if (order.chainId === chainId) {
                     dispatch(
                         actions.new_order_inserted({ order, account: account })
@@ -413,11 +413,12 @@ function Layout({ children }: { children: React.ReactNode }) {
             socket.off("order_partially_filled_cancelled")
         }
     }, [socket, account, chainId, contract, contracts, symbols, pair])
+
     return (
         <div className="h-screen relative overflow-hidden flex flex-row justify-start bg-bgBlack1">
             <Sidebar />
             <div className="w-full overflow-y-scroll">
-                <div className="ml-24 mt-24">{children}</div>
+                <div className="ml-24">{children}</div>
             </div>
 
             {/* Alerts */}
@@ -426,6 +427,9 @@ function Layout({ children }: { children: React.ReactNode }) {
             <AlertSuccess />
             <AlertError />
             <AlertLoading />
+
+            {/* Modal  */}
+            <MetamaskModal />
         </div>
     )
 }

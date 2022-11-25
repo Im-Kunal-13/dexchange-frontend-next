@@ -494,7 +494,6 @@ input[type="number"]::-webkit-outer-spin-button {
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: linear-gradient(
         90deg,
@@ -504,4 +503,16 @@ input[type="number"]::-webkit-outer-spin-button {
     );
     background-size: 100%;
     border-radius: 10px;
+}
+
+// Highcharts
+.highcharts-no-tooltip.highcharts-button.highcharts-button-normal {
+    text {
+        fill: white !important;
+    }
+}
+.highcharts-no-tooltip.highcharts-button.highcharts-button-hover:hover {
+    text {
+        fill: black !important;
+    }
 }
