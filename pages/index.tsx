@@ -34,9 +34,8 @@ import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
 import Head from "next/head"
-import { BACKEND_DEV_URL } from "../constants/links"
 
-const socket = io.connect(BACKEND_DEV_URL)
+const socket = io.connect(process.env.NEXT_PUBLIC_DEXCHANGE_DEV_SERVER || "")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()

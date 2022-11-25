@@ -4,7 +4,7 @@ import { BACKEND_DEV_URL } from "../constants/links"
 // Next we make an 'instance' of it
 const instance = axios.create({
     // .. where we make our configurations
-    baseURL: BACKEND_DEV_URL,
+    baseURL: process.env.NEXT_PUBLIC_DEXCHANGE_DEV_SERVER,
 })
 
 export default instance
