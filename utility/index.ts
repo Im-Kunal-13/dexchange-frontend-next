@@ -22,8 +22,8 @@ export const formatTimestamp = (timestamp: string) => {
 }
 
 export const sortByTimeStamp = (order1: IGetOrder, order2: IGetOrder) => {
-    const date1 = new Date(order1.createdAt)
-    const date2 = new Date(order2.createdAt)
+    const date1 = new Date(order1.updatedAt)
+    const date2 = new Date(order2.updatedAt)
 
     if (date1 > date2) {
         return 1
@@ -35,8 +35,8 @@ export const sortByTimeStampDescending = (
     order1: IGetOrder,
     order2: IGetOrder
 ) => {
-    const date1 = new Date(order1.createdAt)
-    const date2 = new Date(order2.createdAt)
+    const date1 = new Date(order1.updatedAt)
+    const date2 = new Date(order2.updatedAt)
 
     if (date1 > date2) {
         return -1
@@ -214,7 +214,7 @@ export const buildCandleStickData = (
     const sortedTrades = orders.slice().sort(sortByTimeStamp)
 
     const groupedOrders = groupBy(sortedTrades, (order) =>
-        moment(order.createdAt).startOf("minute").format()
+        moment(order.createdAt).startOf(interval).format()
     )
 
     const hours = Object.keys(groupedOrders)

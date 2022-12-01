@@ -516,3 +516,23 @@ input[type="number"]::-webkit-outer-spin-button {
         fill: black !important;
     }
 }
+
+// Material UI Data Grid
+.mui-style-f3jnds-MuiDataGrid-columnHeaders {
+    border-bottom: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.mui-style-1e2bxag-MuiDataGrid-root .MuiDataGrid-cell {
+    border-bottom: none;
+}
+
+.MuiDataGrid-columnHeaders.mui-style-f3jnds-MuiDataGrid-columnHeaders {
+    max-height: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+}
+.MuiDataGrid-row {
+    max-height: 35px !important;
+    height: 35px !important;
+    min-height: 35px !important;
+}

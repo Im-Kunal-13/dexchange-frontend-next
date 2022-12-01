@@ -46,12 +46,14 @@ const OrderV2 = () => {
 
     const buyHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault()
+
+        
         const amountBigNum = ethers.utils.parseUnits(
             amount || "0",
             pair?.pairs[symbols.join("-")].baseAssetPrecision
         )
         const priceBigNum = ethers.utils.parseUnits(
-            amount || "0",
+            price || "0",
             pair?.pairs[symbols.join("-")].quoteAssetPrecision
         )
 

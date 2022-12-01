@@ -57,6 +57,7 @@ const Trades = () => {
                     </TableHead>
                     <TableBody className="bg-black">
                         {allTrades &&
+                            symbols[0] && symbols[1] &&
                             allTrades
                                 .filter((order) => {
                                     return (
@@ -102,9 +103,9 @@ const Trades = () => {
                                                             order.remainingQuantity
                                                         )
                                                     ).toString(),
-                                                    pair.pairs[symbols.join("-")]
-                                                        .baseAssetPrecision !==
-                                                        0
+                                                    pair.pairs[
+                                                        symbols.join("-")
+                                                    ].baseAssetPrecision !== 0
                                                         ? pair.pairs[
                                                               symbols.join("-")
                                                           ].baseAssetPrecision
@@ -122,8 +123,9 @@ const Trades = () => {
                                                 order.price,
                                                 pair.pairs[symbols.join("-")]
                                                     .quoteAssetPrecision !== 0
-                                                    ? pair.pairs[symbols.join("-")]
-                                                          .quoteAssetPrecision
+                                                    ? pair.pairs[
+                                                          symbols.join("-")
+                                                      ].quoteAssetPrecision
                                                     : 0
                                             )}
                                         </TableCell>

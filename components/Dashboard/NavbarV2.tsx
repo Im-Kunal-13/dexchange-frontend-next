@@ -54,7 +54,7 @@ const NavbarV2 = () => {
         localStorage.setItem("isWalletConnected", "true")
     }
     return (
-        <div className="grid grid-cols-7 h-[92px] bg-bgSidebarGray1 border-b border-white border-opacity-10 fixed top-0 z-10">
+        <div className="grid grid-cols-7 h-[92px] bg-bgSidebarGray1 border-b border-white border-opacity-10 fixed top-0 z-10" style={{ width: "calc(100vw - 95px)" }}>
             <Select
                 // @ts-ignore
                 value={symbols[0] ? symbols.join("-") : `pair_default`}

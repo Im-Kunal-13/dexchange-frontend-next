@@ -17,6 +17,7 @@
     "@metamask/providers": "^10.0.0",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.15",
+    "@mui/x-data-grid": "^5.17.13",
     "@reduxjs/toolkit": "^1.8.6",
     "@types/lodash": "^4.14.189",
     "apexcharts": "^3.36.0",

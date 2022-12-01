@@ -1,6 +1,6 @@
 import Head from "next/head"
 import NavbarV2 from "../../components/Dashboard/NavbarV2"
-import DashboardLayout from "../../layout/dashboard"
+import DashboardLayout from "../../layout/dashboardLayout"
 import ExchangeLayout from "../../layout/exchangeLayout"
 
 const exchange = () => {

@@ -412,7 +412,7 @@ export const getMyOrders = async (
 ) => {
     try {
         const res = await axiosConfig.get(
-            `/api/orders/?chainId=${chainId}&wallet=${wallet}`
+            `/api/orders?chainId=${chainId}&wallet=${wallet}`
         )
         dispatch(actions.load_my_orders(res.data))
     } catch (error) {

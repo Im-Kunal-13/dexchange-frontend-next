@@ -27,11 +27,10 @@ import { actions } from "../features/reducerActions"
 import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
 import MetamaskModal from "../components/Core/Modal/MetamaskModal"
-import { BACKEND_DEV_URL } from "../constants/links"
 
-const socket = io.connect(BACKEND_DEV_URL)
+const socket = io.connect(process.env.NEXT_PUBLIC_DEXCHANGE_SERVER_DEV || "")
 
-function Layout({ children }: { children: React.ReactNode }) {
+function DashboardLayout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch()
     const { contracts, pair, symbols } = useAppSelector((state) => state.tokens)
     const { depositState, withdrawState, contract } = useAppSelector(
@@ -434,4 +433,4 @@ function Layout({ children }: { children: React.ReactNode }) {
     )
 }
 
-export default Layout
+export default DashboardLayout

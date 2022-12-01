@@ -35,7 +35,7 @@ import * as io from "socket.io-client"
 import { IGetOrder } from "../types"
 import Head from "next/head"
 
-const socket = io.connect(process.env.NEXT_PUBLIC_DEXCHANGE_DEV_SERVER || "")
+const socket = io.connect(process.env.NEXT_PUBLIC_DEXCHANGE_SERVER_DEV || "")
 
 const Home: NextPage = () => {
     const dispatch = useAppDispatch()

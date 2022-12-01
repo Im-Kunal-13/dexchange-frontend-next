@@ -88,6 +88,7 @@ module.exports = {
         bgBlack1: "#0D0D0F",
         bgSidebarGray1: "#111113",
         textGray1: "#8A8991",
+        borderGray1: "#29292B",
         bgLightGray1: "#262627",
         green1: "#1DB954",
         red1: "#E60000",
