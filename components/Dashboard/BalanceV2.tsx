@@ -9,7 +9,7 @@ import {
 } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
 import { SetStateAction, useEffect, useState } from "react"
-import { deposit, withdraw } from "../../api/interactions"
+import { deposit, loadExchangeBalances, withdraw } from "../../api/interactions"
 import { useAppStateContext } from "../../context/contextProvider"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { containsOnlyValidNumber } from "../../utility"
@@ -207,7 +207,17 @@ const BalanceV2 = () => {
                             {symbols[isToken1Selected ? 0 : 1]} ( Blocked )
                         </p>
                     </div>
-                    <IconButton className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]">
+                    <IconButton
+                        className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]"
+                        onClick={() => {
+                            loadExchangeBalances(
+                                contracts,
+                                account,
+                                chainId,
+                                dispatch
+                            )
+                        }}
+                    >
                         <RefreshIcon className="text-white text-2xl" />
                     </IconButton>
                 </div>

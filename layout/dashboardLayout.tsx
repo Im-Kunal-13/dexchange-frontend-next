@@ -109,25 +109,8 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
             symbols[1] &&
             pair
         ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
+            loadTokenBalances(contracts, account, dispatch)
+            loadExchangeBalances(contracts, account, chainId, dispatch)
         }
     }
 
@@ -222,22 +205,10 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
             loadTokenBalances(
                 contracts,
                 account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
+
                 dispatch
             )
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
+            loadExchangeBalances(contracts, account, chainId, dispatch)
         }
     }, [contract, contracts, account, dispatch, symbols, pair])
 
@@ -250,26 +221,9 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
             chainId &&
             (withdrawState.success || depositState.success)
         ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
+            loadTokenBalances(contracts, account, dispatch)
 
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
+            loadExchangeBalances(contracts, account, chainId, dispatch)
         }
     }, [withdrawState.success, depositState.success])
 
@@ -329,24 +283,8 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                             symbols[1] &&
                             pair
                         ) {
-                            loadTokenBalances(
-                                contracts,
-                                account,
-                                pair && [
-                                    pair.pairs[symbols.join("-")]
-                                        .baseAssetPrecision,
-                                    pair.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision,
-                                ],
-                                dispatch
-                            )
+                            loadTokenBalances(contracts, account, dispatch)
                             loadExchangeBalances(
-                                [
-                                    pair.pairs[symbols.join("-")]
-                                        .baseAssetPrecision,
-                                    pair.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision,
-                                ],
                                 contracts,
                                 account,
                                 chainId,

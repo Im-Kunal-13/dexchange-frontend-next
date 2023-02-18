@@ -2,7 +2,6 @@ import * as zksync from "zksync-web3"
 import * as ethers from "ethers"
 import { EXCHANGE_ABI, TOKEN_ABI } from "../constants/abi"
 import { v4 as uuidv4 } from "uuid"
-import axios from "axios"
 import { actions } from "../features/reducerActions"
 import { AppDispatch } from "../store/store"
 import { IDeposit, IGetOrder, IInsertOrder } from "../types"
@@ -84,11 +83,6 @@ export const loadExchange = async (
 }
 
 // EXCHANGE DEPOSIT AND WITHDRAW
-
-function uuidToDecimal(uuid: string) {
-    return ethers.BigNumber.from(`0x${uuid.replace(/-/g, "")}`).toString()
-}
-
 export const deposit = async (
     chainId: number,
     userAddress: string,
@@ -245,7 +239,6 @@ export const withdraw = async (
 export const loadTokenBalances = async (
     tokens: any,
     account: string,
-    precisions: number[],
     dispatch: AppDispatch
 ) => {
     let balance = await tokens[0].balanceOf(account)
@@ -258,7 +251,6 @@ export const loadTokenBalances = async (
 }
 
 export const loadExchangeBalances = async (
-    tokenPrecisions: number[],
     tokens: any,
     account: string,
     chainId: number,
@@ -457,7 +449,6 @@ export const cancelOrder = async (
 }
 
 // TRADES
-
 export const loadTrades = async (
     chainId: number,
     market: string,

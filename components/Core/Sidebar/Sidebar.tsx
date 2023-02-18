@@ -130,7 +130,7 @@ export const Sidebar = () => {
                                                 {menu.label ===
                                                     "Notifications" && (
                                                     <span
-                                                        className={`absolute rounded-full w-2.5 h-2.5 right-0.5 inline-block bg-red1`}
+                                                        className={`absolute rounded-full w-2 h-2 right-[3px] top-[4.5px] inline-block bg-red1 bg-opacity-90`}
                                                     />
                                                 )}
                                                 <menu.ActiveIcon className="text-[24px]" />
@@ -160,7 +160,7 @@ export const Sidebar = () => {
                                             )}
                                             {menu.label === "Settings" && (
                                                 <span
-                                                    className={`ml-5 rounded-full w-2.5 h-2.5 inline-block text-xs text-white bg-purple1`}
+                                                    className={`ml-5 rounded-full w-2.5 h-2.5 inline-block text-xs text-white ${menu.link === router.pathname ? "bg-red1": "bg-purple1"}`}
                                                 />
                                             )}
                                         </span>
@@ -171,7 +171,7 @@ export const Sidebar = () => {
                     })}
                 </div>
             </div>
-            <div className="">
+            <div>
                 <div className="px-5">
                     <Divider className="bg-white bg-opacity-25 h-[.5px] mb-[20px]" />
                 </div>

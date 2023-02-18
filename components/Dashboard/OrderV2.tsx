@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useRef, useState } from "react"
+import { SetStateAction, useEffect, useState } from "react"
 import {
     Button,
     FormHelperText,
@@ -13,7 +13,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { useAppStateContext } from "../../context/contextProvider"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { BigNumber, ethers } from "ethers"
-import { insertOrder } from "../../api/interactions"
+import { insertOrder, loadTokenBalances } from "../../api/interactions"
 import { containsOnlyValidNumber } from "../../utility"
 import { InputAdornment } from "@material-ui/core"
 
@@ -31,23 +31,16 @@ const OrderV2 = () => {
     const { connection, account, chainId } = useAppSelector(
         (state) => state.provider
     )
-    const { symbols, pair } = useAppSelector((state) => state.tokens)
+    const { symbols, pair, contracts } = useAppSelector((state) => state.tokens)
     const tokenBalances = useAppSelector((state) => state.tokens.balances)
     const { balances } = useAppSelector((state) => state.exchange)
     const exchange = useAppSelector((state) => state.exchange.contract)
 
     const dispatch = useAppDispatch()
 
-    const buyRef = useRef(null)
-    const sellRef = useRef(null)
-
-    const marketRef = useRef(null)
-    const limitRef = useRef(null)
-
     const buyHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault()
 
-        
         const amountBigNum = ethers.utils.parseUnits(
             amount || "0",
             pair?.pairs[symbols.join("-")].baseAssetPrecision
@@ -210,7 +203,7 @@ const OrderV2 = () => {
                             {symbols[1]}
                         </p>
                     </div>
-                    <IconButton className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]">
+                    <IconButton className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]" onClick={() => {loadTokenBalances(contracts,account, dispatch)}}>
                         <RefreshIcon className="text-white text-2xl" />
                     </IconButton>
                 </div>

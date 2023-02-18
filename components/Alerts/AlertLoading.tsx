@@ -19,17 +19,19 @@ const AlertLoading = () => {
     return (
         <Snackbar
             anchorOrigin={position}
-            onClose={() => {
-                setSnackbarLoading({
-                    open: false,
-                    message: snackbarLoading.message,
-                })
-                setTimeout(() => {
+            onClose={(reason) => {
+                if (reason === null) {
                     setSnackbarLoading({
                         open: false,
-                        message: "",
+                        message: snackbarLoading.message,
                     })
-                }, 10000)
+                    setTimeout(() => {
+                        setSnackbarLoading({
+                            open: false,
+                            message: "",
+                        })
+                    }, 10000)
+                }
             }}
             open={snackbarLoading.open}
             message="Note archived"

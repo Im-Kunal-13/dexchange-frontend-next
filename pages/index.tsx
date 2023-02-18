@@ -1,442 +1,220 @@
-import { useEffect } from "react"
-import type { NextPage } from "next"
+import { Button, IconButton, Switch, Tooltip } from "@mui/material"
+import LightModeIcon from "@mui/icons-material/LightMode"
+import PrivacyTipOutlinedIcon from "@mui/icons-material/PrivacyTipOutlined"
+import MetamaskModal from "../components/Core/Modal/MetamaskModal"
+import { useAppStateContext } from "../context/contextProvider"
+import { useEffect, useState } from "react"
+import ReplyAllIcon from "@mui/icons-material/ReplyAll"
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
 import { useAppDispatch, useAppSelector } from "../store/store"
-import Navbar from "../components/Dashboard/Navbar"
-import Markets from "../components/Dashboard/Markets"
-import Balance from "../components/Dashboard/Balance"
-import Order from "../components/Dashboard/Order"
-import Transactions from "../components/Dashboard/Transactions"
-import Trades from "../components/Dashboard/Trades"
-import OrderBook from "../components/Dashboard/OrderBook"
+import { loadProvider, loadNetwork, loadAccount } from "../api/interactions"
 import AlertWarning from "../components/Alerts/AlertWarning"
 import AlertInfo from "../components/Alerts/AlertInfo"
 import AlertSuccess from "../components/Alerts/AlertSuccess"
 import AlertError from "../components/Alerts/AlertError"
 import AlertLoading from "../components/Alerts/AlertLoading"
-import TvChart from "../components/Dashboard/TvChart"
-import {
-    loadProvider,
-    loadNetwork,
-    loadAccount,
-    loadTokens,
-    loadExchange,
-    loadTokenPair,
-    getBuyOrders,
-    getSellOrders,
-    loadTrades,
-    loadTokenBalances,
-    loadExchangeBalances,
-    getMyOrders,
-    getCancelledOrders,
-} from "../api/interactions"
-import { useAppStateContext } from "../context/contextProvider"
-import { actions } from "../features/reducerActions"
-import * as io from "socket.io-client"
-import { IGetOrder } from "../types"
-import Head from "next/head"
-
-const socket = io.connect(process.env.NEXT_PUBLIC_DEXCHANGE_SERVER_DEV || "")
+import { NextPage } from "next"
 
 const Home: NextPage = () => {
+    // @ts-ignore
+    const { setSnackbarInfo, setMetamaskModalActive } = useAppStateContext()
+
     const dispatch = useAppDispatch()
-    const { contracts, pair, symbols } = useAppSelector((state) => state.tokens)
-    const { depositState, withdrawState, contract } = useAppSelector(
-        (state) => state.exchange
-    )
-    const { account, chainId, connection } = useAppSelector(
-        (state) => state.provider
-    )
 
-    const {
-        // @ts-ignore
-        setSnackbarError,
-        // @ts-ignore
-        setSnackbarLoading,
-        // @ts-ignore
-        setSnackbarSuccess,
-    } = useAppStateContext()
+    const { account } = useAppSelector((state) => state.provider)
 
-    const loadBlockchainData = async () => {
-        if (typeof window !== "undefined") {
-            // Reload page on network change
-            window.ethereum.on("chainChanged", () => {
-                window.location.reload()
-            })
+    const [loginState, setLoginState] = useState("1")
+    const [selectedOption, setSelectedOption] = useState("")
 
-            // Fetch current account and balance from metamask when changed //todo -> Not working
-            window.ethereum.on("accountsChanged", () => {
-                loadAccount(connection, dispatch)
-            })
-        }
-
-        // Token Smart Contracts
-        let token_1_address, token_2_address
-
-        if (contracts.length > 0 && symbols.length > 0) {
-            token_1_address = contracts[0].address
-            token_2_address = contracts[1].address
-
-            await loadTokens(
-                connection,
-                [token_1_address, token_2_address],
-                symbols,
-                dispatch
-            )
-        } else {
-            token_1_address = pair?.pairs["BTC-USDC"].baseAssetAddress
-            token_2_address = pair?.pairs["BTC-USDC"].quoteAssetAddress
-
-            await loadTokens(
-                connection,
-                [token_1_address, token_2_address],
-                ["BTC", "USDC"],
-                dispatch
-            )
-        }
-
-        // Exchange Smart contract
-        const dexchangeAddress = pair.dexchange
-
-        await loadExchange(connection, dexchangeAddress, dispatch)
-    }
-
-    const loadMyBalances = () => {
-        if (
-            contract &&
-            contracts[0] &&
-            contracts[1] &&
-            account &&
-            symbols[0] &&
-            symbols[1] &&
-            pair
-        ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
-        }
-    }
-
-    // Initially loading the blockchain data on first render
-    useEffect(() => {
-        if (pair && connection && chainId) {
-            loadBlockchainData()
-        }
-    }, [pair, connection, chainId, symbols])
-
-    // Loading the blockchain data on withdraw or deposit success
-    useEffect(() => {
-        if (depositState.success || withdrawState.success) {
-            loadBlockchainData()
-        }
-    }, [depositState.success, withdrawState.success])
-
-    // Loading states while depositing tokens
-    useEffect(() => {
-        if (depositState.loading) {
-            setSnackbarLoading({
-                open: true,
-                message: "Depositing tokens...",
-            })
-        } else if (depositState.success) {
-            setSnackbarLoading({
-                open: false,
-                message: "Depositing tokens...",
-            })
-            setSnackbarSuccess({
-                open: true,
-                message: "Tokens deposited successfully",
-            })
-        } else if (depositState.failed) {
-            setSnackbarLoading({
-                open: false,
-                message: "Depositing tokens...",
-            })
-            setSnackbarError({
-                open: true,
-                message: "Token deposit unsuccessful !",
-            })
-        }
-    }, [depositState.success, depositState.loading, depositState.failed])
-
-    // Loading states while withdrawing tokens
-    useEffect(() => {
-        if (withdrawState.loading) {
-            setSnackbarLoading({
-                open: true,
-                message: "Withdrawing tokens...",
-            })
-        } else if (withdrawState.success) {
-            setSnackbarLoading({
-                open: false,
-                message: "Withdrawing tokens...",
-            })
-            setSnackbarSuccess({
-                open: true,
-                message: "Tokens withdrawn successfully !",
-            })
-        } else if (withdrawState.failed) {
-            setSnackbarLoading({
-                open: false,
-                message: "Withdrawing tokens...",
-            })
-            setSnackbarError({
-                open: true,
-                message: "Token withdraw unsuccessful !",
-            })
-        }
-    }, [withdrawState.success, withdrawState.loading, withdrawState.failed])
-
-    // Loading the token pairs when chainId is there
-    useEffect(() => {
-        if (chainId) {
-            loadTokenPair(chainId, dispatch)
-        }
-    }, [chainId])
-
-    // Loading the token and dexchange contract balances on the initial render
-    useEffect(() => {
-        if (
-            contract &&
-            contracts[0] &&
-            contracts[1] &&
-            account &&
-            symbols[0] &&
-            symbols[1] &&
-            pair
-        ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
-        }
-    }, [contract, contracts, account, dispatch, symbols, pair])
+    const [clipboardTitle, setClipboardTitle] = useState("Copy to clipboard")
 
     useEffect(() => {
-        if (
-            contracts[0] &&
-            contracts[1] &&
-            account &&
-            pair &&
-            chainId &&
-            (withdrawState.success || depositState.success)
-        ) {
-            loadTokenBalances(
-                contracts,
-                account,
-                pair && [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                dispatch
-            )
+        if (selectedOption === "metamask") {
+            setLoginState("2")
 
-            loadExchangeBalances(
-                [
-                    pair.pairs[symbols.join("-")].baseAssetPrecision,
-                    pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                ],
-                contracts,
-                account,
-                chainId,
-                dispatch
-            )
+            if (typeof window.ethereum !== "undefined") {
+                const provider: any = loadProvider(dispatch)
+                loadNetwork(provider, dispatch)
+
+                loadAccount(provider, dispatch)
+            } else {
+                setSnackbarInfo({
+                    open: true,
+                    message: "You don't have metamask installed !",
+                })
+                setMetamaskModalActive(true)
+            }
         }
-    }, [withdrawState.success, depositState.success])
-
-    // Loading chainId on first render // todo: edge cases check
-    useEffect(() => {
-        const provider: any = loadProvider(dispatch)
-        loadNetwork(provider, dispatch)
-
-        if (localStorage?.getItem("isWalletConnected") === "true") {
-            loadAccount(provider, dispatch)
-        }
-    }, [])
-
-    // Loadig orders and trades when chainId is available
-    useEffect(() => {
-        if (chainId && symbols) {
-            getBuyOrders(chainId, dispatch)
-            getSellOrders(chainId, dispatch)
-            loadTrades(chainId, symbols.join("-"), dispatch)
-        }
-    }, [chainId, symbols])
-
-    // Loading my orders and trades when chainId and account is available
-    useEffect(() => {
-        if (account && chainId && symbols) {
-            getMyOrders(chainId, account, dispatch)
-            loadTrades(chainId, symbols.join("-"), dispatch, account)
-            getCancelledOrders(chainId, account, dispatch)
-        }
-    }, [chainId, account, symbols])
-
-    // Listening to Socket.io events
-    useEffect(() => {
-        if (account && chainId) {
-            socket.on("new_order_inserted", (order: IGetOrder) => {
-                if (order.chainId === chainId) {
-                    dispatch(
-                        actions.new_order_inserted({ order, account: account })
-                    )
-
-                    if (order.wallet === account) {
-                        setSnackbarSuccess({
-                            open: true,
-                            message: "Your order has beed placed",
-                        })
-
-                        if (
-                            contract &&
-                            contracts[0] &&
-                            contracts[1] &&
-                            account &&
-                            symbols[0] &&
-                            symbols[1] &&
-                            pair
-                        ) {
-                            loadTokenBalances(
-                                contracts,
-                                account,
-                                pair && [
-                                    pair.pairs[symbols.join("-")]
-                                        .baseAssetPrecision,
-                                    pair.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision,
-                                ],
-                                dispatch
-                            )
-                            loadExchangeBalances(
-                                [
-                                    pair.pairs[symbols.join("-")]
-                                        .baseAssetPrecision,
-                                    pair.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision,
-                                ],
-                                contracts,
-                                account,
-                                chainId,
-                                dispatch
-                            )
-                        }
-                    }
-                }
-            })
-
-            socket.on("order_cancelled", (order: IGetOrder) => {
-                if (order.chainId === chainId) {
-                    dispatch(actions.order_cancelled({ order, account }))
-                }
-                if (order.wallet === account) {
-                    loadMyBalances()
-                }
-            })
-
-            socket.on("order_filled", (order: IGetOrder) => {
-                if (order.chainId === chainId) {
-                    dispatch(actions.order_filled({ order, account }))
-                    dispatch(actions.insert_trade({ order, account }))
-                }
-
-                if (order.wallet === account) {
-                    loadMyBalances()
-                }
-            })
-
-            socket.on("order_partially_filled", (order: IGetOrder) => {
-                if (order.chainId === chainId) {
-                    dispatch(actions.order_partially_filled({ order, account }))
-                }
-                if (order.wallet === account) {
-                    loadMyBalances()
-                }
-            })
-            socket.on(
-                "order_partially_filled_cancelled",
-                (order: IGetOrder) => {
-                    if (order.chainId === chainId) {
-                        dispatch(
-                            actions.order_partially_filled_cancelled({
-                                order,
-                                account,
-                            })
-                        )
-                    }
-
-                    if (order.wallet === account) {
-                        loadMyBalances()
-                    }
-                }
-            )
-        }
-
-        return () => {
-            socket.off("new_order_inserted")
-            socket.off("order_cancelled")
-            socket.off("order_filled")
-            socket.off("order_partially_filled")
-            socket.off("order_partially_filled_cancelled")
-        }
-    }, [socket, account, chainId, contract, contracts, symbols, pair])
+    }, [selectedOption])
 
     return (
-        <div className="bg-bgGray1">
-            <Head>
-                <title>Dexchange</title>
-                <meta
-                    name="viewport"
-                    content="initial-scale=1.0, width=device-width"
-                />
-            </Head>
-            <Navbar />
-            <main className="grid">
-                <section className="bg-black shadow-black1 p-[2em] col-start-1 col-end-5 max-h-[82rem]">
-                    <Markets />
+        <div className="flex min-h-screen bg-bgBlack1 relative">
+            <IconButton className="absolute top-[30px] right-[40px] bg-white bg-opacity-10 hover:bg-opacity-10 hover:bg-white hover:scale-110 duration-300 transition-all p-3">
+                <LightModeIcon className="text-white text-base" />
+            </IconButton>
+            <div className="w-[44%] transition-all duration-500 bg-purple1 rounded-tr-xl rounded-br-xl"></div>
+            <div className="w-[56%] flex flex-col items-center justify-center max-w-[412px] mx-auto relative">
+                {loginState === "1" && selectedOption === "" ? (
+                    <>
+                        <div className="flex items-center mb-[16px]">
+                            <h2 className="text-[32px] leading-[1.25] tracking-[-.5px] font-medium text-white">
+                                Sign in to Dexchange
+                            </h2>
+                            <IconButton className="text-2xl text-textGray1 hover:text-purple1 transition-all duration-300 hover:scale-105">
+                                <PrivacyTipOutlinedIcon />
+                            </IconButton>
+                        </div>
+                        <h6 className="text-[18px] leading-[1.25] tracking-[-.5px] font-medium text-white relative right-1 mb-[20px]">
+                            Select your wallet to continue
+                        </h6>
+                        <div className="flex flex-col gap-[15px] items-center mt-[15px] mb-[40px]">
+                            {[
+                                { label: "Metamask", wallet: "metamask" },
+                                { label: "Coinbase", wallet: "coinbase" },
+                                {
+                                    label: "Wallet Connect",
+                                    wallet: "wallet_connect",
+                                },
+                            ].map(({ label, wallet }) => (
+                                <Button
+                                    className="w-[290px] h-[52px] relative normal-case bg-bgSidebarGray1 rounded-[10px] transition-all duration-300 border-[2px] hover:border-[2px] border-white border-opacity-5 hover:border-opacity-70 hover:border-purple1 text-textGray1 hover:text-purple1 hover:scale-105"
+                                    variant="outlined"
+                                    onClick={() => setSelectedOption(wallet)}
+                                >
+                                    <img
+                                        className="w-[20px] absolute top-0 bottom-0 left-10 m-auto"
+                                        src={`/images/${wallet}.png`}
+                                    />
+                                    <span className="text-[14px] font-medium leading-[140%] tracking-wider">
+                                        {label}
+                                    </span>
+                                </Button>
+                            ))}
+                        </div>
+                        <div className="flex items-center ">
+                            <span className="leading-[1.25] tracking-[-.5px] font-bold text-white text-[13px]">
+                                Don't have a wallet ?
+                            </span>
+                            <Button
+                                variant="text"
+                                className="text-purple1 normal-case leading-[1.25] tracking-[-.5px] font-bold text-[13px] hover:underline"
+                                onClick={() => {
+                                    setMetamaskModalActive(true)
+                                }}
+                            >
+                                Click Here
+                            </Button>
+                        </div>
+                        <p className="mt-[20px] text-textGray1 text-center mb-[32px] text-[13px] font-medium leading-[1.3]">
+                            By logging in with any of the options above, you
+                            acknowledge that you have read, understood, and
+                            agree to the{" "}
+                            <a className="text-purple1">
+                                {" "}
+                                Terms and Privacy policy
+                            </a>
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <Button
+                            variant="text"
+                            className="absolute top-[30px] -left-[120px] hover:bg-transparent duration-300 transition-all p-3 normal-case text-textGray1 hover:text-white"
+                            startIcon={<ReplyAllIcon />}
+                            onClick={() => {
+                                setSelectedOption("")
+                                setLoginState("1")
+                            }}
+                        >
+                            Back
+                        </Button>
+                        <h2 className="text-[32px] leading-[1.25] tracking-[-.5px] font-medium text-white mb-[20px]">
+                            Sign in to Dexchange
+                        </h2>
+                        <img
+                            src={`/images/${selectedOption}.png`}
+                            className="max-w-[150px] my-[10px]"
+                            alt=""
+                        />
+                        <h6 className="text-[14px] mt-[40px] mb-[20px] max-w-[380px] font-medium text-textGray1">
+                            Great to have you here. Let's start trading right
+                            away !
+                        </h6>
+                        <Tooltip
+                            title={clipboardTitle}
+                            arrow
+                            classes={{
+                                tooltip: "bg-bgLightGray1",
+                                arrow: "before:bg-bgLightGray1",
+                            }}
+                            onMouseLeave={() => {
+                                setTimeout(() => {
+                                    setClipboardTitle("Copy to clipboard")
+                                }, 500)
+                            }}
+                        >
+                            <Button
+                                className="flex items-center gap-2 py-2.5 bg-white hover:bg-white hover:bg-opacity-10 bg-opacity-5 h-[47px] px-[22px] rounded-xl"
+                                onClick={() => {
+                                    if (account) {
+                                        navigator.clipboard.writeText(account)
+                                        setClipboardTitle("Copied !")
+                                    }
+                                }}
+                            >
+                                {account ? (
+                                    <span className="leading-[1.25] tracking-[-.5px] text-white font-semibold text-[14px]">
+                                        {account.slice(0, 14) +
+                                            "..." +
+                                            account.slice(-4)}
+                                    </span>
+                                ) : (
+                                    <>
+                                        <FiberManualRecordIcon className="text-red1 text-[16px]" />
+                                        <span className="leading-[1.25] tracking-[-.5px] text-white font-semibold text-[14px] normal-case">
+                                            Not connected
+                                        </span>
+                                    </>
+                                )}
+                            </Button>
+                        </Tooltip>
+                        <div className="bg-purple1 bg-opacity-10 py-[10px] pl-[15px] pr-[18px] rounded-xl mt-[24px] mb-[20px] flex items-center gap-2 border-2 border-purple1 border-opacity-50">
+                            <Switch
+                                className="transition-all duration-300 scale-[125%]"
+                                classes={{
+                                    thumb: "bg-white",
+                                    track: "bg-white",
+                                }}
+                            />
+                            <span className="text-white text-[14px] font-medium">
+                                Verify you're a human
+                            </span>
+                        </div>
+                        <Button
+                            variant="contained"
+                            className="bg-purple1 hover:bg-purple1 hover:bg-opacity-80 normal-case w-full rounded-xl text-[14px] font-semibold h-[48px] mb-[20px]"
+                        >
+                            Get Started
+                        </Button>
+                        <div className="flex items-center ">
+                            <span className="leading-[1.25] tracking-[-.5px] font-bold text-white text-[13px]">
+                                Don't have a wallet ?
+                            </span>
+                            <Button
+                                variant="text"
+                                className="text-purple1 normal-case leading-[1.25] tracking-[-.5px] font-bold text-[13px] hover:underline"
+                                onClick={() => {
+                                    setMetamaskModalActive(true)
+                                }}
+                            >
+                                Click Here
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
 
-                    <Balance />
-
-                    <Order />
-                </section>
-                <section className="pt-[0.25em] px-[0.75em] col-start-5 col-end-13 grid h-fit max-h-[82rem] overflow-scroll">
-                    <TvChart />
-                    {/* <PriceChart /> */}
-                    <Transactions />
-                    <Trades />
-                    <OrderBook />
-                </section>
-            </main>
-
+            <MetamaskModal />
             {/* Alerts */}
             <AlertWarning />
             <AlertInfo />

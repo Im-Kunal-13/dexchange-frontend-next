@@ -11,14 +11,36 @@ export const truncateDecimals = (num: string, truncateLimit: number) => {
     } else return num
 }
 
-export const formatTimestamp = (timestamp: string) => {
+export const formatTimestamp = (timestamp: string, graphInterval: string) => {
     var date = new Date(timestamp)
 
-    return date.toLocaleString("en-GB", {
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-    })
+    switch (graphInterval) {
+        case "minute":
+            return date.toLocaleString("en-GB", {
+                hour: "numeric",
+                minute: "numeric",
+            })
+
+        case "hour":
+            return date.toLocaleString("en-GB", {
+                hour: "numeric",
+            })
+        case "day":
+            return date.toLocaleString("en-GB", {
+                day: "numeric",
+                month: "short",
+            })
+        case "year":
+            return date.toLocaleString("en-GB", {
+                year: "numeric",
+            })
+        default:
+            return date.toLocaleString("en-GB", {
+                hour: "numeric",
+                minute: "numeric",
+                second: "numeric",
+            })
+    }
 }
 
 export const sortByTimeStamp = (order1: IGetOrder, order2: IGetOrder) => {
@@ -136,7 +158,6 @@ export const getPriceChartOptions = (graphInterval: string) => ({
         type: "datetime",
         labels: {
             formatter: function (value: any) {
-                console.log(graphInterval)
                 const formattedDate =
                     (graphInterval === "hour"
                         ? new Date(value).getHours()
@@ -207,11 +228,11 @@ export const buildGraphData = (
 }
 
 export const buildCandleStickData = (
-    orders: IGetOrder[],
+    trades: IGetOrder[],
     interval: moment.unitOfTime.StartOf,
     quoteAssetPrecision: number
 ) => {
-    const sortedTrades = orders.slice().sort(sortByTimeStamp)
+    const sortedTrades = trades.slice().sort(sortByTimeStamp)
 
     const groupedOrders = groupBy(sortedTrades, (order) =>
         moment(order.createdAt).startOf(interval).format()
@@ -219,7 +240,7 @@ export const buildCandleStickData = (
 
     const hours = Object.keys(groupedOrders)
 
-    const graphData = hours.map((hour, index) => {
+    const graphData = hours.map((hour) => {
         const group = groupedOrders[hour]
 
         const open = group[0]
@@ -227,9 +248,9 @@ export const buildCandleStickData = (
         const low = minBy(group, "price")
         const close = group[group.length - 1]
 
-        return {
-            x: new Date(hour).getTime(),
-            y: [open, high, low, close].map((p) =>
+        return [
+            new Date(hour).getTime(),
+            ...[open, high, low, close].map((p) =>
                 Number(
                     ethers.utils.formatUnits(
                         p?.price ? p.price : "0",
@@ -237,7 +258,7 @@ export const buildCandleStickData = (
                     )
                 )
             ),
-        }
+        ]
     })
 
     return graphData

@@ -5,12 +5,11 @@ import PollOutlinedIcon from "@mui/icons-material/PollOutlined"
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined"
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined"
-import BookmarkBorderOutlinedIcon from '@mui/icons-material/BookmarkBorderOutlined';
 import BookmarkIcon from "@mui/icons-material/Bookmark"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
-import SettingsIcon from "@mui/icons-material/Settings"
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined"
+import NotificationsIcon from "@mui/icons-material/Notifications"
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const menuItems = [
     {
@@ -32,7 +31,7 @@ export const menuItems = [
         label: "Wallets",
         Icon: AccountBalanceWalletOutlinedIcon,
         ActiveIcon: AccountBalanceWalletIcon,
-        link: "/dashboard/walllets",
+        link: "/dashboard/wallets",
     },
     {
         id: 4,
@@ -41,18 +40,11 @@ export const menuItems = [
         ActiveIcon: HistoryOutlinedIcon,
         link: "/dashboard/history",
     },
-    // {
-    //     id: 5,
-    //     label: "Leaderboard",
-    //     Icon: BookmarkBorderOutlinedIcon,
-    //     ActiveIcon: BookmarkIcon,
-    //     link: "/dashboard/leaderboard",
-    // },
     {
         id: 6,
         label: "Settings",
         Icon: SettingsOutlinedIcon,
-        ActiveIcon: BookmarkIcon,
+        ActiveIcon: SettingsIcon,
         link: "/dashboard/settings",
     },
     {
@@ -60,7 +52,7 @@ export const menuItems = [
         label: "Notifications",
         Icon: NotificationsOutlinedIcon,
         ActiveIcon: NotificationsIcon,
-        link: "/dashboard/settings",
+        link: "/dashboard/notifications",
     },
 ]
 

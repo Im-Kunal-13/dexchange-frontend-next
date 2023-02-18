@@ -123,3 +123,5 @@ export interface IOrderFill {
     createdAt: string
     updatedAt: string
 }
+
+export type ChainConfig = "testnet" | "devnet" | "custom"

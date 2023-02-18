@@ -19,17 +19,20 @@ const AlertSuccess = () => {
     return (
         <Snackbar
             anchorOrigin={position}
-            onClose={() => {
-                setSnackbarSuccess({
-                    open: false,
-                    message: snackbarSuccess.message,
-                })
-                setTimeout(() => {
+            onClose={(reason) => {
+                if(reason === null)
+                {
                     setSnackbarSuccess({
                         open: false,
-                        message: "",
+                        message: snackbarSuccess.message,
                     })
-                }, 10000)
+                    setTimeout(() => {
+                        setSnackbarSuccess({
+                            open: false,
+                            message: "",
+                        })
+                    }, 10000)
+                }
             }}
             open={snackbarSuccess.open}
             autoHideDuration={6000}

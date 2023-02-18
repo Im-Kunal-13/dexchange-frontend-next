@@ -5,7 +5,8 @@ import HighChartsAccessibility from "highcharts/modules/accessibility"
 import HighChartsStock from "highcharts/highstock"
 import { buildCandleStickData, formatTimestamp } from "../../utility"
 import { useAppSelector } from "../../store/store"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { Button } from "@mui/material"
 
 if (typeof HighChartsStock === "object") {
     HighChartsExporting(HighChartsStock)
@@ -16,33 +17,15 @@ if (typeof HighChartsStock === "object") {
 const PriceChartV2 = () => {
     const { allTrades } = useAppSelector((state) => state.trade)
     const { pair, symbols } = useAppSelector((state) => state.tokens)
-    const [graphInterval, setGraphInterval] = useState("hour")
+    const [graphInterval, setGraphInterval] =
+        useState<moment.unitOfTime.StartOf>("hour")
 
     const candleStickOptions = {
-        rangeSelector: {
-            enabled: true,
-            label: "",
-            inputPosition: {
-                align: "right",
-                x: 0,
-                y: 0,
-            },
-            buttonPosition: {
-                align: "left",
-                x: 0,
-                y: 0,
-            },
-            buttonTheme: {
-                fill: "rgb(255, 255, 255, .1)",
-                style: {
-                    color: "white",
-                    backgroundColor: "",
-                    border: "10px solid red",
-                },
-            },
-        },
         chart: {
             backgroundColor: "#111113",
+            style: {
+                overflow: "visible",
+            },
         },
         plotOptions: {
             candlestick: {
@@ -58,29 +41,13 @@ const PriceChartV2 = () => {
                 type: "candlestick",
                 name: "Order",
                 data:
-                    //  buildCandleStickData(allTrades, 'minute', 8),
-                    [
-                        [1668177000000, 145.82, 150.01, 144.37, 149.7],
-                        [1668436200000, 148.97, 150.28, 147.43, 148.28],
-                        [1668522600000, 152.22, 153.59, 148.56, 150.04],
-                        [1668609000000, 149.13, 149.87, 147.29, 148.79],
-                        [1668695400000, 146.43, 151.48, 146.15, 150.72],
-                        [1668781800000, 152.31, 152.7, 149.97, 151.29],
-                        [1669041000000, 150.16, 150.37, 147.72, 148.01],
-                        [1669127400000, 148.13, 150.42, 146.93, 150.18],
-                        [1669213800000, 149.45, 151.83, 149.34, 151.07],
-                    ],
-
-                dataGrouping: {
-                    units: [
-                        [
-                            "week", // unit name
-                            [1], // allowed multiples
-                        ],
-                        ["month", [1, 2, 3, 4, 6]],
-                    ],
-                    grouping: false,
-                },
+                    pair && symbols[0]
+                        ? buildCandleStickData(
+                              allTrades,
+                              graphInterval,
+                              pair?.pairs[symbols.join("-")].quoteAssetPrecision
+                          )
+                        : [],
                 lineColor: "#DD3D32",
                 upLineColor: "#25ce8f",
             },
@@ -93,7 +60,7 @@ const PriceChartV2 = () => {
                 // @ts-ignore
                 formatter: function () {
                     // @ts-ignore
-                    return formatTimestamp(this.value)
+                    return formatTimestamp(this.value, graphInterval)
                 },
                 style: {
                     color: "#8A8991",
@@ -120,15 +87,77 @@ const PriceChartV2 = () => {
         legend: {
             enabled: false,
         },
+        exporting: {
+            enabled: false,
+            buttons: {
+                contextButton: {
+                    // y: -40,
+                    y: -10,
+                },
+            },
+        },
     }
 
+    useEffect(() => {})
+
     return (
-        <div className="w-full border-b border-l border-white border-opacity-10 h-fit bg-bgSidebarGray1">
+        <div className="w-full border-b border-l border-white border-opacity-10 h-fit bg-bgSidebarGray1 flex flex-col">
+            <div className="flex items-center gap-2 pl-5 relative top-[20px]">
+                <h6 className="text-[10px] font-bold leading-[1.6] tracking-[.9px] text-textGray1">
+                    INTERVAL
+                </h6>
+                <div className="flex items-center">
+                    <Button
+                        variant="outlined"
+                        className={`${
+                            graphInterval === "minute"
+                                ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                                : "border-[2px] hover:border-[2px] border-white border-opacity-10 hover:border-opacity-20 text-textGray1 hover:border-textGray1"
+                        } normal-case rounded-full text-[10px] font-bold leading-[1.6] tracking-[.9px] scale-[85%]`}
+                        onClick={() => setGraphInterval("minute")}
+                    >
+                        MIN
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        className={`${
+                            graphInterval === "hour"
+                                ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                                : "border-[2px] hover:border-[2px] border-white border-opacity-10 hover:border-opacity-20 text-textGray1 hover:border-textGray1"
+                        } normal-case rounded-full text-[10px] font-bold leading-[1.6] tracking-[.9px] scale-[85%]`}
+                        onClick={() => setGraphInterval("hour")}
+                    >
+                        HOUR
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        className={`${
+                            graphInterval === "day"
+                                ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                                : "border-[2px] hover:border-[2px] border-white border-opacity-10 hover:border-opacity-20 text-textGray1 hover:border-textGray1"
+                        } normal-case rounded-full text-[10px] font-bold leading-[1.6] tracking-[.9px] scale-[85%]`}
+                        onClick={() => setGraphInterval("day")}
+                    >
+                        DAY
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        className={`${
+                            graphInterval === "year"
+                                ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                                : "border-[2px] hover:border-[2px] border-white border-opacity-10 hover:border-opacity-20 text-textGray1 hover:border-textGray1"
+                        } normal-case rounded-full text-[10px] font-bold leading-[1.6] tracking-[.9px] scale-[85%]`}
+                        onClick={() => setGraphInterval("year")}
+                    >
+                        YEAR
+                    </Button>
+                </div>
+            </div>
             <HighchartsReact
                 containerProps={{
                     style: {
                         height: "443px",
-                        padding: "10px",
+                        padding: "30px 10px 10px 10px",
                         backgroundColor: "#111113",
                     },
                 }}

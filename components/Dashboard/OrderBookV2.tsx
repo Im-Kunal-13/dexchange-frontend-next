@@ -1,12 +1,5 @@
-import { Button, Divider } from "@mui/material"
+import { Button, Divider, Stack } from "@mui/material"
 import { useState } from "react"
-import Table from "@mui/material/Table"
-import TableBody from "@mui/material/TableBody"
-import TableCell from "@mui/material/TableCell"
-import TableContainer from "@mui/material/TableContainer"
-import TableHead from "@mui/material/TableHead"
-import TableRow from "@mui/material/TableRow"
-import Paper from "@mui/material/Paper"
 import { cancelOrder } from "../../api/interactions"
 import { useAppStateContext } from "../../context/contextProvider"
 import { ethers } from "ethers"
@@ -14,13 +7,15 @@ import { formatTimestamp } from "../../utility"
 import { useAppSelector } from "../../store/store"
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
 
-const OrderBookV2 = () => {
+interface Props {
+    shortBookOrders: any[]
+}
+
+const OrderBookV2 = ({ shortBookOrders }: Props) => {
     const [isTrades, setIsTrades] = useState(false)
     const { symbols, pair } = useAppSelector((state) => state.tokens)
-    const { myOrders, buyOrders, sellOrders } = useAppSelector(
-        (state) => state.order
-    )
-    const { myTrades, allTrades } = useAppSelector((state) => state.trade)
+    const { buyOrders, sellOrders } = useAppSelector((state) => state.order)
+    const { allTrades } = useAppSelector((state) => state.trade)
 
     // Grid
     const orderColumns: GridColDef[] = [
@@ -39,7 +34,6 @@ const OrderBookV2 = () => {
                 </span>
             ),
             renderCell: (cellValues) => {
-                console.log(cellValues)
                 return (
                     <span
                         className={`relative bottom-[14px] text-[12px] leading-[1.3] font-semibold ${
@@ -92,7 +86,6 @@ const OrderBookV2 = () => {
                 </span>
             ),
             renderCell: (cellValues) => {
-                console.log(cellValues)
                 return (
                     <span
                         className={`relative bottom-[14px] text-[12px] leading-[1.3] font-semibold ${
@@ -101,6 +94,7 @@ const OrderBookV2 = () => {
                                 : "text-inputErrorRed"
                         }`}
                     >
+                        {cellValues.row.side === "buy" ? "+ " : "- "}
                         {cellValues.formattedValue}
                     </span>
                 )
@@ -154,23 +148,23 @@ const OrderBookV2 = () => {
         <div className="bg-bgSidebarGray1 border border-t-0 border-white border-opacity-10 h-full">
             <div className="flex items-center gap-2 px-[10px] py-[5px]">
                 <Button
-                    variant="text"
+                    variant="outlined"
                     className={`normal-case ${
                         !isTrades
-                            ? "bg-white bg-opacity-10 text-purple1"
-                            : "text-textGray1  hover:text-white"
-                    }  rounded-full w-full hover:bg-white hover:bg-opacity-20 border border-white p-[5px] m-[5px] text-[10px] font-bold leading-[1.6] tracking-[.9px]`}
+                            ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                            : "border-[2px] hover:border-[2px] border-transparent hover:border-transparent hover:bg-transparent text-textGray1"
+                    }  rounded-full w-full p-[4px] m-[5px] text-[10px] font-bold leading-[1.6] tracking-[.9px]`}
                     onClick={() => setIsTrades(false)}
                 >
                     ORDER BOOK
                 </Button>
                 <Button
-                    variant="text"
-                    className={`normal-case rounded-full w-full ${
+                    variant="outlined"
+                    className={`normal-case ${
                         isTrades
-                            ? "bg-white bg-opacity-10 text-purple1"
-                            : "text-textGray1  hover:text-white"
-                    } rounded-full w-full hover:bg-white hover:bg-opacity-20 border border-white p-[5px] m-[5px] text-[10px] font-bold leading-[1.6] tracking-[.9px]`}
+                            ? "border-[2px] hover:border-[2px] border-blue1 text-blue1 hover:border-blue1"
+                            : "border-[2px] hover:border-[2px] border-transparent hover:border-transparent hover:bg-transparent text-textGray1"
+                    }  rounded-full w-full p-[4px] m-[5px] text-[10px] font-bold leading-[1.6] tracking-[.9px]`}
                     onClick={() => setIsTrades(true)}
                 >
                     TRADES
@@ -178,9 +172,10 @@ const OrderBookV2 = () => {
             </div>
             <Divider className="bg-white bg-opacity-10" />
             {isTrades ? (
+                // <div className="h-96 custom-scrollbar">
                 <DataGrid
                     classes={{
-                        root: "bg-black border-none bg-bgSidebarGray1",
+                        root: "border-none bg-bgSidebarGray1",
                         checkboxInput: "text-white",
                         sortIcon: "hidden",
                         columnHeaderTitle:
@@ -190,7 +185,6 @@ const OrderBookV2 = () => {
                         iconSeparator: "stroke-black w-[20px]",
                     }}
                     className="text-white"
-                    style={{ height: "calc(550px)" }}
                     rows={
                         allTrades &&
                         allTrades
@@ -222,7 +216,8 @@ const OrderBookV2 = () => {
                                               .quoteAssetPrecision
                                         : 0
                                 ),
-                                time: formatTimestamp(trade.updatedAt),
+                                time: formatTimestamp(trade.updatedAt, ""),
+                                side: trade.side,
                             }))
                     }
                     columns={tradeColumns}
@@ -230,11 +225,22 @@ const OrderBookV2 = () => {
                     hideFooterPagination
                     hideFooter
                     disableColumnMenu
+                    components={{
+                        NoRowsOverlay: () => (
+                            <Stack
+                                height="100%"
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                No Trades
+                            </Stack>
+                        ),
+                    }}
                 />
             ) : (
                 <DataGrid
                     classes={{
-                        root: "bg-black border-none bg-bgSidebarGray1",
+                        root: "border-none bg-bgSidebarGray1",
                         checkboxInput: "text-white",
                         sortIcon: "hidden",
                         columnHeaderTitle:
@@ -244,12 +250,12 @@ const OrderBookV2 = () => {
                         iconSeparator: "stroke-black w-[20px]",
                     }}
                     className="text-white"
-                    style={{ height: "calc(550px)" }}
                     rows={buyOrders.concat(sellOrders).map((trade) => ({
                         id: trade._id,
                         amount: ethers.utils.formatUnits(
                             trade.remainingQuantity,
                             pair &&
+                                symbols[0] &&
                                 pair.pairs[symbols.join("-")]
                                     .baseAssetPrecision !== 0
                                 ? pair.pairs[symbols.join("-")]
@@ -258,18 +264,33 @@ const OrderBookV2 = () => {
                         ),
                         price: ethers.utils.formatUnits(
                             trade.price,
-                            pair.pairs[symbols.join("-")]
-                                .quoteAssetPrecision !== 0
+                            pair &&
+                                symbols[0] &&
+                                pair.pairs[symbols.join("-")]
+                                    .quoteAssetPrecision !== 0
                                 ? pair.pairs[symbols.join("-")]
                                       .quoteAssetPrecision
                                 : 0
                         ),
+                        side: trade.side,
                     }))}
+                    disableVirtualization
                     columns={orderColumns}
                     disableSelectionOnClick
                     hideFooterPagination
                     hideFooter
                     disableColumnMenu
+                    components={{
+                        NoRowsOverlay: () => (
+                            <Stack
+                                height="100%"
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                No Orders in Orderbook
+                            </Stack>
+                        ),
+                    }}
                 />
             )}
         </div>

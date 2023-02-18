@@ -19,17 +19,19 @@ const AlertError = () => {
     return (
         <Snackbar
             anchorOrigin={position}
-            onClose={() => {
-                setSnackbarError({
-                    open: false,
-                    message: snackbarError.message,
-                })
-                setTimeout(() => {
+            onClose={(reason) => {
+                if (reason === null) {
                     setSnackbarError({
                         open: false,
-                        message: "",
+                        message: snackbarError.message,
                     })
-                }, 10000)
+                    setTimeout(() => {
+                        setSnackbarError({
+                            open: false,
+                            message: "",
+                        })
+                    }, 10000)
+                }
             }}
             open={snackbarError.open}
             autoHideDuration={6000}

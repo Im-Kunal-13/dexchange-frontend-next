@@ -19,20 +19,22 @@ const AlertWarning = () => {
     return (
         <Snackbar
             anchorOrigin={position}
-            onClose={() => {
-                setSnackbarWarning({
-                    open: false,
-                    message: snackbarWarning.message,
-                })
-                setTimeout(() => {
+            onClose={(reason) => {
+                if (reason === null) {
                     setSnackbarWarning({
                         open: false,
-                        message: "",
+                        message: snackbarWarning.message,
                     })
-                }, 10000)
+                    setTimeout(() => {
+                        setSnackbarWarning({
+                            open: false,
+                            message: "",
+                        })
+                    }, 10000)
+                }
             }}
             open={snackbarWarning.open}
-            autoHideDuration={6000}
+            autoHideDuration={1000}
             message="Note archived"
             key={"top" + "center"}
             TransitionComponent={TransitionLeft}
