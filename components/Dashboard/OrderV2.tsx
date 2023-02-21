@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
     Button,
     FormHelperText,
@@ -13,149 +13,201 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { useAppStateContext } from "../../context/contextProvider"
 import { useAppDispatch, useAppSelector } from "../../store/store"
 import { BigNumber, ethers } from "ethers"
-import { insertOrder, loadTokenBalances } from "../../api/interactions"
-import { containsOnlyValidNumber } from "../../utility"
-import { InputAdornment } from "@material-ui/core"
 
-const OrderV2 = () => {
+import { InputAdornment } from "@material-ui/core"
+import { useAppPersistStore } from "@store/app"
+import Long from "long"
+import { useQueryClient, useSigningClient, UseWallet } from "@sei-js/react"
+import { StdFee } from "@cosmjs/stargate"
+import { RPC_URL, CONTRACT_ADDRESS, REST_URL } from "constants/index"
+import { formatUnits } from "ethers/lib/utils"
+import moment from "moment"
+import { isStringValidNumber } from "components/utility/isStringValidNumber"
+
+const fee: StdFee = {
+    amount: [
+        {
+            denom: "usei",
+            amount: "2000",
+        },
+    ],
+    gas: "200000",
+}
+
+interface Props {
+    seiWallet: UseWallet | null
+}
+
+const OrderV2 = ({ seiWallet }: Props) => {
     const {
         // @ts-ignore
         setSnackbarWarning,
+        // @ts-ignore
+        setSnackbarLoading,
+        // @ts-ignore
+        setSnackbarSuccess,
+        // @ts-ignore
+        setSnackbarError,
     } = useAppStateContext()
+
+    const { provider, setProvider, txHistory, setTxHistory } =
+        useAppPersistStore()
 
     const [isMarket, setIsMarket] = useState(false)
     const [isBuy, setIsBuy] = useState(true)
     const [amount, setAmount] = useState("")
     const [price, setPrice] = useState("")
 
-    const { connection, account, chainId } = useAppSelector(
-        (state) => state.provider
-    )
-    const { symbols, pair, contracts } = useAppSelector((state) => state.tokens)
-    const tokenBalances = useAppSelector((state) => state.tokens.balances)
+    const { symbols, pair } = useAppSelector((state) => state.tokens)
+
     const { balances } = useAppSelector((state) => state.exchange)
-    const exchange = useAppSelector((state) => state.exchange.contract)
 
-    const dispatch = useAppDispatch()
+    const { signingClient } = useSigningClient(
+        RPC_URL,
+        seiWallet?.offlineSigner
+    )
 
-    const buyHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        e.preventDefault()
+    let { queryClient, isLoading } = useQueryClient(REST_URL)
 
-        const amountBigNum = ethers.utils.parseUnits(
-            amount || "0",
-            pair?.pairs[symbols.join("-")].baseAssetPrecision
-        )
-        const priceBigNum = ethers.utils.parseUnits(
-            price || "0",
-            pair?.pairs[symbols.join("-")].quoteAssetPrecision
-        )
+    const getAccountBalance = useCallback(async () => {
+        if (!isLoading && seiWallet?.offlineSigner && seiWallet?.chainId) {
+            const accounts = await seiWallet?.offlineSigner?.getAccounts()
 
-        if (!amountBigNum.isZero() && (isMarket || !priceBigNum.isZero())) {
-            if (
-                priceBigNum.lte(balances[1].deposited.sub(balances[1].blocked))
-            ) {
-                insertOrder(
-                    account,
-                    `${symbols[0]}-${symbols[1]}`,
-                    isMarket ? "market" : "limit",
-                    isBuy ? "buy" : "sell",
-                    amount,
-                    !isMarket ? price : "0",
-                    chainId,
-                    exchange.address,
-                    [
-                        pair.pairs[symbols.join("-")].baseAssetPrecision,
-                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                    ],
-                    connection,
-                    dispatch
-                )
-                setAmount("")
-                setPrice("")
-            } else {
-                setSnackbarWarning({
-                    open: true,
-                    message: "You don't have enough USDC deposited !",
+            // Query the account balance
+            const accountBalance =
+                await queryClient.cosmos.bank.v1beta1.allBalances({
+                    address: accounts[0]?.address,
                 })
-            }
-        } else {
-            setSnackbarWarning({
-                open: true,
-                message: "Token amount cannot be zero !",
+
+            setProvider({
+                ...provider,
+                account: accounts[0]?.address,
+                balances:
+                    accountBalance?.balances?.length > 0
+                        ? accountBalance?.balances?.map(
+                              (balance: { denom: string; amount: string }) => ({
+                                  ...balance,
+                                  amount: formatUnits(
+                                      balance?.amount,
+                                      6
+                                  ).toString(),
+                              })
+                          )
+                        : [],
+
+                chainId: seiWallet?.chainId,
             })
         }
-    }
+    }, [isLoading, seiWallet?.offlineSigner, seiWallet?.chainId])
 
-    const sellHandler = (
-        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
-        e.preventDefault()
-        if (
-            (isMarket && Number(amount) > 0) ||
-            (Number(amount) > 0 && Number(price) > 0)
-        ) {
-            if (
-                Number(amount) <=
-                Number(balances[0].deposited) - Number(balances[0].blocked)
-            ) {
-                insertOrder(
-                    account,
-                    `${symbols[0]}-${symbols[1]}`,
-                    isMarket ? "market" : "limit",
-                    isBuy ? "buy" : "sell",
-                    amount,
-                    !isMarket ? price : "0",
-                    chainId,
-                    exchange.address,
-                    [
-                        pair.pairs[symbols.join("-")].baseAssetPrecision,
-                        pair.pairs[symbols.join("-")].quoteAssetPrecision,
-                    ],
-                    connection,
-                    dispatch
-                )
-                setAmount("")
-                setPrice("")
-            } else {
-                setSnackbarWarning({
-                    open: true,
-                    message: "You don't have enough tokens to sell !",
-                })
-            }
-        } else {
-            setSnackbarWarning({
+    const msgPlaceOrder = async () => {
+        let msgOrder = {
+            typeUrl: "/seiprotocol.seichain.dex.MsgPlaceOrders",
+            value: {
+                creator: provider?.account,
+                funds: [
+                    {
+                        denom: isBuy ? "uusdc" : "usei",
+                        amount: isBuy
+                            ? (
+                                  Number(amount) *
+                                  Number(price) *
+                                  1000000
+                              ).toString()
+                            : (Number(amount) * 1000000).toString(),
+                    },
+                ], // Check this  update to uusdc
+                contractAddr: CONTRACT_ADDRESS,
+                orders: [
+                    {
+                        id: Long.fromNumber(0),
+                        status: 0,
+                        account: provider?.account,
+                        contractAddr: CONTRACT_ADDRESS,
+                        price: isMarket
+                            ? "1000000000000000000"
+                            : (Number(price) * 1000000000000000000).toString(), // check the prices in orderbook  1 * 10 ^ 18
+                        quantity: (
+                            Number(amount) * 1000000000000000000
+                        ).toString(), // 1 * 10 ^ 18
+                        priceDenom: "USDC",
+                        assetDenom: "SEI",
+                        orderType: isMarket ? 1 : 0, // 0 -Limit, 1 - Market
+                        positionDirection: isBuy ? 0 : 1, // Check this 0 - Long, 1 - Short
+                        data: '{"leverage":"1","position_effect":"Open"}',
+                        statusDescription: "",
+                    },
+                ],
+            },
+        }
+
+        console.log("Number price parsed => ", Number(price))
+
+        console.log(
+            "Parsed price => ",
+            (Number(price) * 1000000000000000000).toString()
+        )
+        console.log(
+            "Parsed amount => ",
+            (Number(amount) * 1000000000000000000).toString()
+        )
+        console.log("message order => ", msgOrder)
+
+        setSnackbarLoading({
+            open: true,
+            message: "Placing your order...",
+            autoHide: false,
+        })
+
+        const res = await signingClient.signAndBroadcast(
+            provider?.account,
+            [msgOrder],
+            fee,
+            "test msg place order"
+        )
+
+        setSnackbarLoading({
+            open: false,
+            message: "",
+            autoHide: true,
+        })
+
+        getAccountBalance()
+
+        if (res?.code === 0) {
+            setSnackbarSuccess({
                 open: true,
-                message: "Token amount cannot be zero !",
+                message:
+                    "tx hash : " + res.transactionHash.slice(0, 15) + "...",
+                autoHide: false,
+                content: res.transactionHash,
+            })
+
+            setTxHistory([
+                ...txHistory,
+                {
+                    amount,
+                    date: moment(),
+                    price,
+                    txHash: res.transactionHash,
+                    side: isBuy ? "buy" : "sell",
+                },
+            ])
+        } else {
+            setSnackbarError({
+                open: true,
+                message: "Sorry, some error occured !",
             })
         }
-    }
 
-    const handleInput = (
-        value: string,
-        baseAsset: boolean,
-        setValue: React.Dispatch<SetStateAction<string>>
-    ) => {
-        if (containsOnlyValidNumber(value)) {
-            if (value.includes(".")) {
-                const arr = value.split(".")
-                if (
-                    arr[1].length <=
-                    pair.pairs[symbols.join("-")][
-                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                    ]
-                ) {
-                    setValue(value)
-                }
-            } else {
-                setValue(value)
-            }
-        }
+        console.log("msg place order response", res)
     }
 
     useEffect(() => {
         setAmount("")
         setPrice("")
     }, [symbols])
+
     return (
         <div>
             <div className="flex items-center gap-2">
@@ -184,26 +236,20 @@ const OrderV2 = () => {
                 </h6>
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-[3px]">
-                        <p className="text-[12px] text-white font-bold leading-[1.6] trackig-widest">
-                            {tokenBalances[0] &&
-                                ethers.utils.formatUnits(
-                                    tokenBalances[0].toString(),
-                                    pair?.pairs[symbols.join("-")]
-                                        .baseAssetPrecision
-                                )}{" "}
-                            {symbols[0]}
-                        </p>
-                        <p className="text-[12px] text-white font-bold leading-[1.6] trackig-widest">
-                            {tokenBalances[1] &&
-                                ethers.utils.formatUnits(
-                                    tokenBalances[1].toString(),
-                                    pair?.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision
-                                )}{" "}
-                            {symbols[1]}
-                        </p>
+                        {provider.balances.map((token) => (
+                            <p
+                                className="text-[12px] text-white font-bold leading-[1.6] trackig-widest"
+                                key={token?.denom}
+                            >
+                                {token?.amount} -{" "}
+                                {token?.denom.slice(1).toUpperCase()}
+                            </p>
+                        ))}
                     </div>
-                    <IconButton className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]" onClick={() => {loadTokenBalances(contracts,account, dispatch)}}>
+                    <IconButton
+                        className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]"
+                        onClick={() => {}}
+                    >
                         <RefreshIcon className="text-white text-2xl" />
                     </IconButton>
                 </div>
@@ -259,7 +305,10 @@ const OrderV2 = () => {
                 value={amount}
                 autoComplete="off"
                 onChange={(e) => {
-                    handleInput(e.target.value, true, setAmount)
+                    // handleInput(e.target.value, true, setAmount)
+                    if (isStringValidNumber(e?.target?.value)) {
+                        setAmount(e?.target?.value)
+                    }
                 }}
                 variant="standard"
                 label={
@@ -282,7 +331,7 @@ const OrderV2 = () => {
                                     isBuy ? "text-textGreen1" : "text-alertRed"
                                 } relative bottom-2 font-semibold text-[14px]`}
                             >
-                                {symbols[0]}
+                                SEI
                             </span>
                         </InputAdornment>
                     ),
@@ -331,8 +380,12 @@ const OrderV2 = () => {
                 disabled={isMarket}
                 autoComplete="off"
                 onChange={(e) => {
-                    if (!isMarket) {
-                        handleInput(e.target.value, false, setPrice)
+                    // if (!isMarket) {
+                    //     handleInput(e.target.value, false, setPrice)
+                    // }
+
+                    if (isStringValidNumber(e?.target?.value)) {
+                        setPrice(e?.target?.value)
                     }
                 }}
                 variant="standard"
@@ -399,16 +452,19 @@ const OrderV2 = () => {
             >
                 You don't have enough {symbols[0]} deposited !
             </FormHelperText>
+
             <Button
                 variant="contained"
-                onClick={isBuy ? buyHandler : sellHandler}
+                onClick={() => {
+                    msgPlaceOrder()
+                }}
                 className={`${
                     isBuy
                         ? "bg-green1 hover:bg-green1"
                         : "bg-alertRed hover:bg-alertRed"
                 } w-full rounded-xl mt-[4px] normal-case font-semibold py-3 hover:bg-opacity-90`}
             >
-                {isBuy ? "Buy" : "Sell"} {symbols[0]}
+                {isBuy ? "Buy" : "Sell"} SEI
             </Button>
         </div>
     )

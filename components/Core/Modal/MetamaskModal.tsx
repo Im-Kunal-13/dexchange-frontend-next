@@ -38,12 +38,12 @@ const MetamaskModal = () => {
                         <div className="flex flex-col mt-[16px]">
                             <div className="flex items-center gap-2.5 mt-[22px]">
                                 <p className="text-white">
-                                    Step 1 : Go to the Metamask website
+                                    Step 1 : Go to the Keplr website
                                 </p>
                                 <Button
                                     variant="contained"
                                     className="bg-purple1 hover:bg-purple1 hover:bg-opacity-80 min-w-[80px] w-[89px] h-[34px] text-[12px] normal-case leading-[1.25] tracking-tight font-bold"
-                                    href="https://metamask.io/download/"
+                                    href="https://www.keplr.app/download"
                                     target="_blank"
                                 >
                                     Click here
@@ -67,7 +67,7 @@ const MetamaskModal = () => {
                         </div>
                         <img
                             className="w-[125px] h-fit relative top-7"
-                            src="/images/metamask.png"
+                            src="/images/kepler.png"
                         />
                     </div>
                     <div className="height-[100px] flex justify-between p-[40px] bg-purple1 absolute bottom-0 left-0 w-full rounded-br-[24px] rounded-bl-[24px]">

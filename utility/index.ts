@@ -11,7 +11,7 @@ export const truncateDecimals = (num: string, truncateLimit: number) => {
     } else return num
 }
 
-export const formatTimestamp = (timestamp: string, graphInterval: string) => {
+export const formatTimestamp = (timestamp: string, graphInterval: string = "") => {
     var date = new Date(timestamp)
 
     switch (graphInterval) {

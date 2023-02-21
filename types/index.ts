@@ -44,9 +44,12 @@ export interface ITokens {
 
 export interface IProvider {
     connection: any
-    chainId: number
+    chainId: string
     account: string
-    balance: string
+    balances: {
+        denom: string
+        amount: string
+    }[]
 }
 
 export interface IRootState {
@@ -125,3 +128,19 @@ export interface IOrderFill {
 }
 
 export type ChainConfig = "testnet" | "devnet" | "custom"
+
+export interface IBookOrder {
+    entry: {
+        allocations: {
+            account: string
+            orderId: string
+            quantity: string
+        }[]
+        assetDemon: string
+        price: string
+        priceDenom: string
+        quantity: string
+    }
+    price: string
+    side: string
+}

@@ -50,13 +50,6 @@ const DEFAULT_EXCHANGE_STATE: IExchange = {
     },
 }
 
-const DEFAULT_PROVIDER_STATE: IProvider = {
-    connection: {},
-    chainId: 0,
-    account: "",
-    balance: "",
-}
-
 const DEFAULT_ORDERS_STATE: IOrder = {
     sellOrders: [],
     buyOrders: [],
@@ -68,22 +61,6 @@ const DEFAULT_TRADES_STATE: ITrade = {
     myTrades: [],
     allTrades: [],
 }
-
-export const provider = createReducer(DEFAULT_PROVIDER_STATE, (builder) => {
-    builder
-        .addCase(actions.load_provider, (state, action) => {
-            state.connection = action.payload
-        })
-        .addCase(actions.load_network, (state, action) => {
-            state.chainId = action.payload
-        })
-        .addCase(actions.load_account, (state, action) => {
-            state.account = action.payload
-        })
-        .addCase(actions.load_ether_balance, (state, action) => {
-            state.balance = action.payload
-        })
-})
 
 export const tokens = createReducer(DEFAULT_TOKENS_STATE, (builder) => {
     builder
@@ -171,7 +148,7 @@ export const order = createReducer(DEFAULT_ORDERS_STATE, (builder) => {
         .addCase(actions.load_cancelled_orders, (state, action) => {
             state.cancelledOrders = action.payload
         })
-        
+
         // SOCKET EVENTS
         .addCase(actions.new_order_inserted, (state, action) => {
             if (action.payload.order.side === "buy") {

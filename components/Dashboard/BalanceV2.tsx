@@ -37,108 +37,108 @@ const BalanceV2 = () => {
     const exchange = useAppSelector((state) => state.exchange.contract)
     const exchangeBalances = useAppSelector((state) => state.exchange.balances)
 
-    const depositHandler = (token: any, baseAsset: boolean) => {
-        const tokenBigNum = ethers.utils.parseUnits(
-            tokenTransferAmount || "0",
-            pair?.pairs[symbols.join("-")][
-                isToken1Selected ? "baseAssetPrecision" : "quoteAssetPrecision"
-            ]
-        )
+    // const depositHandler = (token: any, baseAsset: boolean) => {
+    //     const tokenBigNum = ethers.utils.parseUnits(
+    //         tokenTransferAmount || "0",
+    //         pair?.pairs[symbols.join("-")][
+    //             isToken1Selected ? "baseAssetPrecision" : "quoteAssetPrecision"
+    //         ]
+    //     )
 
-        const balance = tokenBalances[baseAsset ? 0 : 1]
+    //     const balance = tokenBalances[baseAsset ? 0 : 1]
 
-        if (!tokenBigNum.isZero()) {
-            if (tokenBigNum.lt(balance)) {
-                deposit(
-                    chainId,
-                    account,
-                    token,
-                    tokenTransferAmount,
-                    exchange.address,
-                    pair.pairs[symbols.join("-")][
-                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                    ],
-                    connection,
-                    dispatch
-                )
-                setTokenTransferAmount("")
-            } else {
-                setSnackbarWarning({
-                    open: true,
-                    message: "You have insufficient amount of tokens !",
-                })
-            }
-        } else {
-            setSnackbarWarning({
-                open: true,
-                message: "Token amount cannot be zero !",
-            })
-        }
-    }
+    //     if (!tokenBigNum.isZero()) {
+    //         if (tokenBigNum.lt(balance)) {
+    //             deposit(
+    //                 chainId,
+    //                 account,
+    //                 token,
+    //                 tokenTransferAmount,
+    //                 exchange.address,
+    //                 pair.pairs[symbols.join("-")][
+    //                     baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+    //                 ],
+    //                 connection,
+    //                 dispatch
+    //             )
+    //             setTokenTransferAmount("")
+    //         } else {
+    //             setSnackbarWarning({
+    //                 open: true,
+    //                 message: "You have insufficient amount of tokens !",
+    //             })
+    //         }
+    //     } else {
+    //         setSnackbarWarning({
+    //             open: true,
+    //             message: "Token amount cannot be zero !",
+    //         })
+    //     }
+    // }
 
-    const withdrawHandler = (token: any, baseAsset: boolean) => {
-        const tokenBigNum = ethers.utils.parseUnits(
-            tokenTransferAmount || "0",
-            pair?.pairs[symbols.join("-")][
-                baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-            ]
-        )
+    // const withdrawHandler = (token: any, baseAsset: boolean) => {
+    //     const tokenBigNum = ethers.utils.parseUnits(
+    //         tokenTransferAmount || "0",
+    //         pair?.pairs[symbols.join("-")][
+    //             baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+    //         ]
+    //     )
 
-        const balDeposited =
-            exchangeBalances[isToken1Selected ? 0 : 1].deposited
-        const balBlocked = exchangeBalances[isToken1Selected ? 0 : 1].blocked
+    //     const balDeposited =
+    //         exchangeBalances[isToken1Selected ? 0 : 1].deposited
+    //     const balBlocked = exchangeBalances[isToken1Selected ? 0 : 1].blocked
 
-        if (!tokenBigNum.isZero()) {
-            if (tokenBigNum.lte(balDeposited.sub(balBlocked))) {
-                withdraw(
-                    chainId,
-                    account,
-                    token,
-                    tokenTransferAmount,
-                    exchange.address,
-                    pair.pairs[symbols.join("-")][
-                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                    ],
-                    connection,
-                    dispatch
-                )
-                setTokenTransferAmount("")
-            } else {
-                setSnackbarWarning({
-                    open: true,
-                    message: "You don't have enough withdrawal balance !",
-                })
-            }
-        } else {
-            setSnackbarWarning({
-                open: true,
-                message: "Token amount cannot be zero !",
-            })
-        }
-    }
+    //     if (!tokenBigNum.isZero()) {
+    //         if (tokenBigNum.lte(balDeposited.sub(balBlocked))) {
+    //             withdraw(
+    //                 chainId,
+    //                 account,
+    //                 token,
+    //                 tokenTransferAmount,
+    //                 exchange.address,
+    //                 pair.pairs[symbols.join("-")][
+    //                     baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+    //                 ],
+    //                 connection,
+    //                 dispatch
+    //             )
+    //             setTokenTransferAmount("")
+    //         } else {
+    //             setSnackbarWarning({
+    //                 open: true,
+    //                 message: "You don't have enough withdrawal balance !",
+    //             })
+    //         }
+    //     } else {
+    //         setSnackbarWarning({
+    //             open: true,
+    //             message: "Token amount cannot be zero !",
+    //         })
+    //     }
+    // }
 
-    const handleInput = (
-        value: string,
-        baseAsset: boolean,
-        setValue: React.Dispatch<SetStateAction<string>>
-    ) => {
-        if (containsOnlyValidNumber(value)) {
-            if (value.includes(".")) {
-                const arr = value.split(".")
+    // const handleInput = (
+    //     value: string,
+    //     baseAsset: boolean,
+    //     setValue: React.Dispatch<SetStateAction<string>>
+    // ) => {
+    //     if (containsOnlyValidNumber(value)) {
+    //         if (value.includes(".")) {
+    //             const arr = value.split(".")
 
-                if (
-                    arr[1].length <=
-                    pair.pairs[symbols.join("-")][
-                        baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
-                    ]
-                ) {
-                    setValue(value)
-                }
-            } else {
-                setValue(value)
-            }
-        }
-    }
+    //             if (
+    //                 arr[1].length <=
+    //                 pair.pairs[symbols.join("-")][
+    //                     baseAsset ? "baseAssetPrecision" : "quoteAssetPrecision"
+    //                 ]
+    //             ) {
+    //                 setValue(value)
+    //             }
+    //         } else {
+    //             setValue(value)
+    //         }
+    //     }
+    // }
 
     useEffect(() => {
         setTokenTransferAmount("")
@@ -146,7 +146,7 @@ const BalanceV2 = () => {
 
     return (
         <div>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
                 <Button
                     variant="text"
                     className={`normal-case text-[13px] font-semibold ${
@@ -386,7 +386,7 @@ const BalanceV2 = () => {
                 className={`${"bg-purple1 hover:bg-purple1"} w-full rounded-xl mt-[4px] normal-case font-semibold py-3 hover:bg-opacity-90`}
             >
                 {isDeposit ? "Deposit" : "Withdraw"}
-            </Button>
+            </Button> */}
         </div>
     )
 }

@@ -1,27 +1,36 @@
 import { Button, Divider, Stack } from "@mui/material"
-import { useState } from "react"
-import { cancelOrder } from "../../api/interactions"
+import { useCallback, useEffect, useState } from "react"
 import { useAppStateContext } from "../../context/contextProvider"
 import { ethers } from "ethers"
 import { formatTimestamp } from "../../utility"
 import { useAppSelector } from "../../store/store"
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
+import { useQueryClient } from "@sei-js/react"
+import { CONTRACT_ADDRESS, REST_URL } from "constants/index"
+import { useAppPersistStore } from "@store/app"
+import { IBookOrder } from "types"
+import formatTime from "components/utility/formatTime"
+import moment from "moment"
 
-interface Props {
-    shortBookOrders: any[]
-}
+interface Props {}
 
-const OrderBookV2 = ({ shortBookOrders }: Props) => {
+const OrderBookV2 = ({}: Props) => {
     const [isTrades, setIsTrades] = useState(false)
     const { symbols, pair } = useAppSelector((state) => state.tokens)
-    const { buyOrders, sellOrders } = useAppSelector((state) => state.order)
     const { allTrades } = useAppSelector((state) => state.trade)
+
+    let { queryClient, isLoading } = useQueryClient(REST_URL)
+
+    const [sellOrders, setSellOrders] = useState<IBookOrder[]>([])
+    const [buyOrders, setBuyOrders] = useState<IBookOrder[]>([])
+
+    const { provider, txHistory } = useAppPersistStore()
 
     // Grid
     const orderColumns: GridColDef[] = [
         {
-            field: "amount",
-            headerName: "AMOUNT",
+            field: "price",
+            headerName: "PRICE",
 
             flex: 1,
             sortable: false,
@@ -29,8 +38,8 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
             headerAlign: "center",
             renderHeader: () => (
                 <span className="text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center">
-                    AMOUNT
-                    <span>({symbols[0] && symbols[0]})</span>
+                    PRICE
+                    <span>( USDC )</span>
                 </span>
             ),
             renderCell: (cellValues) => {
@@ -48,22 +57,24 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
             },
         },
         {
-            field: "price",
-            headerName: "PRICE",
+            field: "amount",
+            headerName: "AMOUNT",
 
             flex: 1,
             sortable: false,
             align: "center",
             headerAlign: "center",
             renderHeader: () => (
-                <span className="text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center">
-                    PRICE
-                    <span>({symbols[1] && symbols[1]})</span>
+                <span className="text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center text-white">
+                    AMOUNT
+                    <span>( SEI )</span>
                 </span>
             ),
             renderCell: (cellValues) => {
                 return (
-                    <span className="relative bottom-[14px] text-[12px] leading-[1.3] font-semibold">
+                    <span
+                        className={`relative bottom-[14px] text-[12px] leading-[1.3] font-semibold`}
+                    >
                         {cellValues.formattedValue}
                     </span>
                 )
@@ -72,17 +83,19 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
     ]
     const tradeColumns: GridColDef[] = [
         {
-            field: "amount",
-            headerName: "AMOUNT",
+            field: "price",
+            headerName: "PRICE",
 
             flex: 1,
             sortable: false,
             align: "center",
             headerAlign: "center",
             renderHeader: () => (
-                <span className="text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center">
-                    AMOUNT
-                    <span>({symbols[0] && symbols[0]})</span>
+                <span
+                    className={`text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center `}
+                >
+                    PRICE
+                    <span>( USDC )</span>
                 </span>
             ),
             renderCell: (cellValues) => {
@@ -94,15 +107,14 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
                                 : "text-inputErrorRed"
                         }`}
                     >
-                        {cellValues.row.side === "buy" ? "+ " : "- "}
                         {cellValues.formattedValue}
                     </span>
                 )
             },
         },
         {
-            field: "price",
-            headerName: "PRICE",
+            field: "amount",
+            headerName: "AMOUNT",
 
             flex: 1,
             sortable: false,
@@ -110,13 +122,16 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
             headerAlign: "center",
             renderHeader: () => (
                 <span className="text-[9px] font-bold leading-[1.6] tracking-[.9px] text-textGray1 flex flex-col items-center">
-                    PRICE
-                    <span>({symbols[1] && symbols[1]})</span>
+                    AMOUNT
+                    <span>( SEI )</span>
                 </span>
             ),
             renderCell: (cellValues) => {
                 return (
-                    <span className="relative bottom-[14px] text-[12px] leading-[1.3] font-semibold">
+                    <span
+                        className={`relative bottom-[14px] text-[12px] leading-[1.3] font-semibold text-white`}
+                    >
+                        {cellValues.row.side === "buy" ? "+ " : "- "}
                         {cellValues.formattedValue}
                     </span>
                 )
@@ -140,6 +155,52 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
             },
         },
     ]
+
+    const getShortBookAllQuery = useCallback(async () => {
+        if (!isLoading) {
+            const query =
+                await queryClient.seiprotocol.seichain.dex.shortBookAll({
+                    contractAddr: CONTRACT_ADDRESS,
+                    priceDenom: "USDC",
+                    assetDenom: "SEI",
+                })
+            console.log("get short book query", query)
+
+            setSellOrders(
+                query?.ShortBook.map((order: IBookOrder) => ({
+                    ...order,
+                    side: "sell",
+                }))
+            )
+        }
+    }, [isLoading])
+
+    const getLongBookAllQuery = useCallback(async () => {
+        console.log("account address => ", provider?.account)
+        if (!isLoading) {
+            const query =
+                await queryClient.seiprotocol.seichain.dex.longBookAll({
+                    contractAddr: CONTRACT_ADDRESS,
+                    priceDenom: "USDC",
+                    assetDenom: "SEI",
+                })
+            console.log("get long book query", query)
+
+            setBuyOrders(
+                query?.LongBook.map((order: IBookOrder) => ({
+                    ...order,
+                    side: "buy",
+                }))
+            )
+        }
+    }, [isLoading])
+
+    useEffect(() => {
+        if (!!provider?.account) {
+            getLongBookAllQuery()
+            getShortBookAllQuery()
+        }
+    }, [isLoading, provider])
 
     //@ts-ignore
     const { setSnackbarInfo } = useAppStateContext()
@@ -185,41 +246,24 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
                         iconSeparator: "stroke-black w-[20px]",
                     }}
                     className="text-white"
-                    rows={
-                        allTrades &&
-                        allTrades
-                            .filter((trade) => {
-                                return (
-                                    (trade.status === "filled" ||
-                                        trade.status === "partially-filled") &&
-                                    trade.market === symbols.join("-")
-                                )
-                            })
-                            .map((trade) => ({
-                                id: trade._id,
-                                amount: ethers.utils.formatUnits(
-                                    (
-                                        Number(trade.originalQuantity) -
-                                        Number(trade.remainingQuantity)
-                                    ).toString(),
-                                    pair.pairs[symbols.join("-")]
-                                        .baseAssetPrecision !== 0
-                                        ? pair.pairs[symbols.join("-")]
-                                              .baseAssetPrecision
-                                        : 0
-                                ),
-                                price: ethers.utils.formatUnits(
-                                    trade.price,
-                                    pair.pairs[symbols.join("-")]
-                                        .quoteAssetPrecision !== 0
-                                        ? pair.pairs[symbols.join("-")]
-                                              .quoteAssetPrecision
-                                        : 0
-                                ),
-                                time: formatTimestamp(trade.updatedAt, ""),
-                                side: trade.side,
-                            }))
-                    }
+                    rows={txHistory
+                        .sort((tx1, tx2) => {
+                            const dateA = moment(tx1.date)
+                            const dateB = moment(tx2.date)
+                            if (dateA.isBefore(dateB)) {
+                                return 1
+                            } else if (dateA.isAfter(dateB)) {
+                                return -1
+                            }
+                            return 0
+                        })
+                        .map((trade, index) => ({
+                            id: index,
+                            amount: trade?.amount,
+                            price: trade?.price,
+                            time: formatTime(moment(trade?.date)),
+                            side: trade.side,
+                        }))}
                     columns={tradeColumns}
                     disableSelectionOnClick
                     hideFooterPagination
@@ -250,30 +294,27 @@ const OrderBookV2 = ({ shortBookOrders }: Props) => {
                         iconSeparator: "stroke-black w-[20px]",
                     }}
                     className="text-white"
-                    rows={buyOrders.concat(sellOrders).map((trade) => ({
-                        id: trade._id,
-                        amount: ethers.utils.formatUnits(
-                            trade.remainingQuantity,
-                            pair &&
-                                symbols[0] &&
-                                pair.pairs[symbols.join("-")]
-                                    .baseAssetPrecision !== 0
-                                ? pair.pairs[symbols.join("-")]
-                                      .baseAssetPrecision
-                                : 0
-                        ),
-                        price: ethers.utils.formatUnits(
-                            trade.price,
-                            pair &&
-                                symbols[0] &&
-                                pair.pairs[symbols.join("-")]
-                                    .quoteAssetPrecision !== 0
-                                ? pair.pairs[symbols.join("-")]
-                                      .quoteAssetPrecision
-                                : 0
-                        ),
-                        side: trade.side,
-                    }))}
+                    rows={sellOrders
+                        .sort(
+                            (a: IBookOrder, b: IBookOrder) =>
+                                Number(a.entry?.price) - Number(b.entry?.price)
+                        )
+                        .reverse()
+                        .concat(
+                            buyOrders
+                                ?.sort(
+                                    (a: IBookOrder, b: IBookOrder) =>
+                                        Number(a.entry?.price) -
+                                        Number(b.entry?.price)
+                                )
+                                .reverse()
+                        )
+                        .map((order, index) => ({
+                            id: index,
+                            amount: Number(order?.entry?.quantity).toFixed(2),
+                            price: Number(order?.entry?.price).toFixed(2),
+                            side: order?.side,
+                        }))}
                     disableVirtualization
                     columns={orderColumns}
                     disableSelectionOnClick
