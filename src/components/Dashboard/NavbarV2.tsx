@@ -150,7 +150,7 @@ const NavbarV2 = ({ seiWallet }: Props) => {
                                     alt=""
                                 />
                                 <img
-                                    src={`/images/usdc.png`}
+                                    src={`/images/USDC.png`}
                                     alt=""
                                     className="w-[20px] min-w-[20px] absolute -right-2 bottom-0"
                                 />
