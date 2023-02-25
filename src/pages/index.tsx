@@ -1,0 +1,79 @@
+import { NoSsr } from "@mui/material"
+
+import { NextPage } from "next"
+import DashboardLayout from "@layout/dashboardLayout"
+import ExchangeLayout from "@layout/exchangeLayout"
+import Head from "next/head"
+import NavbarV2 from "@components/Dashboard/NavbarV2"
+import { useWallet } from "@sei-js/react"
+import { useEffect } from "react"
+import { RPC_URL, REST_URL } from "@constants/index"
+import { useAppUiStore } from "@store/app"
+import { useQuery } from "@tanstack/react-query"
+import axiosConfig from "src/config/axiosConfig"
+import { useTradeStore } from "@store/trades"
+
+const Home: NextPage = () => {
+    const { setMetamaskModalActive, metamaskModalActive } = useAppUiStore()
+    const { setTxHistory } = useTradeStore()
+
+    // @ts-ignore
+    const seiWallet: UseWallet | null =
+        typeof window !== "undefined"
+            ? useWallet(window, {
+                  inputWallet: "keplr",
+                  autoConnect: true,
+                  chainConfiguration: {
+                      chainId: "sei",
+                      rpcUrl: RPC_URL,
+                      restUrl: REST_URL,
+                  },
+              })
+            : null
+
+    useEffect(() => {
+        // @ts-ignore
+        if (typeof window?.keplr === "undefined") {
+            setMetamaskModalActive(true)
+        }
+    }, [metamaskModalActive])
+
+    useQuery(
+        ["getTrades"],
+        async ({ signal }) => {
+            return await axiosConfig({
+                method: "get",
+                url: "/api/trades",
+                signal,
+            }).then((res) => res.data)
+        },
+        {
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            onSuccess: (data) => {
+                setTxHistory(data)
+            },
+            onError: (err) => {
+                console.log("Fetching error: ", err)
+            },
+        }
+    )
+
+    return (
+        <DashboardLayout>
+            <Head>
+                <title>Dexchange</title>
+                <meta
+                    name="viewport"
+                    content="initial-scale=1.0, width=device-width"
+                />
+            </Head>
+            <NoSsr>
+                <NavbarV2 seiWallet={seiWallet} />
+            </NoSsr>
+            <ExchangeLayout seiWallet={seiWallet} />
+        </DashboardLayout>
+    )
+}
+
+export default Home
