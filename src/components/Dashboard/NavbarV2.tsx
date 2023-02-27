@@ -22,54 +22,6 @@ const NavbarV2 = ({ seiWallet }: Props) => {
 
     let { queryClient, isLoading } = useQueryClient(REST_URL)
 
-    const suggestChain = async () => {
-        // @ts-ignore
-        return window?.keplr.experimentalSuggestChain({
-            chainId: "sei",
-            chainName: "Sei Devnet",
-            rpc: RPC_URL,
-            rest: REST_URL,
-            bip44: {
-                coinType: 118,
-            },
-            bech32Config: {
-                bech32PrefixAccAddr: "sei",
-                bech32PrefixAccPub: "sei" + "pub",
-                bech32PrefixValAddr: "sei" + "valoper",
-                bech32PrefixValPub: "sei" + "valoperpub",
-                bech32PrefixConsAddr: "sei" + "valcons",
-                bech32PrefixConsPub: "sei" + "valconspub",
-            },
-            currencies: [
-                {
-                    coinDenom: "SEI",
-                    coinMinimalDenom: "usei",
-                    coinDecimals: 6,
-                    coinGeckoId: "sei",
-                },
-            ],
-            feeCurrencies: [
-                {
-                    coinDenom: "SEI",
-                    coinMinimalDenom: "usei",
-                    coinDecimals: 6,
-                    coinGeckoId: "sei",
-                    gasPriceStep: {
-                        low: 0.01,
-                        average: 0.025,
-                        high: 0.04,
-                    },
-                },
-            ],
-            stakeCurrency: {
-                coinDenom: "sei",
-                coinMinimalDenom: "usei",
-                coinDecimals: 6,
-                coinGeckoId: "sei",
-            },
-        })
-    }
-
     const getAccountBalance = useCallback(async () => {
         if (!isLoading && seiWallet?.offlineSigner && seiWallet?.chainId) {
             const accounts = await seiWallet?.offlineSigner?.getAccounts()
@@ -107,7 +59,6 @@ const NavbarV2 = ({ seiWallet }: Props) => {
 
     useEffect(() => {
         if (!isLoading && seiWallet?.offlineSigner) {
-            suggestChain()
             getAccountBalance()
         }
     }, [isLoading, seiWallet?.offlineSigner])

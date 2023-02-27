@@ -17,6 +17,54 @@ const Home: NextPage = () => {
     const { setMetamaskModalActive, metamaskModalActive } = useAppUiStore()
     const { setTxHistory } = useTradeStore()
 
+    const suggestChain = async () => {
+        // @ts-ignore
+        return window?.keplr.experimentalSuggestChain({
+            chainId: "sei",
+            chainName: "Sei Devnet",
+            rpc: RPC_URL,
+            rest: REST_URL,
+            bip44: {
+                coinType: 118,
+            },
+            bech32Config: {
+                bech32PrefixAccAddr: "sei",
+                bech32PrefixAccPub: "sei" + "pub",
+                bech32PrefixValAddr: "sei" + "valoper",
+                bech32PrefixValPub: "sei" + "valoperpub",
+                bech32PrefixConsAddr: "sei" + "valcons",
+                bech32PrefixConsPub: "sei" + "valconspub",
+            },
+            currencies: [
+                {
+                    coinDenom: "SEI",
+                    coinMinimalDenom: "usei",
+                    coinDecimals: 6,
+                    coinGeckoId: "sei",
+                },
+            ],
+            feeCurrencies: [
+                {
+                    coinDenom: "SEI",
+                    coinMinimalDenom: "usei",
+                    coinDecimals: 6,
+                    coinGeckoId: "sei",
+                    gasPriceStep: {
+                        low: 0.01,
+                        average: 0.025,
+                        high: 0.04,
+                    },
+                },
+            ],
+            stakeCurrency: {
+                coinDenom: "sei",
+                coinMinimalDenom: "usei",
+                coinDecimals: 6,
+                coinGeckoId: "sei",
+            },
+        })
+    }
+
     // @ts-ignore
     const seiWallet: UseWallet | null =
         typeof window !== "undefined"
@@ -37,6 +85,10 @@ const Home: NextPage = () => {
             setMetamaskModalActive(true)
         }
     }, [metamaskModalActive])
+
+    useEffect(() => {
+        suggestChain()
+    }, [])
 
     useQuery(
         ["getTrades"],
