@@ -6,6 +6,7 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { CacheProvider } from "@emotion/react"
 import createEmotionCache from "../createEmotionCache"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { NotificationsProvider } from "@mantine/notifications"
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache()
@@ -31,7 +32,9 @@ export default function MyApp(props: any) {
             {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             <CssBaseline />
             <QueryClientProvider client={client}>
-                <Component {...pageProps} />
+                <NotificationsProvider>
+                    <Component {...pageProps} />
+                </NotificationsProvider>
             </QueryClientProvider>
         </CacheProvider>
     )

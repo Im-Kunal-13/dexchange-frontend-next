@@ -131,3 +131,14 @@ input[type="number"]::-webkit-outer-spin-button {
 .MuiDataGrid-columnHeaders {
     border-bottom: 2px solid rgb(255, 255, 255, 0.1) !important;
 }
+
+// Mantine notifications
+.mantine-vqs8oh {
+    z-index: 10000;
+    right: 25px;
+    width: fit-content;
+}
+
+.__mantine-ref-icon {
+    background-color: transparent !important;
+}

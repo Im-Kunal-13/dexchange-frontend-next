@@ -195,8 +195,6 @@ const OrderBookV2 = ({}: Props) => {
         }
     }, [isLoading, provider])
 
-    const { setSnackbarInfo } = useAppUiStore()
-
     return (
         <div className="bg-bgSidebarGray1 border border-t-0 border-white border-opacity-10 h-full">
             <div className="flex items-center gap-2 px-[10px] py-[5px]">

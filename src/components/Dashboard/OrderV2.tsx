@@ -20,8 +20,9 @@ import { formatUnits } from "ethers/lib/utils"
 import moment from "moment"
 import { isStringValidNumber } from "@components/utility/isStringValidNumber"
 import axiosConfig from "src/config/axiosConfig"
-import { useTradeStore } from "@store/trades"
 import { IProvider } from "../../types/index"
+import { showNotification, updateNotification } from "@mantine/notifications"
+import { CheckCircleRounded, ErrorRounded } from "@mui/icons-material"
 
 const fee: StdFee = {
     amount: [
@@ -38,9 +39,6 @@ interface Props {
 }
 
 const OrderV2 = ({ seiWallet }: Props) => {
-    const { setSnackbarLoading, setSnackbarSuccess, setSnackbarError } =
-        useAppUiStore()
-
     const { provider, setProvider } = useAppPersistStore()
 
     const [contractBalances, setContractBalances] =
@@ -158,10 +156,30 @@ const OrderV2 = ({ seiWallet }: Props) => {
             },
         }
 
-        setSnackbarLoading({
-            open: true,
-            message: "Placing your order...",
-            autoHide: false,
+        showNotification({
+            id: "placing-order",
+            loading: true,
+            title: "User notification",
+            message: "Placing your order . . .",
+            autoClose: false,
+            classNames: {
+                root: "bg-alertBgBlue py-5 text-alertTextBlue rounded overflow-hidden shadow-black1 min-w-[275px] border-none px-[18px]",
+                loader: "stroke-[#3453FF] h-[24px]",
+                title: "text-white",
+                description: "text-alertTextBlue",
+                closeButton:
+                    "rounded-full hover:rounded-full hover:bg-alertTextBlue transition-all hover:text-alertBgBlue",
+                icon: "bg-transparent",
+            },
+            // styles: () => ({
+            //     root: {
+            //         zIndex: 1000000000,
+            //         width: "300px",
+            //         padding: "12.5px 5px 20px 22px",
+            //         "&::before": { backgroundColor: "#3453FF" },
+            //         border: "2px solid rgb(52, 83, 255, .25)",
+            //     },
+            // }),
         })
 
         const res = await signingClient.signAndBroadcast(
@@ -171,22 +189,35 @@ const OrderV2 = ({ seiWallet }: Props) => {
             "test msg place order"
         )
 
-        setSnackbarLoading({
-            open: false,
-            message: "",
-            autoHide: true,
-        })
-
         getAccountBalance()
         getContractBalance()
 
         if (res?.code === 0) {
-            setSnackbarSuccess({
-                open: true,
+            updateNotification({
+                id: "placing-order",
+                title: "Transaction Successfull",
+                classNames: {
+                    root: "bg-alertBgGreen py-5 text-alertTextGreen rounded overflow-hidden shadow-black1 min-w-[275px] border-none px-[18px]",
+                    title: "text-white",
+                    description: "text-alertTextGreen",
+                    closeButton:
+                        "rounded-full hover:rounded-full hover:bg-alertTextGreen transition-all hover:text-alertBgGreen",
+                    icon: "bg-transparent",
+                },
                 message:
                     "tx hash : " + res.transactionHash.slice(0, 15) + "...",
-                autoHide: false,
-                content: res.transactionHash,
+                icon: (
+                    <CheckCircleRounded
+                        className="text-green1"
+                        style={{ fontSize: "28px" }}
+                    />
+                ),
+                styles: () => ({
+                    icon: {
+                        backgroundColor: "transparent",
+                    },
+                }),
+                autoClose: false,
             })
 
             // Inserting transaction in the db
@@ -203,9 +234,31 @@ const OrderV2 = ({ seiWallet }: Props) => {
                 },
             })
         } else {
-            setSnackbarError({
-                open: true,
-                message: "Sorry, some error occured !",
+            updateNotification({
+                id: "placing-order",
+                title: "Transaction Failed",
+                classNames: {
+                    root: "bg-alertBgRed py-5 text-alertTextRed rounded overflow-hidden shadow-black1 min-w-[275px] border-none px-[18px]",
+                    title: "text-white",
+                    description: "text-alertTextRed",
+                    closeButton:
+                        "rounded-full hover:rounded-full hover:bg-alertTextRed transition-all hover:text-alertBgRed",
+                    icon: "bg-transparent",
+                },
+                message:
+                    "tx hash : " + res.transactionHash.slice(0, 15) + "...",
+                icon: (
+                    <ErrorRounded
+                        className="text-alertRed"
+                        style={{ fontSize: "28px" }}
+                    />
+                ),
+                styles: () => ({
+                    icon: {
+                        backgroundColor: "transparent",
+                    },
+                }),
+                autoClose: false,
             })
         }
     }
