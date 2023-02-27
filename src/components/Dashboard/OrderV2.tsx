@@ -21,6 +21,7 @@ import moment from "moment"
 import { isStringValidNumber } from "@components/utility/isStringValidNumber"
 import axiosConfig from "src/config/axiosConfig"
 import { useTradeStore } from "@store/trades"
+import { IProvider } from "../../types/index"
 
 const fee: StdFee = {
     amount: [
@@ -42,7 +43,8 @@ const OrderV2 = ({ seiWallet }: Props) => {
 
     const { provider, setProvider } = useAppPersistStore()
 
-    const [contractBalance, setContractBalance] = useState()
+    const [contractBalances, setContractBalances] =
+        useState<IProvider["balances"]>()
 
     const [isMarket, setIsMarket] = useState(false)
     const [isBuy, setIsBuy] = useState(true)
@@ -92,16 +94,14 @@ const OrderV2 = ({ seiWallet }: Props) => {
 
     const getContractBalance = useCallback(async () => {
         if (!isLoading && seiWallet?.offlineSigner && seiWallet?.chainId) {
-            const accounts = await seiWallet?.offlineSigner?.getAccounts()
-
-            // Query the account balance
+            // Query the contract balance
             const contractBal =
                 await queryClient.cosmos.bank.v1beta1.allBalances({
                     address:
                         "sei14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sh9m79m",
                 })
 
-            setContractBalance(
+            setContractBalances(
                 contractBal?.balances?.length > 0
                     ? contractBal?.balances?.map(
                           (balance: { denom: string; amount: string }) => ({
@@ -114,26 +114,6 @@ const OrderV2 = ({ seiWallet }: Props) => {
                       )
                     : []
             )
-            console.log({ contractBalances: contractBalance })
-
-            // setProvider({
-            //     ...provider,
-            //     account: accounts[0]?.address,
-            //     balances:
-            //         accountBalance?.balances?.length > 0
-            //             ? accountBalance?.balances?.map(
-            //                   (balance: { denom: string; amount: string }) => ({
-            //                       ...balance,
-            //                       amount: formatUnits(
-            //                           balance?.amount,
-            //                           6
-            //                       ).toString(),
-            //                   })
-            //               )
-            //             : [],
-
-            //     chainId: seiWallet?.chainId,
-            // })
         }
     }, [isLoading, seiWallet?.offlineSigner, seiWallet?.chainId])
 
@@ -288,8 +268,8 @@ const OrderV2 = ({ seiWallet }: Props) => {
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-[3px]">
                         {/* @ts-ignore */}
-                        {contractBalance &&
-                            contractBalance.map((token) => (
+                        {contractBalances &&
+                            contractBalances.map((token) => (
                                 <p
                                     className="text-[12px] text-white font-bold leading-[1.6] trackig-widest"
                                     key={token?.denom}
