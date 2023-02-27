@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets"
 
 const TvChart = () => {
@@ -12,4 +13,4 @@ const TvChart = () => {
     )
 }
 
-export default TvChart
+export default memo(TvChart)

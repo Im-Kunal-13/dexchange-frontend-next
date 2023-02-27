@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
     Button,
     FormHelperText,
@@ -42,6 +42,8 @@ const OrderV2 = ({ seiWallet }: Props) => {
 
     const { provider, setProvider } = useAppPersistStore()
 
+    const [contractBalance, setContractBalance] = useState()
+
     const [isMarket, setIsMarket] = useState(false)
     const [isBuy, setIsBuy] = useState(true)
     const [amount, setAmount] = useState("")
@@ -62,7 +64,10 @@ const OrderV2 = ({ seiWallet }: Props) => {
             const accountBalance =
                 await queryClient.cosmos.bank.v1beta1.allBalances({
                     address: accounts[0]?.address,
+                    // address: "sei14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sh9m79m",
                 })
+
+            console.log({ contractBalances: accountBalance })
 
             setProvider({
                 ...provider,
@@ -82,6 +87,53 @@ const OrderV2 = ({ seiWallet }: Props) => {
 
                 chainId: seiWallet?.chainId,
             })
+        }
+    }, [isLoading, seiWallet?.offlineSigner, seiWallet?.chainId])
+
+    const getContractBalance = useCallback(async () => {
+        if (!isLoading && seiWallet?.offlineSigner && seiWallet?.chainId) {
+            const accounts = await seiWallet?.offlineSigner?.getAccounts()
+
+            // Query the account balance
+            const contractBal =
+                await queryClient.cosmos.bank.v1beta1.allBalances({
+                    address:
+                        "sei14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sh9m79m",
+                })
+
+            setContractBalance(
+                contractBal?.balances?.length > 0
+                    ? contractBal?.balances?.map(
+                          (balance: { denom: string; amount: string }) => ({
+                              ...balance,
+                              amount: formatUnits(
+                                  balance?.amount,
+                                  6
+                              ).toString(),
+                          })
+                      )
+                    : []
+            )
+            console.log({ contractBalances: contractBalance })
+
+            // setProvider({
+            //     ...provider,
+            //     account: accounts[0]?.address,
+            //     balances:
+            //         accountBalance?.balances?.length > 0
+            //             ? accountBalance?.balances?.map(
+            //                   (balance: { denom: string; amount: string }) => ({
+            //                       ...balance,
+            //                       amount: formatUnits(
+            //                           balance?.amount,
+            //                           6
+            //                       ).toString(),
+            //                   })
+            //               )
+            //             : [],
+
+            //     chainId: seiWallet?.chainId,
+            // })
         }
     }, [isLoading, seiWallet?.offlineSigner, seiWallet?.chainId])
 
@@ -146,6 +198,7 @@ const OrderV2 = ({ seiWallet }: Props) => {
         })
 
         getAccountBalance()
+        getContractBalance()
 
         if (res?.code === 0) {
             setSnackbarSuccess({
@@ -176,6 +229,10 @@ const OrderV2 = ({ seiWallet }: Props) => {
             })
         }
     }
+
+    useEffect(() => {
+        getContractBalance()
+    }, [isLoading, seiWallet?.offlineSigner, seiWallet?.chainId])
 
     return (
         <div>
@@ -214,6 +271,33 @@ const OrderV2 = ({ seiWallet }: Props) => {
                                 {token?.denom.slice(1).toUpperCase()}
                             </p>
                         ))}
+                    </div>
+                    <IconButton
+                        className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]"
+                        onClick={() => {}}
+                    >
+                        <RefreshIcon className="text-white text-2xl" />
+                    </IconButton>
+                </div>
+            </div>
+
+            <div className="bg-purple1 bg-opacity-25 flex flex-col gap-[6px] mt-[24px] rounded-xl py-[20px] px-[24px]">
+                <h6 className="text-[10px] font-bold leading-[1] trackig-widest uppercase text-textGray1">
+                    CONTRACT BALANCE
+                </h6>
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-[3px]">
+                        {/* @ts-ignore */}
+                        {contractBalance &&
+                            contractBalance.map((token) => (
+                                <p
+                                    className="text-[12px] text-white font-bold leading-[1.6] trackig-widest"
+                                    key={token?.denom}
+                                >
+                                    {token?.amount} -{" "}
+                                    {token?.denom.slice(1).toUpperCase()}
+                                </p>
+                            ))}
                     </div>
                     <IconButton
                         className="rounded-full rotate-0 hover:rotate-[45deg] transition-all duration-300 bg-white bg-opacity-10 hover:bg-black hover:bg-opacity-20 relative bottom-[2px]"
