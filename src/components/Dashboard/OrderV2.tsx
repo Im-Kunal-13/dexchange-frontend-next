@@ -11,7 +11,7 @@ import RefreshIcon from "@mui/icons-material/Refresh"
 import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { InputAdornment } from "@material-ui/core"
-import { useAppPersistStore, useAppUiStore } from "@store/app"
+import { useAppPersistStore } from "@store/app"
 import Long from "long"
 import { useQueryClient, useSigningClient, UseWallet } from "@sei-js/react"
 import { StdFee } from "@cosmjs/stargate"
@@ -95,8 +95,7 @@ const OrderV2 = ({ seiWallet }: Props) => {
             // Query the contract balance
             const contractBal =
                 await queryClient.cosmos.bank.v1beta1.allBalances({
-                    address:
-                        "sei14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sh9m79m",
+                    address: CONTRACT_ADDRESS,
                 })
 
             setContractBalances(
@@ -182,6 +181,9 @@ const OrderV2 = ({ seiWallet }: Props) => {
             // }),
         })
 
+        setAmount("")
+        setPrice("")
+
         const res = await signingClient.signAndBroadcast(
             provider?.account,
             [msgOrder],
@@ -204,8 +206,20 @@ const OrderV2 = ({ seiWallet }: Props) => {
                         "rounded-full hover:rounded-full hover:bg-alertTextGreen transition-all hover:text-alertBgGreen",
                     icon: "bg-transparent",
                 },
-                message:
-                    "tx hash : " + res.transactionHash.slice(0, 15) + "...",
+                message: (
+                    <a
+                        href={
+                            "https://explorer.sei.autonomy.network/sei/tx/" +
+                            res.transactionHash
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        {"tx hash : " +
+                            res.transactionHash.slice(0, 15) +
+                            "..."}
+                    </a>
+                ),
                 icon: (
                     <CheckCircleRounded
                         className="text-green1"
@@ -314,7 +328,7 @@ const OrderV2 = ({ seiWallet }: Props) => {
                 </div>
             </div>
 
-            <div className="bg-purple1 bg-opacity-25 flex flex-col gap-[6px] mt-[24px] rounded-xl py-[20px] px-[24px]">
+            <div className="bg-purple1 bg-opacity-25 flex flex-col gap-[6px] mt-[20px] rounded-xl py-[20px] px-[24px]">
                 <h6 className="text-[10px] font-bold leading-[1] trackig-widest uppercase text-textGray1">
                     CONTRACT BALANCE
                 </h6>

@@ -3,3 +3,4 @@ export const CONTRACT_ADDRESS =
 
 export const RPC_URL = "https://rpc.sei.autonomy.network/"
 export const REST_URL = "https://lcd.sei.autonomy.network/"
+
