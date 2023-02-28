@@ -10,6 +10,9 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem"
 import { useQueryClient } from "@sei-js/react"
 import { REST_URL, CONTRACT_ADDRESS } from "@constants/index"
 import { useAppPersistStore } from "@store/app"
+import { useTradeStore } from "@store/trades"
+import moment from "moment"
+import formatTime from "@components/utility/formatTime"
 
 const columns: GridColDef[] = [
     {
@@ -174,46 +177,7 @@ const tradeColumns: GridColDef[] = [
             )
         },
     },
-    {
-        field: "orderStatus",
-        headerName: "STATUS",
-        type: "string",
 
-        flex: 1,
-        sortable: false,
-        align: "center",
-        headerAlign: "center",
-
-        renderCell: (cellValues) => {
-            return (
-                <span
-                    className={`relative bottom-[10px] border-[2px] rounded-full px-1 py-[1px] flex items-center gap-[5px] ${
-                        cellValues.formattedValue === "open"
-                            ? "border-blue1 text-blue1"
-                            : cellValues.formattedValue === "partially-filled"
-                            ? "border-btcYellow text-btcYellow"
-                            : cellValues.formattedValue === "filled"
-                            ? "border-textGreen1 text-green1"
-                            : "border-inputErrorRed text-inputErrorRed"
-                    }`}
-                >
-                    {cellValues.formattedValue === "open" ? (
-                        <InfoIcon className="text-lg" />
-                    ) : cellValues.formattedValue === "partially-filled" ? (
-                        <AutorenewIcon className="text-lg" />
-                    ) : cellValues.formattedValue === "filled" ? (
-                        <DoneIcon className="text-lg" />
-                    ) : (
-                        <ReportProblemIcon className="text-lg" />
-                    )}
-
-                    <span className="mr-1 capitalize">
-                        {cellValues.formattedValue}
-                    </span>
-                </span>
-            )
-        },
-    },
     {
         field: "time",
         headerName: "TIME",
@@ -256,6 +220,7 @@ const MyOrderBookV2 = ({}: Props) => {
     const [myOrders, setMyOrders] = useState([])
 
     const { provider } = useAppPersistStore()
+    const { txHistory } = useTradeStore()
 
     const getOrdersOfAccount = useCallback(async () => {
         if (!isLoading && provider?.account) {
@@ -328,7 +293,17 @@ const MyOrderBookV2 = ({}: Props) => {
                     }}
                     className="text-white"
                     style={{ height: "calc(550px)" }}
-                    rows={[]}
+                    rows={txHistory
+                        .sort((tx1, tx2) =>
+                            moment(tx2.date).diff(moment(tx1.date))
+                        )
+                        .map((trade, index) => ({
+                            id: index,
+                            amount: trade?.amount,
+                            price: trade?.price,
+                            side: trade.side,
+                            time: formatTime(moment(trade?.date)),
+                        }))}
                     columns={tradeColumns}
                     disableSelectionOnClick
                     hideFooterPagination
